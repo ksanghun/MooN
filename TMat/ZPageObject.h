@@ -6,6 +6,8 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
+#define DEFAULT_PAGE_SIZE 128
+
 class CZPageObject
 {
 public:
@@ -18,7 +20,9 @@ public:
 	void SetTexId(GLuint _texid);
 	void SetTex(GLuint _tex);
 	void SetPosition(POINT3D pos);
-	void SetSelecttion(bool _isSel);
+	void SetRendomPos();
+	//void SetSelecttion(bool _isSel);
+	float SetSelection(int nSlot, float offset);
 //	void SetImgSize(unsigned short _w, unsigned short _h) { nImgWidth = _w; nImgHeight = _h; };
 
 	void DrawThumbNail(float fAlpha);
@@ -62,6 +66,8 @@ private:
 
 	float	m_fRectWidth;
 	POINT3D m_pos;
+	POINT3D m_targetPos;
+
 	POINT3D m_vertex[4];
 	POINT3D m_vertexBg[4];
 	POINT2D m_texcoord[4];
@@ -75,6 +81,8 @@ private:
 	std::vector<_MATCHInfo> m_matched_pos;
 	float m_fXScale, m_fYScale;
 
+
+	bool m_bCandidate;
 
 
 };

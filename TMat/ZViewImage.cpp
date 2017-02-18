@@ -4,10 +4,16 @@
 #include "MainFrm.h"
 
 enum TIMEREVNT { _RENDER = 100, _ADDIMG, _SEARCHIMG };
+#define MAX_CAM_HIGHTLEVEL 2000
+#define MIN_CAM_HIGHTLEVEL 1000
+#define MAX_CAM_FOV 45.0f
+
+
 CZViewImage::CZViewImage()
 {
 	m_addImgCnt = 0;
 	m_isAnimation = true;
+	m_mouseMode = 0;
 }
 
 
@@ -19,14 +25,30 @@ CZViewImage::~CZViewImage()
 void CZViewImage::InitGLview(int _nWidth, int _nHeight)
 {
 	mtSetPoint3D(&m_lookAt, 0, 0, 0);
-	m_cameraPri.SetInitLevelHeight(2000);
-	m_cameraPri.InitializeCamera(45, 0, 0, m_lookAt, _nWidth, _nHeight);
-
+	m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL);
+	m_cameraPri.InitializeCamera(MAX_CAM_FOV, 0, 0, m_lookAt, _nWidth, _nHeight);
 	SetTimer(_RENDER, 30, NULL);
 }
+
+void CZViewImage::InitCamera()
+{
+	mtSetPoint3D(&m_lookAt, 0, 0, 0);
+	m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL);
+}
+
 void CZViewImage::MouseWheel(short zDelta)
 {
+	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
 
+	float fLevelHeight = m_cameraPri.GetLevelHeight();
+	float zoomValue = fLevelHeight*0.1f;
+	if (zDelta > 0){ zoomValue = -zoomValue;}
+	fLevelHeight += zoomValue;	
+
+	if (fLevelHeight > MAX_CAM_HIGHTLEVEL){ fLevelHeight = MAX_CAM_HIGHTLEVEL; }
+	if (fLevelHeight < MIN_CAM_HIGHTLEVEL){ fLevelHeight = MIN_CAM_HIGHTLEVEL; }
+
+	m_cameraPri.SetInitLevelHeight(fLevelHeight);
 }
 
 void CZViewImage::ProcGenerateThumbnail()
@@ -42,7 +64,7 @@ void CZViewImage::GenerateThumbnail()
 
 	int cnt = 0;
 	for (; m_addImgCnt < imgvec.size(); m_addImgCnt++){
-		imgvec[m_addImgCnt]->LoadPageImage(128);
+		imgvec[m_addImgCnt]->LoadPageImage(DEFAULT_PAGE_SIZE);
 		cnt++;
 		if (cnt > 10)
 			break;
@@ -88,13 +110,16 @@ ON_WM_SIZE()
 ON_WM_TIMER()
 ON_WM_MOUSEHOVER()
 ON_WM_MOUSEMOVE()
+ON_WM_LBUTTONUP()
 END_MESSAGE_MAP()
 
 
 void CZViewImage::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
-
+	m_mouseMode = 2;
+	IDragMap(point.x, point.y, 0);
+	SetCapture();
 
 	COGLWnd::OnLButtonDown(nFlags, point);
 }
@@ -152,5 +177,69 @@ void CZViewImage::OnMouseHover(UINT nFlags, CPoint point)
 void CZViewImage::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
+	if (m_mouseMode == 2)		// Move
+	{
+		if ((point.x>0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight))
+		{
+			IDragMap(point.x, point.y, 1);
+		}
+	}
 	COGLWnd::OnMouseMove(nFlags, point);
+}
+
+
+void CZViewImage::IDragMap(int x, int y, short sFlag)
+{
+	POINT3D curPos, prePos, transPos, ptLookAt;
+	BOOL res = FALSE;
+	int dx = 0, dy = 0;
+
+
+	switch (sFlag){
+	case 0:		// DOWN
+		m_dragOper.init();
+		m_dragOper.IsDrag = true;
+		m_dragOper.px = x;
+		m_dragOper.py = y;
+		break;
+
+	case 1:		// MOVE
+		if (m_dragOper.IsDrag){
+
+			curPos = m_cameraPri.ScreenToWorld(x, y);
+			prePos = m_cameraPri.ScreenToWorld(m_dragOper.px, m_dragOper.py);
+			transPos = prePos - curPos;
+			ptLookAt = m_cameraPri.GetLookAt();
+
+			ptLookAt.x += transPos.x;
+			//ptLookAt.y += transPos.y;
+
+			m_dragOper.px = x;
+			m_dragOper.py = y;
+
+			//	m_DemProj->ProjectPoint(&ptLookAt, &m_cameraPri.m_currentBlockid);
+			m_cameraPri.SetModelViewMatrix(ptLookAt, 0, 0);
+			m_lookAt = ptLookAt;
+			//	UpdateCamera(ptLookAt, 0,0);
+		}
+		break;
+
+	case 2:		// UP
+		ReleaseCapture();
+		m_dragOper.init();
+		break;
+	}
+
+
+
+
+}
+
+void CZViewImage::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	m_mouseMode = 0;
+	IDragMap(point.x, point.y, 2);
+
+	COGLWnd::OnLButtonUp(nFlags, point);
 }

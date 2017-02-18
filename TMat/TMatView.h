@@ -19,6 +19,8 @@ public:
 //	CTMatDoc* GetDocument() const;
 
 	void SetTreeDragItem(CImageList* pImage, HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
+	void ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
+	void SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset);
 // Operations
 public:
 
@@ -58,6 +60,7 @@ public:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	virtual void OnInitialUpdate();
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 };
 
 #ifndef _DEBUG  // debug version in TMatView.cpp

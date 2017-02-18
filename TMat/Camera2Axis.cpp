@@ -313,8 +313,6 @@ void CCamera2Axis::SetInitLevelHeight(float fHeight_D)
 	m_levelHeight = fHeight_D;
 	if(m_levelHeight<2)
 		m_levelHeight = 2;
-	//	if(m_levelHeight>1500000)
-	//		m_levelHeight = 1500000;
 
 	if((fHeight_D>0))
 		SetModelViewMatrix(m_vLookat, 1.0,0);

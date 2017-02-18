@@ -18,7 +18,8 @@ public:
 	void DrawBGPageAni();
 	void DrawBGPage();
 	
-	
+	void IDragMap(int x, int y, short sFlag);
+	void InitCamera();
 private:
 	POINT3D m_lookAt;
 	unsigned short m_rectWidth, m_rectHeight;
@@ -28,6 +29,7 @@ private:
 	unsigned int m_addImgCnt;
 
 	bool m_isAnimation;
+	unsigned short m_mouseMode;
 
 public:
 	DECLARE_MESSAGE_MAP()
@@ -36,5 +38,6 @@ public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnMouseHover(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 };
 

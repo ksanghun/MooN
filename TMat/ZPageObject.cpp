@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ZPageObject.h"
 
-#define DEFALUT_PAGE_SIZE 100
+
 CZPageObject::CZPageObject()
 {
 	parentCode = 0;
@@ -14,14 +14,14 @@ CZPageObject::CZPageObject()
 
 	mtSetPoint3D(&m_vBgColor, 1.0f, 1.0f, 1.0f);
 
-	m_pos.x = rand() % 2000 - 1000;
-	m_pos.y = rand() % 1400 - 700;
-	m_pos.z = rand() % 2000 - 1000;
+	SetRendomPos();
+	mtSetPoint3D(&m_targetPos, 0, 0, 0);
 
 	m_fXScale = 1.0f;
 	m_fYScale = 1.0f;
 
-	SetSize(128, 128, 128);
+	SetSize(DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE);
+	m_bCandidate = false;
 }
 
 
@@ -39,7 +39,12 @@ CZPageObject::~CZPageObject()
 
 
 //===========================//
-
+void CZPageObject::SetRendomPos()
+{
+	m_pos.x = rand() % 2000 - 1000;
+	m_pos.y = rand() % 1400 - 700;
+	m_pos.z = rand() % 2000 - 1000;
+}
 bool CZPageObject::AddMatchedPoint(_MATCHInfo info, int search_size)
 {
 	if (search_size > 0){
@@ -120,16 +125,36 @@ void CZPageObject::DrawForPicking()
 
 }
 
-void CZPageObject::SetSelecttion(bool _isSel)
+//void CZPageObject::SetSelecttion(bool _isSel)
+//{
+//	if (_isSel == true){
+//		mtSetPoint3D(&m_vBgColor, 0.1f, 0.99f, 0.1f);
+//	}
+//	else{
+//		mtSetPoint3D(&m_vBgColor, 1.0f, 1.0f, 1.0f);
+//	}
+//	m_bIsSelected = _isSel;
+//};
+
+
+float CZPageObject::SetSelection(int nSlot, float offset)
 {
-	if (_isSel == true){
-		mtSetPoint3D(&m_vBgColor, 0.1f, 0.99f, 0.1f);
+	if (nSlot >= 0){
+		m_targetPos.x = (float)offset;
+		m_targetPos.y = -nSlot * (DEFAULT_PAGE_SIZE+10);
+		m_targetPos.z = 0.0f;
+
+		m_pos = m_targetPos;
+		m_bCandidate = true;
+		return m_fRectWidth;
 	}
 	else{
-		mtSetPoint3D(&m_vBgColor, 1.0f, 1.0f, 1.0f);
-	}
-	m_bIsSelected = _isSel;
-};
+		SetRendomPos();
+		m_bCandidate = false;
+		return 0.0f;
+	}	
+}
+
 
 void CZPageObject::SetTexId(GLuint _texid)
 {
@@ -318,12 +343,14 @@ bool CZPageObject::IsDuplicate(POINT3D pos, int search_size)
 
 void CZPageObject::RotatePos(float fSpeed)
 {
-	float fCos = cos(0.001);
-	float fSin = sin(0.001);
+	if (!m_bCandidate){
+		float fCos = cos(0.001);
+		float fSin = sin(0.001);
 
-	POINT3D tmpV = m_pos;
-	m_pos.x = tmpV.x*fCos - tmpV.z*fSin;
-	m_pos.z = tmpV.x*fSin + tmpV.z*fCos;
+		POINT3D tmpV = m_pos;
+		m_pos.x = tmpV.x*fCos - tmpV.z*fSin;
+		m_pos.z = tmpV.x*fSin + tmpV.z*fCos;
+	}
 
 }
 
@@ -342,7 +369,7 @@ bool CZPageObject::LoadPageImage(unsigned short resolution)
 		return false;
 	}
 
-	SetSize(src.rows, src.cols, DEFALUT_PAGE_SIZE);
+	SetSize(src.rows, src.cols, DEFAULT_PAGE_SIZE);
 
 	cv::resize(src, src, cv::Size(128, 128), 0, 0, CV_INTER_LINEAR);		// Memory Leak!!!!!!
 

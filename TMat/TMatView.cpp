@@ -35,6 +35,7 @@ BEGIN_MESSAGE_MAP(CTMatView, CView)
 	ON_WM_RBUTTONUP()
 	ON_WM_CREATE()
 	ON_WM_SIZE()
+	ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
 
 // CTMatView construction/destruction
@@ -118,9 +119,9 @@ void CTMatView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 
 void CTMatView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 {
-#ifndef SHARED_HANDLERS
-	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
-#endif
+//#ifndef SHARED_HANDLERS
+//	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
+//#endif
 }
 
 
@@ -211,6 +212,8 @@ void CTMatView::SetTreeDragItem(CImageList* pImage, HTREEITEM hItem, CDragDropTr
 	CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();	
 	int addcnt = 0;
 	AddImageData(hItem, pCtrl, addcnt);
+	
+
 	CString str;
 	str.Format(L"%d image(s) added", addcnt);
 	pM->AddOutputString(str, false);
@@ -222,10 +225,62 @@ void CTMatView::SetTreeDragItem(CImageList* pImage, HTREEITEM hItem, CDragDropTr
 
 }
 
+void CTMatView::ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl)
+{
+	if (m_pViewImage){
+		m_pViewImage->InitCamera();
+	}
+	float offset = 0.0f;
+	SetSelectedItem(hItem, pCtrl, offset);
+}
+void CTMatView::SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset)
+{
+	USES_CONVERSION;	char* sz = 0;
+	CString strPath, strPName, strName;
+	unsigned long pCode = 0, cCode = 0;
+	HTREEITEM hChildItem = pCtrl->GetChildItem(hItem);
+
+	if (hChildItem != NULL){  // Has Child!! Folder
+	//	HTREEITEM pItem = pCtrl->GetParentItem(hItem);
+		strName = pCtrl->GetItemText(hItem);
+	//	strPName = pCtrl->GetItemFullPath(pItem);
+		strPath = pCtrl->GetItemFullPath(hItem);
+
+	//	sz = T2A(strPName);		
+	//	pCode = getHashCode(sz);
+		sz = T2A(strPath);		
+		cCode = getHashCode(sz);
+
+		// Set Page Selected //
+		SINGLETON_TMat::GetInstance()->SelectPages(cCode);
+
+	}
+	//else{		// Has Child : Folder //
+	//	strPName = pCtrl->GetItemFullPath(hItem);
+	//	sz = T2A(strPName);		pCode = getHashCode(sz);
+
+	//	while (hChildItem){
+	//		HTREEITEM cItem = pCtrl->GetChildItem(hChildItem);
+
+	//		if (cItem == NULL){ // File //
+	//			strName = pCtrl->GetItemText(hChildItem);
+	//			strPath = pCtrl->GetItemFullPath(hChildItem);
+	//			//==================================//
+	//			char* sz = T2A(strPath);			
+	//			cCode = getHashCode(sz);
+	//			// Set Page Selected //
+	//			SINGLETON_TMat::GetInstance()->SelectPages(cCode, pCode);
+	//		}
+	//		else{
+	//			SetSelectedItem(hChildItem, pCtrl, offset);
+	//		}
+	//		hChildItem = pCtrl->GetNextItem(hChildItem, TVGN_NEXT);
+	//	}
+	//}
+}
+
 void CTMatView::AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt)
 {
-	
-
 	USES_CONVERSION;	char* sz = 0;
 
 	CString strPath, strPName, strName;
@@ -237,7 +292,7 @@ void CTMatView::AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt
 		HTREEITEM pItem = pCtrl->GetParentItem(_item);
 
 		strName = pCtrl->GetItemText(_item);
-		strPName = pCtrl->GetItemText(pItem);
+		strPName = pCtrl->GetItemFullPath(pItem);
 		strPath = pCtrl->GetItemFullPath(_item);
 
 		sz = T2A(strPName);		pCode = getHashCode(sz);
@@ -250,7 +305,7 @@ void CTMatView::AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt
 
 	}
 	else{		// Has Child : Folder //
-		strPName = pCtrl->GetItemText(_item);
+		strPName = pCtrl->GetItemFullPath(_item);
 		sz = T2A(strPName);		pCode = getHashCode(sz);
 
 		while (hChildItem){
@@ -275,4 +330,14 @@ void CTMatView::AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt
 			hChildItem = pCtrl->GetNextItem(hChildItem, TVGN_NEXT);
 		}
 	}
+}
+
+BOOL CTMatView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (m_pViewImage){
+		m_pViewImage->MouseWheel(zDelta);
+	}
+
+	return CView::OnMouseWheel(nFlags, zDelta, pt);
 }

@@ -140,6 +140,7 @@ void CDragDropTreeCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 
 void CDragDropTreeCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 {
+	ClearSelection();
   SetFocus();
   do
   {	
@@ -156,10 +157,10 @@ void CDragDropTreeCtrl::OnLButtonDown(UINT nFlags, CPoint point)
     {
       break;
     }
-    if( NULL == GetParentItem(hItem) )
-    {
-      break;
-    }
+    //if( NULL == GetParentItem(hItem) )
+    //{
+    //  break;
+    //}
     unsigned short shKeyState = GetKeyState(VK_CONTROL);
     shKeyState >>= 15;
     if( shKeyState == 1 )
@@ -518,14 +519,23 @@ CString CDragDropTreeCtrl::GetItemFullPath(HTREEITEM hItem)
 void CDragDropTreeCtrl::OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	// TODO: Add your control notification handler code here
+	CPoint pt;
+	GetCursorPos(&pt);
+	ScreenToClient(&pt);
+
+	HTREEITEM hItem = HitTest(pt);
+
+	pView->ProcSetSelectedItem(hItem, this);
+
+
 	*pResult = 1;
 }
 
 
 void CDragDropTreeCtrl::OnNMCustomdraw(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	HTREEITEM hItem = GetRootItem();
-	SetItemState(hItem, 0, TVIS_SELECTED);
+	//HTREEITEM hItem = GetRootItem();
+	//SetItemState(hItem, 0, TVIS_SELECTED);
 
 
 

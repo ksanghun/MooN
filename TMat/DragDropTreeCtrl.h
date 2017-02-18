@@ -45,6 +45,8 @@ private:
 	void OnControlKeyPress(HTREEITEM hCurItem);
 	BOOL IsItemPresent(HTREEITEM hItem);
 	BOOL IsInTheSameLevel(HTREEITEM hItem);
+
+	void SelectPages(unsigned long pCode, unsigned long cCode);
 	// Construction
 public:
 	CDragDropTreeCtrl();
