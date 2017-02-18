@@ -100,7 +100,7 @@ void CFileView::FillFileView(CString strFolder)
 
 	m_wndFileView.DeleteAllItems();
 	HTREEITEM hRoot = NULL;
-	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
+	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_SELECTED);
 
 	_strlist filelist;
 	ExtractFolder(strFolder, strFolder, filelist, hRoot);

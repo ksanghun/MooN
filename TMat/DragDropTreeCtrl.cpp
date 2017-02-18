@@ -38,6 +38,8 @@ BEGIN_MESSAGE_MAP(CDragDropTreeCtrl, CTreeCtrl)
 	ON_WM_TIMER()
   ON_NOTIFY_REFLECT(NM_CLICK,OnClick)
 	//}}AFX_MSG_MAP
+	ON_NOTIFY_REFLECT(NM_DBLCLK, &CDragDropTreeCtrl::OnNMDblclk)
+	ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, &CDragDropTreeCtrl::OnNMCustomdraw)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -500,7 +502,6 @@ CString CDragDropTreeCtrl::GetItemFullPath(HTREEITEM hItem)
 		}
 	}
 
-
 	CString fullpath = L"";
 	if (strItem.size() > 0){
 		
@@ -512,4 +513,45 @@ CString CDragDropTreeCtrl::GetItemFullPath(HTREEITEM hItem)
 	}
 
 	return fullpath;
+}
+
+void CDragDropTreeCtrl::OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	// TODO: Add your control notification handler code here
+	*pResult = 1;
+}
+
+
+void CDragDropTreeCtrl::OnNMCustomdraw(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	HTREEITEM hItem = GetRootItem();
+	SetItemState(hItem, 0, TVIS_SELECTED);
+
+
+
+	LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
+	// TODO: Add your control notification handler code here
+	//*pResult = 0;
+
+	LPNMLVCUSTOMDRAW lpLVCustomDraw = reinterpret_cast<LPNMLVCUSTOMDRAW>(pNMHDR);
+	switch (lpLVCustomDraw->nmcd.dwDrawStage)
+	{
+	case CDDS_ITEMPREPAINT:
+	case CDDS_SUBITEM:
+		if (lpLVCustomDraw->nmcd.uItemState & CDIS_SELECTED)
+		{
+			// Your color definitions here:
+			lpLVCustomDraw->clrText = RGB(255, 255, 255);
+			lpLVCustomDraw->clrTextBk = RGB(0, 30, 100);
+		}
+		break;
+
+	default:
+		break;
+	}
+
+	*pResult = 0;
+	*pResult |= CDRF_NOTIFYPOSTPAINT;
+	*pResult |= CDRF_NOTIFYITEMDRAW;
+	*pResult |= CDRF_NOTIFYSUBITEMDRAW;
 }
