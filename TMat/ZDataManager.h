@@ -4,7 +4,7 @@
 #include "ZPageObject.h"
 
 
-
+#define ANI_FRAME_CNT 10
 
 typedef std::vector<CZPageObject*> _vecPageObj;
 
@@ -35,7 +35,7 @@ public:
 
 	void TestThread();
 	void Th_GenerateThumnail();
-	bool SelectPages(unsigned long cCode);
+	short SelectPages(unsigned long cCode);
 	void UpdatePageStatus(POINT3D camPos);
 
 	_vecPageObj::iterator GetVecImageBegin() { return m_vecImageData.img.begin(); }
@@ -44,6 +44,9 @@ public:
 
 	int  GetEmptySlot();
 	void ReturnSlot(int idx);
+	float GetAniAcceration(int idx);
+
+	CZPageObject* GetPageByOrderID(int idx);
 
 private:
 	CZPDFConverter* m_pPDF;
@@ -56,6 +59,7 @@ private:
 	std::map<unsigned long, PAGEGROUP> m_mapGrupImg;
 //	_vecPageObj m_vecImageData;
 
+	float m_fAniAcceration[ANI_FRAME_CNT];
 };
 
 typedef CZSingtonTMat<CZDataManager> SINGLETON_TMat;

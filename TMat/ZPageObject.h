@@ -6,12 +6,14 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
-#define DEFAULT_PAGE_SIZE 128
+#define DEFAULT_PAGE_SIZE 500
 #define MAX_SLOT_SIZE 4096
-#define MAX_DESP_COLS 35
+#define MAX_DESP_COLS 25
 #define UPDATE_DISTANCE 200
-#define DEFAULT_X_OFFSET -2000;
-#define DEFAULT_Y_OFFSET 1200;
+
+#define DEFAULT_X_OFFSET -6000;
+#define DEFAULT_Y_OFFSET 250;
+
 #define MAX_CAM_HIGHTLEVEL 5000
 #define MIN_CAM_HIGHTLEVEL 10
 #define MAX_CAM_FOV 45.0f
@@ -31,7 +33,7 @@ public:
 	void SetPosition(POINT3D pos);
 	void SetRendomPos();
 	//void SetSelecttion(bool _isSel);
-	float SetSelection(int nSlot, float xOffset, float yOffset);
+	float SetSelectionPosition(int nSlot, float xOffset, float yOffset, bool IsAni);
 //	void SetImgSize(unsigned short _w, unsigned short _h) { nImgWidth = _w; nImgHeight = _h; };
 
 	void DrawThumbNail(float fAlpha);
@@ -61,6 +63,10 @@ public:
 	std::vector<_MATCHInfo>* GetMatchResult() { return &m_matched_pos; };
 	int GetResultSize() { return m_matched_pos.size(); }
 	bool IsCandidate() { return m_bCandidate; }
+
+	void SetSelection(bool IsSel);
+	void AnimatePos();
+
 private:
 	CString strPath;
 	CString strPName;
@@ -78,6 +84,7 @@ private:
 	float	m_fRectWidth;
 	POINT3D m_pos;
 	POINT3D m_targetPos;
+	
 
 	POINT3D m_vertex[4];
 	POINT3D m_vertexBg[4];
@@ -92,6 +99,9 @@ private:
 	std::vector<_MATCHInfo> m_matched_pos;
 	float m_fXScale, m_fYScale;
 
+	bool m_bAniPos;
+	POINT3D m_MoveVec;
+	short m_nAniCnt;
 
 	bool m_bCandidate;
 

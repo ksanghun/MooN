@@ -32,11 +32,25 @@ UINT Threadproc(LPVOID param)
 
 CZDataManager::CZDataManager()
 {
+	
 	m_pPDF = NULL;
 	memset(m_bSlot, 0x00, sizeof(m_bSlot));
 	m_xOffset = DEFAULT_X_OFFSET;
 	m_yOffset = DEFAULT_Y_OFFSET;
 
+	float scale = 1.0f / 4.147f; // sum of sin vlaue between 0 ~ 90
+	float fstepRad = (3.141529f*0.5f) / (float)ANI_FRAME_CNT;
+	for (int i = 0; i < ANI_FRAME_CNT; i++){
+		m_fAniAcceration[i] = (1.0f - sin(fstepRad*i))*scale;
+	}
+}
+
+float CZDataManager::GetAniAcceration(int idx)
+{
+	if (idx < ANI_FRAME_CNT)
+		return m_fAniAcceration[idx];
+	else
+		return 0.0f;
 }
 
 
@@ -116,7 +130,7 @@ void CZDataManager::Th_GenerateThumnail()
 //	CWinThread *pThread = AfxBeginThread(Threadproc, &m_vecImageData);
 }
 
-bool CZDataManager::SelectPages(unsigned long cCode)
+short CZDataManager::SelectPages(unsigned long cCode)
 {
 	//std::map<unsigned long, CZPageObject*>::iterator iter;
 	//iter = m_mapImageData.find(cCode);
@@ -126,7 +140,7 @@ bool CZDataManager::SelectPages(unsigned long cCode)
 	//else{
 	//	return 0.0f;
 	//}
-	bool res = false;
+	short res = -1;
 	std::map<unsigned long, PAGEGROUP>::iterator iter_gr;
 	iter_gr = m_mapGrupImg.find(cCode);
 	if (iter_gr != m_mapGrupImg.end()){
@@ -135,26 +149,37 @@ bool CZDataManager::SelectPages(unsigned long cCode)
 		if (iter_gr->second.nSlot == -1){		// Selection
 			iter_gr->second.nSlot = GetEmptySlot();
 			float xoffset = DEFAULT_X_OFFSET;
-			for (int i = 0; i < iter_gr->second.imgVec.size(); i++){
+			int i = 0;
+			for (i = 0; i < iter_gr->second.imgVec.size(); i++){
 				if (i%MAX_DESP_COLS == 0){
 					xoffset = DEFAULT_X_OFFSET;
 					m_yOffset -= DEFAULT_PAGE_SIZE;
 				}
-				xoffset += iter_gr->second.imgVec[i]->SetSelection(iter_gr->second.nSlot, xoffset, m_yOffset);
+				xoffset += iter_gr->second.imgVec[i]->SetSelectionPosition(iter_gr->second.nSlot, xoffset, m_yOffset, true);
 			}
-			res = true;
+			if (i%MAX_DESP_COLS == 0){
+				xoffset = DEFAULT_X_OFFSET;
+				m_yOffset -= DEFAULT_PAGE_SIZE;
+			}
+			res = 1;
 		}
 		else{		// Deselection //
 			ReturnSlot(iter_gr->second.nSlot);
 			iter_gr->second.nSlot = -1;
 			float xoffset = DEFAULT_X_OFFSET;
-			for (int i = 0; i < iter_gr->second.imgVec.size(); i++){
+			int i = 0;
+			for (i = 0; i < iter_gr->second.imgVec.size(); i++){
 				if (i % MAX_DESP_COLS == 0){
 					xoffset = DEFAULT_X_OFFSET;
 					m_yOffset += DEFAULT_PAGE_SIZE;
 				}
-				xoffset += iter_gr->second.imgVec[i]->SetSelection(-1, xoffset, m_yOffset);
+				xoffset += iter_gr->second.imgVec[i]->SetSelectionPosition(-1, xoffset, m_yOffset, true);
 			}
+			if (i % MAX_DESP_COLS == 0){
+				xoffset = DEFAULT_X_OFFSET;
+				m_yOffset += DEFAULT_PAGE_SIZE;
+			}
+			res = 2;
 		}
 	}
 
@@ -179,6 +204,16 @@ void CZDataManager::ReturnSlot(int idx)
 	}
 }
 
+CZPageObject* CZDataManager::GetPageByOrderID(int idx)
+{
+	if (idx < m_vecImageData.img.size()){
+		if (m_vecImageData.img[idx]->IsCandidate())
+			return m_vecImageData.img[idx];
+		else
+			return NULL;
+	}
+	return NULL;
+}
 
 void CZDataManager::UpdatePageStatus(POINT3D camPos)
 {
@@ -187,7 +222,7 @@ void CZDataManager::UpdatePageStatus(POINT3D camPos)
 	for (int i = 0; i < m_vecImageData.img.size(); i++){
 		if (m_vecImageData.img[i]->IsCandidate()){
 			float fDist = mtDistance(camPos, m_vecImageData.img[i]->GetPos());
-			if (fDist < UPDATE_DISTANCE){
+			if (fDist < DEFAULT_PAGE_SIZE*1.5f){
 				m_vecImageData.img[i]->LoadFullImage();
 			}
 		}

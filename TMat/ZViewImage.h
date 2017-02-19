@@ -1,6 +1,6 @@
 #pragma once
 #include "OGLWnd.h"
-#define ANI_FRAME_CNT 10
+#include "ZPageObject.h"
 
 
 class CZViewImage :	public COGLWnd
@@ -21,6 +21,9 @@ public:
 	
 	void IDragMap(int x, int y, short sFlag);
 	void InitCamera();
+	void DrawImageByOrderForPicking();
+	int SelectObject3D(int x, int y, int rect_width, int rect_height, int selmode);
+
 private:
 	POINT3D m_lookAt;
 	unsigned short m_rectWidth, m_rectHeight;
@@ -32,8 +35,13 @@ private:
 	bool m_isAnimation;
 	unsigned short m_mouseMode;
 	CPoint m_stratPnt, m_moveVec;
+
+
 	short m_nAniCnt;
-	float m_fAniAcceration[ANI_FRAME_CNT];
+	POINT3D  m_AniMoveVec;
+	float  m_fAniMoveSca;
+	CZPageObject* m_pSelectPageForCNS;
+
 
 public:
 	DECLARE_MESSAGE_MAP()
@@ -43,5 +51,7 @@ public:
 	afx_msg void OnMouseHover(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMButtonDblClk(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 };
 

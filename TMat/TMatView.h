@@ -19,8 +19,9 @@ public:
 //	CTMatDoc* GetDocument() const;
 
 	void SetTreeDragItem(CImageList* pImage, HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
-	bool ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
-	bool SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset);
+	short ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
+	short SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset);
+	void InitCamera();
 // Operations
 public:
 
@@ -64,7 +65,7 @@ public:
 };
 
 #ifndef _DEBUG  // debug version in TMatView.cpp
-inline CTMatDoc* CTMatView::GetDocument() const
-   { return reinterpret_cast<CTMatDoc*>(m_pDocument); }
+//inline CTMatDoc* CTMatView::GetDocument() const
+//   { return reinterpret_cast<CTMatDoc*>(m_pDocument); }
 #endif
 

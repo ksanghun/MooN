@@ -154,7 +154,7 @@ void CCamera2Axis::SetProjectionMatrix(GLfloat fov, GLfloat x, GLfloat y, int wi
 
 //	m_farPlane = m_levelHeight*2.0f;
 //	m_farPlane = m_levelHeight*10.0f;
-	m_farPlane = 20000;
+	m_farPlane = 2000000;
 	if(m_farPlane<7000)
 		m_farPlane = 7000;
 	m_nearPlane = m_levelHeight*0.1f;

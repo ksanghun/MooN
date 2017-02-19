@@ -4,7 +4,7 @@
 
 #include "stdafx.h"
 #include "TMat.h"
-
+#include "TMatView.h"
 #include "MainFrm.h"
 
 #ifdef _DEBUG
@@ -528,6 +528,7 @@ void CMainFrame::OnView3dview()
 void CMainFrame::OnViewInitialize()
 {
 	// TODO: Add your command handler code here
+	pView->InitCamera();
 }
 
 

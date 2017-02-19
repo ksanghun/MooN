@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "ZPageObject.h"
-
+#include "ZDataManager.h"
 //#define SPACE_SIZE 7000
+
+#define Z_TRANS 70000
 
 
 CZPageObject::CZPageObject()
@@ -14,7 +16,7 @@ CZPageObject::CZPageObject()
 	thTexId = texId = 0;
 	m_fRectWidth = 0.0f;
 
-	mtSetPoint3D(&m_vBgColor, 1.0f, 1.0f, 1.0f);
+	mtSetPoint3D(&m_vBgColor, 0.3f, 0.7f, 0.9f);
 
 	SetRendomPos();
 	mtSetPoint3D(&m_targetPos, 0, 0, 0);
@@ -24,6 +26,8 @@ CZPageObject::CZPageObject()
 
 	SetSize(DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE);
 	m_bCandidate = false;
+	m_bIsSelected = false;
+	m_bAniPos = false;
 }
 
 
@@ -39,16 +43,33 @@ CZPageObject::~CZPageObject()
 	m_matched_pos.clear();
 }
 
-
 //===========================//
 void CZPageObject::SetRendomPos()
 {
-	int range = MAX_CAM_HIGHTLEVEL*2.0f;
+	float fScale = 20.0f;
+	m_pos.x = (rand() % MAX_CAM_HIGHTLEVEL) - MAX_CAM_HIGHTLEVEL*0.5f;
+	m_pos.y = (rand() % MAX_CAM_HIGHTLEVEL) - MAX_CAM_HIGHTLEVEL*0.5f;
+	m_pos.z = -((rand() % MAX_CAM_HIGHTLEVEL) - MAX_CAM_HIGHTLEVEL*0.5f);
 
-	m_pos.x = (rand() % range) - range*0.5f;
-	m_pos.y = (rand() % range*0.7f) - range*0.5f*0.7f;
-	m_pos.z = -(rand() % MAX_CAM_HIGHTLEVEL) - 100;
+	m_pos.x = m_pos.x*fScale;
+	m_pos.y = m_pos.y*fScale;
+	m_pos.z = m_pos.z*fScale - Z_TRANS;
 }
+
+void CZPageObject::RotatePos(float fSpeed)
+{
+	if (!m_bCandidate){
+		float fCos = cos(0.001);
+		float fSin = sin(0.001);
+
+		POINT3D tmpV = m_pos;
+		tmpV.z += Z_TRANS;
+
+		m_pos.x = tmpV.x*fCos - tmpV.z*fSin;
+		m_pos.z = (tmpV.x*fSin + tmpV.z*fCos) - Z_TRANS;
+	}
+}
+
 bool CZPageObject::AddMatchedPoint(_MATCHInfo info, int search_size)
 {
 	if (search_size > 0){
@@ -119,46 +140,79 @@ void CZPageObject::DrawForPicking()
 	// Background//	
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
-	glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
-	glVertex3f(m_vertexBg[1].x, m_vertexBg[1].y, m_vertexBg[1].z);
-	glVertex3f(m_vertexBg[2].x, m_vertexBg[2].y, m_vertexBg[2].z);
-	glVertex3f(m_vertexBg[3].x, m_vertexBg[3].y, m_vertexBg[3].z);
+	glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
+	glVertex3f(m_vertex[1].x, m_vertex[1].y, m_vertex[1].z);
+	glVertex3f(m_vertex[2].x, m_vertex[2].y, m_vertex[2].z);
+	glVertex3f(m_vertex[3].x, m_vertex[3].y, m_vertex[3].z);
 	glEnd();
 	//==================//
 	glPopMatrix();
 
 }
 
-//void CZPageObject::SetSelecttion(bool _isSel)
-//{
-//	if (_isSel == true){
-//		mtSetPoint3D(&m_vBgColor, 0.1f, 0.99f, 0.1f);
-//	}
-//	else{
-//		mtSetPoint3D(&m_vBgColor, 1.0f, 1.0f, 1.0f);
-//	}
-//	m_bIsSelected = _isSel;
-//};
-
-
-float CZPageObject::SetSelection(int nSlot, float xOffset, float yOffset)
+void CZPageObject::SetSelection(bool _isSel)
 {
-	if (nSlot >= 0){
-		m_targetPos.x = xOffset;
-		m_targetPos.y = yOffset;
-		m_targetPos.z = 0.0f;
-
-		m_pos = m_targetPos;
-		m_bCandidate = true;
-		return m_fRectWidth;
+	if (_isSel == true){
+		mtSetPoint3D(&m_vBgColor, 0.99f, 0.0f, 0.0f);
 	}
 	else{
-		SetRendomPos();
+		mtSetPoint3D(&m_vBgColor, 0.3f, 0.7f, 0.9f);
+	}
+	m_bIsSelected = _isSel;
+};
+
+float CZPageObject::SetSelectionPosition(int nSlot, float xOffset, float yOffset, bool IsAni)
+{
+	m_bAniPos = IsAni;
+	POINT3D targetPos;
+	if (nSlot >= 0){
+		targetPos.x = xOffset;
+		targetPos.y = yOffset;
+		targetPos.z = 0.0f;
+
+		if (m_bAniPos){
+			m_nAniCnt = 0;
+			m_MoveVec = targetPos - m_pos;
+		}
+		else{
+			m_pos = targetPos;
+		}
+		m_bCandidate = true;
+		return m_fRectWidth+2;
+	}
+	else{
+		float fScale = 20.0f;
+		targetPos.x = (rand() % MAX_CAM_HIGHTLEVEL) - MAX_CAM_HIGHTLEVEL*0.5f;
+		targetPos.y = (rand() % MAX_CAM_HIGHTLEVEL) - MAX_CAM_HIGHTLEVEL*0.5f;
+		targetPos.z = -((rand() % MAX_CAM_HIGHTLEVEL) - MAX_CAM_HIGHTLEVEL*0.5f);
+
+		targetPos.x = targetPos.x*fScale;
+		targetPos.y = targetPos.y*fScale;
+		targetPos.z = targetPos.z*fScale - Z_TRANS;
+
+		if (IsAni){
+			m_nAniCnt = 0;
+			m_MoveVec = targetPos - m_pos;
+		}
+		else{
+			m_pos = targetPos;
+		}
 		m_bCandidate = false;
 		return 0.0f;
 	}	
 }
 
+void CZPageObject::AnimatePos()
+{
+	float fDelta = SINGLETON_TMat::GetInstance()->GetAniAcceration(m_nAniCnt);
+	m_pos.x = m_pos.x + m_MoveVec.x*fDelta;
+	m_pos.y = m_pos.y + m_MoveVec.y*fDelta;
+	m_pos.z = m_pos.z + m_MoveVec.z*fDelta;
+	m_nAniCnt++;
+	if (m_nAniCnt >= ANI_FRAME_CNT){
+		m_bAniPos = false;
+	}
+}
 
 void CZPageObject::SetTexId(GLuint _texid)
 {
@@ -233,6 +287,10 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 	if (m_bCandidate){
 		fAlpha = 0.95f;
 	}
+	if (m_bAniPos){
+		AnimatePos();
+	}
+
 	glPushMatrix();
 	glTranslatef(m_pos.x, m_pos.y, m_pos.z);
 
@@ -302,14 +360,18 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 	}
 
 
-	glColor4f(0.0f, 0.4f, 0.9f, fAlpha);
+//	glColor4f(0.3f, 0.7f, 0.9f, 0.7f);
+	if (m_bIsSelected)
+		glLineWidth(2);
+	glColor4f(m_vBgColor.x, m_vBgColor.y, m_vBgColor.z, 0.7f);
 	glBegin(GL_LINE_STRIP);	
-	glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
-	glVertex3f(m_vertex[1].x, m_vertex[1].y, m_vertex[1].z);
-	glVertex3f(m_vertex[2].x, m_vertex[2].y, m_vertex[2].z);
-	glVertex3f(m_vertex[3].x, m_vertex[3].y, m_vertex[3].z);
+	glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
+	glVertex3f(m_vertexBg[1].x, m_vertexBg[1].y, m_vertexBg[1].z);
+	glVertex3f(m_vertexBg[2].x, m_vertexBg[2].y, m_vertexBg[2].z);
+	glVertex3f(m_vertexBg[3].x, m_vertexBg[3].y, m_vertexBg[3].z);
+	glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
 	glEnd();
-
+	glLineWidth(1);
 
 	glPopMatrix();
 
@@ -348,20 +410,7 @@ bool CZPageObject::IsDuplicate(POINT3D pos, int search_size)
 	return IsDup;
 }
 
-void CZPageObject::RotatePos(float fSpeed)
-{
-	if (!m_bCandidate){
-		float fCos = cos(0.001);
-		float fSin = sin(0.001);
 
-		POINT3D tmpV = m_pos;
-		tmpV.z += MAX_CAM_HIGHTLEVEL*0.5f ;
-
-		m_pos.x = tmpV.x*fCos - tmpV.z*fSin;
-		m_pos.z = (tmpV.x*fSin + tmpV.z*fCos) - MAX_CAM_HIGHTLEVEL*0.5f ;
-	}
-
-}
 
 GLuint CZPageObject::LoadFullImage()
 {
@@ -410,7 +459,7 @@ bool CZPageObject::LoadThumbImage(unsigned short resolution)
 
 	SetSize(src.cols, src.rows, DEFAULT_PAGE_SIZE);
 
-	cv::resize(src, src, cv::Size(128, 128), 0, 0, CV_INTER_LINEAR);		// Memory Leak!!!!!!
+	cv::resize(src, src, cv::Size(resolution, resolution), 0, 0, CV_INTER_LINEAR);		// Memory Leak!!!!!!
 
 	// glupload Image - Thumnail image=======================================================//
 	GLuint tid = 0;

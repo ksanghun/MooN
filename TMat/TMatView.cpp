@@ -225,17 +225,24 @@ void CTMatView::SetTreeDragItem(CImageList* pImage, HTREEITEM hItem, CDragDropTr
 
 }
 
-bool CTMatView::ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl)
+void CTMatView::InitCamera()
 {
 	if (m_pViewImage){
 		m_pViewImage->InitCamera();
 	}
+}
+
+short CTMatView::ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl)
+{
+	//if (m_pViewImage){
+	//	m_pViewImage->InitCamera();
+	//}
 	float offset = 0.0f;
 	return SetSelectedItem(hItem, pCtrl, offset);
 }
-bool CTMatView::SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset)
+short CTMatView::SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset)
 {
-	bool res = false;
+	short res = false;
 	USES_CONVERSION;	char* sz = 0;
 	CString strPath, strPName, strName;
 	unsigned long pCode = 0, cCode = 0;

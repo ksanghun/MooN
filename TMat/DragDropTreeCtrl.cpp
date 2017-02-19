@@ -541,14 +541,14 @@ void CDragDropTreeCtrl::OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult)
 	ScreenToClient(&pt);
 
 	HTREEITEM hItem = HitTest(pt);
-	bool IsAdded = pView->ProcSetSelectedItem(hItem, this);
+	short IsAdded = pView->ProcSetSelectedItem(hItem, this);
 
-	if (IsAdded){
+	if (IsAdded==1){
 	//	m_vReadyItem.push_back(hItem);
 	//	SetItemState(hItem, 2, TVIS_SELECTED);
 		SetItemImage(hItem, 2, 2);
 	}
-	else{
+	else if(IsAdded==2){
 		SetItemImage(hItem, 1, 1);
 		SEL_ITEM_LIST::iterator itr;
 		//for (itr = m_vReadyItem.begin(); m_vReadyItem.end() != itr; ++itr)

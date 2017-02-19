@@ -3,7 +3,7 @@
 #include "ZDataManager.h"
 #include "MainFrm.h"
 
-enum TIMEREVNT { _RENDER = 100, _ADDIMG, _SEARCHIMG, _MOVEANI, _UPDATE_PAGE};
+enum TIMEREVNT { _RENDER = 100, _ADDIMG, _SEARCHIMG, _MOVECAMANI, _UPDATE_PAGE};
 
 
 CZViewImage::CZViewImage()
@@ -12,11 +12,9 @@ CZViewImage::CZViewImage()
 	m_isAnimation = true;
 	m_mouseMode = 0;
 
-	float scale = (float)ANI_FRAME_CNT / 4.147f; // sum of sin vlaue between 0 ~ 90
-	float fstepRad =( 3.141529f*0.5f )/ (float)ANI_FRAME_CNT;
-	for (int i = 0; i < ANI_FRAME_CNT; i++){
-		m_fAniAcceration[i] = (1.0f - sin(fstepRad*i))*scale;
-	}
+
+	m_pSelectPageForCNS = NULL;
+	
 }
 
 
@@ -28,17 +26,19 @@ CZViewImage::~CZViewImage()
 void CZViewImage::InitGLview(int _nWidth, int _nHeight)
 {
 	mtSetPoint3D(&m_lookAt, 0, 0, 0);
-	m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL*0.7f);
+	m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL*2);
 	m_cameraPri.InitializeCamera(MAX_CAM_FOV, 0, 0, m_lookAt, _nWidth, _nHeight);
 	SetTimer(_RENDER, 30, NULL);
 	SetTimer(_UPDATE_PAGE, 500, NULL);
+
+	glInitNames();
 }
 
 void CZViewImage::InitCamera()
 {
 	mtSetPoint3D(&m_lookAt, 0, 0, 0);
 	m_cameraPri.SetModelViewMatrix(m_lookAt, 0, 0);
-	m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL*0.7f);
+	m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL*2);
 }
 
 void CZViewImage::MouseWheel(short zDelta)
@@ -50,7 +50,7 @@ void CZViewImage::MouseWheel(short zDelta)
 	if (zDelta > 0){ zoomValue = -zoomValue;}
 	fLevelHeight += zoomValue;	
 
-	if (fLevelHeight > MAX_CAM_HIGHTLEVEL){ fLevelHeight = MAX_CAM_HIGHTLEVEL; }
+	if (fLevelHeight > MAX_CAM_HIGHTLEVEL*2){ fLevelHeight = MAX_CAM_HIGHTLEVEL*2; }
 	if (fLevelHeight < MIN_CAM_HIGHTLEVEL){ fLevelHeight = MIN_CAM_HIGHTLEVEL; }
 
 	m_cameraPri.SetInitLevelHeight(fLevelHeight);
@@ -69,7 +69,7 @@ void CZViewImage::GenerateThumbnail()
 
 	int cnt = 0;
 	for (; m_addImgCnt < imgvec.size(); m_addImgCnt++){
-		imgvec[m_addImgCnt]->LoadThumbImage(DEFAULT_PAGE_SIZE);
+		imgvec[m_addImgCnt]->LoadThumbImage(128);
 		cnt++;
 		if (cnt > 10)
 			break;
@@ -116,12 +116,16 @@ ON_WM_TIMER()
 ON_WM_MOUSEHOVER()
 ON_WM_MOUSEMOVE()
 ON_WM_LBUTTONUP()
+ON_WM_MBUTTONDBLCLK()
+ON_WM_LBUTTONDBLCLK()
 END_MESSAGE_MAP()
 
 
 void CZViewImage::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
+	SelectObject3D(point.x, point.y, 2, 2, 0);
+
 	m_mouseMode = 2;
 	IDragMap(point.x, point.y, 0);
 	SetCapture();
@@ -154,14 +158,24 @@ void CZViewImage::OnTimer(UINT_PTR nIDEvent)
 	else if (nIDEvent == _ADDIMG){
 		GenerateThumbnail();
 	}
-	else if (nIDEvent == _MOVEANI){		
-		m_stratPnt.x += m_moveVec.x*m_fAniAcceration[m_nAniCnt];
-		m_stratPnt.y += m_moveVec.y*m_fAniAcceration[m_nAniCnt];
-		IDragMap(m_stratPnt.x, m_stratPnt.y, 1);
-		m_nAniCnt++;
+	else if (nIDEvent == _MOVECAMANI){		
+		//m_stratPnt.x += m_moveVec.x*SINGLETON_TMat::GetInstance()->GetAniAcceration(m_nAniCnt);
+		//m_stratPnt.y += m_moveVec.y*SINGLETON_TMat::GetInstance()->GetAniAcceration(m_nAniCnt);
+		//IDragMap(m_stratPnt.x, m_stratPnt.y, 1);
 
+		float fDelta = SINGLETON_TMat::GetInstance()->GetAniAcceration(m_nAniCnt);
+
+		m_lookAt.x = m_lookAt.x + m_AniMoveVec.x * fDelta;
+		m_lookAt.y = m_lookAt.y + m_AniMoveVec.y * fDelta;
+		m_lookAt.z = m_lookAt.z + m_AniMoveVec.z * fDelta;
+
+		float levelheight = m_cameraPri.GetLevelHeight() - m_fAniMoveSca*fDelta;
+		m_cameraPri.SetModelViewMatrix(m_lookAt, 0, 0);
+		m_cameraPri.SetInitLevelHeight(levelheight);
+
+		m_nAniCnt++;
 		if (m_nAniCnt >= ANI_FRAME_CNT){
-			KillTimer(_MOVEANI);
+			KillTimer(_MOVECAMANI);
 			m_mouseMode = 0;
 			IDragMap(m_stratPnt.x, m_stratPnt.y, 2);
 		}
@@ -184,9 +198,11 @@ void CZViewImage::DrawBGPageAni()
 void CZViewImage::DrawBGPage()
 {
 	_vecPageObj::iterator iter = SINGLETON_TMat::GetInstance()->GetVecImageBegin();
+	
 	for (; iter != SINGLETON_TMat::GetInstance()->GetVecImageEnd(); iter++){
 		(*iter)->DrawThumbNail(0.3f);
 	}
+
 }
 
 void CZViewImage::OnMouseHover(UINT nFlags, CPoint point)
@@ -300,4 +316,80 @@ void CZViewImage::OnLButtonUp(UINT nFlags, CPoint point)
 	IDragMap(point.x, point.y, 2);
 
 	COGLWnd::OnLButtonUp(nFlags, point);
+}
+
+
+void CZViewImage::DrawImageByOrderForPicking()
+{
+	_vecPageObj::iterator iter = SINGLETON_TMat::GetInstance()->GetVecImageBegin();
+	int id = 0;
+	for (; iter != SINGLETON_TMat::GetInstance()->GetVecImageEnd(); iter++){
+		glPushName(id);
+		(*iter)->DrawForPicking();
+		glPopName();
+		id++;
+	}
+}
+
+int CZViewImage::SelectObject3D(int x, int y, int rect_width, int rect_height, int selmode)
+{
+	if (m_pSelectPageForCNS){
+		m_pSelectPageForCNS->SetSelection(false);
+		m_pSelectPageForCNS = NULL;
+	}
+
+	GLuint selectBuff[1024];
+	memset(&selectBuff, 0, sizeof(GLuint) * 1024);
+
+	GLint hits, viewport[4];
+	hits = 0;
+
+	glSelectBuffer(1024, selectBuff);
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glRenderMode(GL_SELECT);
+	
+	
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();	
+	glLoadIdentity();
+	gluPickMatrix(x, viewport[3] - y, 2, 2, viewport);
+	gluPerspective(m_cameraPri.m_Cntfovy, (float)viewport[2] / (float)viewport[3], m_cameraPri.GetNearPlane(), m_cameraPri.GetFarPlane());
+
+	//m_cameraPri.SetProjectionMatrix(45.0f, 0.0f, 0.0f, cx, cy);
+	glMatrixMode(GL_MODELVIEW);
+	DrawImageByOrderForPicking();
+
+	hits = glRenderMode(GL_RENDER);
+	if (hits>0)
+	{
+		m_pSelectPageForCNS = SINGLETON_TMat::GetInstance()->GetPageByOrderID(selectBuff[3]);
+		if(m_pSelectPageForCNS)
+			m_pSelectPageForCNS->SetSelection(true);
+	}
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+
+	return hits;
+}
+
+void CZViewImage::OnMButtonDblClk(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	COGLWnd::OnMButtonDblClk(nFlags, point);
+}
+
+void CZViewImage::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (m_pSelectPageForCNS){
+
+		KillTimer(_MOVECAMANI);
+		m_nAniCnt = 0;
+		m_AniMoveVec = m_pSelectPageForCNS->GetPos() - m_lookAt;
+		m_fAniMoveSca = m_cameraPri.GetLevelHeight() - DEFAULT_PAGE_SIZE;
+		
+		SetTimer(_MOVECAMANI, 20, NULL);		
+	}
+	COGLWnd::OnLButtonDblClk(nFlags, point);
 }
