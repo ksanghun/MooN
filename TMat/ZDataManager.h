@@ -3,11 +3,10 @@
 #include "ZPDFConverter.h"
 #include "ZPageObject.h"
 
-#define MAX_SLOT_SIZE 4096
+
 
 
 typedef std::vector<CZPageObject*> _vecPageObj;
-
 
 struct PAGEGROUP{
 	int nSlot;
@@ -36,7 +35,8 @@ public:
 
 	void TestThread();
 	void Th_GenerateThumnail();
-	void SelectPages(unsigned long cCode);
+	bool SelectPages(unsigned long cCode);
+	void UpdatePageStatus(POINT3D camPos);
 
 	_vecPageObj::iterator GetVecImageBegin() { return m_vecImageData.img.begin(); }
 	_vecPageObj::iterator GetVecImageEnd() { return m_vecImageData.img.end(); }
@@ -49,7 +49,7 @@ private:
 	CZPDFConverter* m_pPDF;
 	THREADINFO m_vecImageData;
 	bool m_bSlot[MAX_SLOT_SIZE];
-
+	float m_xOffset, m_yOffset;
 
 	// Image Data Set //
 	std::map<unsigned long, CZPageObject*> m_mapImageData;

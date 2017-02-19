@@ -3,10 +3,7 @@
 #include "ZDataManager.h"
 #include "MainFrm.h"
 
-enum TIMEREVNT { _RENDER = 100, _ADDIMG, _SEARCHIMG };
-#define MAX_CAM_HIGHTLEVEL 2000
-#define MIN_CAM_HIGHTLEVEL 1000
-#define MAX_CAM_FOV 45.0f
+enum TIMEREVNT { _RENDER = 100, _ADDIMG, _SEARCHIMG, _MOVEANI, _UPDATE_PAGE};
 
 
 CZViewImage::CZViewImage()
@@ -14,6 +11,12 @@ CZViewImage::CZViewImage()
 	m_addImgCnt = 0;
 	m_isAnimation = true;
 	m_mouseMode = 0;
+
+	float scale = (float)ANI_FRAME_CNT / 4.147f; // sum of sin vlaue between 0 ~ 90
+	float fstepRad =( 3.141529f*0.5f )/ (float)ANI_FRAME_CNT;
+	for (int i = 0; i < ANI_FRAME_CNT; i++){
+		m_fAniAcceration[i] = (1.0f - sin(fstepRad*i))*scale;
+	}
 }
 
 
@@ -25,15 +28,17 @@ CZViewImage::~CZViewImage()
 void CZViewImage::InitGLview(int _nWidth, int _nHeight)
 {
 	mtSetPoint3D(&m_lookAt, 0, 0, 0);
-	m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL);
+	m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL*0.7f);
 	m_cameraPri.InitializeCamera(MAX_CAM_FOV, 0, 0, m_lookAt, _nWidth, _nHeight);
 	SetTimer(_RENDER, 30, NULL);
+	SetTimer(_UPDATE_PAGE, 500, NULL);
 }
 
 void CZViewImage::InitCamera()
 {
 	mtSetPoint3D(&m_lookAt, 0, 0, 0);
-	m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL);
+	m_cameraPri.SetModelViewMatrix(m_lookAt, 0, 0);
+	m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL*0.7f);
 }
 
 void CZViewImage::MouseWheel(short zDelta)
@@ -64,7 +69,7 @@ void CZViewImage::GenerateThumbnail()
 
 	int cnt = 0;
 	for (; m_addImgCnt < imgvec.size(); m_addImgCnt++){
-		imgvec[m_addImgCnt]->LoadPageImage(DEFAULT_PAGE_SIZE);
+		imgvec[m_addImgCnt]->LoadThumbImage(DEFAULT_PAGE_SIZE);
 		cnt++;
 		if (cnt > 10)
 			break;
@@ -121,6 +126,8 @@ void CZViewImage::OnLButtonDown(UINT nFlags, CPoint point)
 	IDragMap(point.x, point.y, 0);
 	SetCapture();
 
+	m_stratPnt = point;
+
 	COGLWnd::OnLButtonDown(nFlags, point);
 }
 
@@ -146,6 +153,21 @@ void CZViewImage::OnTimer(UINT_PTR nIDEvent)
 	}
 	else if (nIDEvent == _ADDIMG){
 		GenerateThumbnail();
+	}
+	else if (nIDEvent == _MOVEANI){		
+		m_stratPnt.x += m_moveVec.x*m_fAniAcceration[m_nAniCnt];
+		m_stratPnt.y += m_moveVec.y*m_fAniAcceration[m_nAniCnt];
+		IDragMap(m_stratPnt.x, m_stratPnt.y, 1);
+		m_nAniCnt++;
+
+		if (m_nAniCnt >= ANI_FRAME_CNT){
+			KillTimer(_MOVEANI);
+			m_mouseMode = 0;
+			IDragMap(m_stratPnt.x, m_stratPnt.y, 2);
+		}
+	}
+	else if (nIDEvent == _UPDATE_PAGE){
+		SINGLETON_TMat::GetInstance()->UpdatePageStatus(m_cameraPri.GetEye());
 	}
 	COGLWnd::OnTimer(nIDEvent);
 }
@@ -177,6 +199,20 @@ void CZViewImage::OnMouseHover(UINT nFlags, CPoint point)
 void CZViewImage::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
+
+	int xDelta = point.x - m_stratPnt.x;
+	int yDelta = point.y - m_stratPnt.y;
+
+	if (xDelta*xDelta > yDelta*yDelta){
+		m_moveVec.x = 1.0f;
+		m_moveVec.y = 0;
+	}
+	else{
+		m_moveVec.y = 1.0f;
+		m_moveVec.x = 0;
+	}
+
+
 	if (m_mouseMode == 2)		// Move
 	{
 		if ((point.x>0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight))
@@ -211,8 +247,8 @@ void CZViewImage::IDragMap(int x, int y, short sFlag)
 			transPos = prePos - curPos;
 			ptLookAt = m_cameraPri.GetLookAt();
 
-			ptLookAt.x += transPos.x;
-			//ptLookAt.y += transPos.y;
+			ptLookAt.x += transPos.x*m_moveVec.x;
+			ptLookAt.y += transPos.y*m_moveVec.y;
 
 			m_dragOper.px = x;
 			m_dragOper.py = y;
@@ -238,6 +274,28 @@ void CZViewImage::IDragMap(int x, int y, short sFlag)
 void CZViewImage::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
+	//if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
+
+	//	int xDelta = point.x - m_stratPnt.x;
+	//	int yDelta = point.y - m_stratPnt.y;
+
+	//	if (xDelta*xDelta > yDelta*yDelta){
+	//		m_moveVec.x = (float)xDelta / (float)ANI_FRAME_CNT;
+	//		m_moveVec.y = 0;
+	//	}
+	//	else{
+	//		m_moveVec.y = (float)yDelta / (float)ANI_FRAME_CNT;
+	//		m_moveVec.x = 0;
+	//	}
+
+	//	m_mouseMode = 2;
+	//	SetCapture();
+	//	IDragMap(m_stratPnt.x, m_stratPnt.y, 0);
+
+	//	m_nAniCnt = 0;
+	//	SetTimer(_MOVEANI, 20, NULL);
+	//}
+
 	m_mouseMode = 0;
 	IDragMap(point.x, point.y, 2);
 

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ZPageObject.h"
 
+//#define SPACE_SIZE 7000
+
 
 CZPageObject::CZPageObject()
 {
@@ -41,9 +43,11 @@ CZPageObject::~CZPageObject()
 //===========================//
 void CZPageObject::SetRendomPos()
 {
-	m_pos.x = rand() % 2000 - 1000;
-	m_pos.y = rand() % 1400 - 700;
-	m_pos.z = rand() % 2000 - 1000;
+	int range = MAX_CAM_HIGHTLEVEL*2.0f;
+
+	m_pos.x = (rand() % range) - range*0.5f;
+	m_pos.y = (rand() % range*0.7f) - range*0.5f*0.7f;
+	m_pos.z = -(rand() % MAX_CAM_HIGHTLEVEL) - 100;
 }
 bool CZPageObject::AddMatchedPoint(_MATCHInfo info, int search_size)
 {
@@ -137,11 +141,11 @@ void CZPageObject::DrawForPicking()
 //};
 
 
-float CZPageObject::SetSelection(int nSlot, float offset)
+float CZPageObject::SetSelection(int nSlot, float xOffset, float yOffset)
 {
 	if (nSlot >= 0){
-		m_targetPos.x = (float)offset;
-		m_targetPos.y = -nSlot * (DEFAULT_PAGE_SIZE+10);
+		m_targetPos.x = xOffset;
+		m_targetPos.y = yOffset;
 		m_targetPos.z = 0.0f;
 
 		m_pos = m_targetPos;
@@ -224,7 +228,10 @@ void CZPageObject::DrawBMPText()
 void CZPageObject::DrawThumbNail(float fAlpha)
 {
 	if (thTexId == 0){
-		return;
+		return;	
+	}
+	if (m_bCandidate){
+		fAlpha = 0.95f;
 	}
 	glPushMatrix();
 	glTranslatef(m_pos.x, m_pos.y, m_pos.z);
@@ -348,14 +355,46 @@ void CZPageObject::RotatePos(float fSpeed)
 		float fSin = sin(0.001);
 
 		POINT3D tmpV = m_pos;
+		tmpV.z += MAX_CAM_HIGHTLEVEL*0.5f ;
+
 		m_pos.x = tmpV.x*fCos - tmpV.z*fSin;
-		m_pos.z = tmpV.x*fSin + tmpV.z*fCos;
+		m_pos.z = (tmpV.x*fSin + tmpV.z*fCos) - MAX_CAM_HIGHTLEVEL*0.5f ;
 	}
 
 }
 
+GLuint CZPageObject::LoadFullImage()
+{
+	if (texId != 0){
+		return 0;
+	}
 
-bool CZPageObject::LoadPageImage(unsigned short resolution)
+	USES_CONVERSION;
+	char* sz = T2A(strPath);
+
+	IplImage *pimg = cvLoadImage(sz);
+	if (pimg){
+		//	cvShowImage(sz, pimg);
+		cvCvtColor(pimg, pimg, CV_BGR2RGB);
+
+		// glupload Image - Thumnail image=======================================================//
+		glGenTextures(1, &texId);
+		glBindTexture(GL_TEXTURE_2D, texId);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
+		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		//glTexImage2D(GL_TEXTURE_2D, 0, 3, m_texture->sizeX,m_texture->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE,m_texture->data);
+		gluBuild2DMipmaps(GL_TEXTURE_2D, 3, pimg->width, pimg->height, GL_RGB, GL_UNSIGNED_BYTE, pimg->imageData);
+		//======================================================================================//
+		cvReleaseImage(&pimg);
+	}
+	return texId;
+}
+
+bool CZPageObject::LoadThumbImage(unsigned short resolution)
 {
 	if (thTexId != 0){
 		return false;
@@ -369,7 +408,7 @@ bool CZPageObject::LoadPageImage(unsigned short resolution)
 		return false;
 	}
 
-	SetSize(src.rows, src.cols, DEFAULT_PAGE_SIZE);
+	SetSize(src.cols, src.rows, DEFAULT_PAGE_SIZE);
 
 	cv::resize(src, src, cv::Size(128, 128), 0, 0, CV_INTER_LINEAR);		// Memory Leak!!!!!!
 

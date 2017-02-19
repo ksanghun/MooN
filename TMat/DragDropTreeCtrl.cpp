@@ -1,4 +1,4 @@
-                    // DragDropTreeCtrl.cpp : implementation file
+// DragDropTreeCtrl.cpp : implementation file
 #include "stdafx.h"
 #include "DragDropTreeCtrl.h"
 #include "DragEventListener.h"
@@ -31,12 +31,12 @@ CDragDropTreeCtrl::~CDragDropTreeCtrl()
 
 BEGIN_MESSAGE_MAP(CDragDropTreeCtrl, CTreeCtrl)
 	//{{AFX_MSG_MAP(CDragDropTreeCtrl)
-//	ON_NOTIFY_REFLECT(TVN_BEGINDRAG, OnBeginDrag)
+	//	ON_NOTIFY_REFLECT(TVN_BEGINDRAG, OnBeginDrag)
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONUP()
-  ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONDOWN()
 	ON_WM_TIMER()
-  ON_NOTIFY_REFLECT(NM_CLICK,OnClick)
+	ON_NOTIFY_REFLECT(NM_CLICK, OnClick)
 	//}}AFX_MSG_MAP
 	ON_NOTIFY_REFLECT(NM_DBLCLK, &CDragDropTreeCtrl::OnNMDblclk)
 	ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, &CDragDropTreeCtrl::OnNMCustomdraw)
@@ -45,7 +45,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CDragDropTreeCtrl message handlers
 
-BOOL CDragDropTreeCtrl::PreCreateWindow(CREATESTRUCT& cs) 
+BOOL CDragDropTreeCtrl::PreCreateWindow(CREATESTRUCT& cs)
 {
 	//
 	// Make sure the control's TVS_DISABLEDRAGDROP flag is not set.
@@ -57,189 +57,206 @@ BOOL CDragDropTreeCtrl::PreCreateWindow(CREATESTRUCT& cs)
 	return CTreeCtrl::PreCreateWindow(cs);
 }
 
-void CDragDropTreeCtrl::OnMouseMove(UINT nFlags, CPoint point) 
+void CDragDropTreeCtrl::OnMouseMove(UINT nFlags, CPoint point)
 {
-  if ( m_bDragging )
+	if (m_bDragging)
 	{
-		POINT pt = point ;
-		ClientToScreen ( &pt ) ;
-    
-		CImageList::DragMove ( pt ) ;
-    int nEventListenerCount = m_vEventListener.size();
-    for( int nEventListenerIdx = 0; nEventListenerIdx < nEventListenerCount;
-                                    ++nEventListenerIdx )
-    {
-      m_vEventListener[nEventListenerIdx]->OnDragMove(point);
-    }
-    return;
+		POINT pt = point;
+		ClientToScreen(&pt);
+
+		CImageList::DragMove(pt);
+		int nEventListenerCount = m_vEventListener.size();
+		for (int nEventListenerIdx = 0; nEventListenerIdx < nEventListenerCount;
+			++nEventListenerIdx)
+		{
+			m_vEventListener[nEventListenerIdx]->OnDragMove(point);
+		}
+		return;
 	}
-    
-  if( DragDetect(point) )
-  {
-    OnDrag(point);
-  }
-  CTreeCtrl::OnMouseMove(nFlags,point);
-} 
+
+	if (DragDetect(point))
+	{
+		OnDrag(point);
+	}
+	CTreeCtrl::OnMouseMove(nFlags, point);
+}
 void CDragDropTreeCtrl::OnTimer(UINT nIDEvent)
 {
-  POINT pt;
-  GetCursorPos ( &pt ) ;
- 	CImageList::DragMove ( pt ) ;
-  int nEventListenerCount = m_vEventListener.size();
-  for( int nEventListenerIdx = 0; nEventListenerIdx < nEventListenerCount;
-                                  ++nEventListenerIdx )
-  {
-    m_vEventListener[nEventListenerIdx]->OnDragMove(pt);
-  }
+	POINT pt;
+	GetCursorPos(&pt);
+	CImageList::DragMove(pt);
+	int nEventListenerCount = m_vEventListener.size();
+	for (int nEventListenerIdx = 0; nEventListenerIdx < nEventListenerCount;
+		++nEventListenerIdx)
+	{
+		m_vEventListener[nEventListenerIdx]->OnDragMove(pt);
+	}
 }
-void CDragDropTreeCtrl::OnLButtonUp(UINT nFlags, CPoint point) 
+void CDragDropTreeCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	if ((m_bDragging && m_pImageList != NULL) && (point.x > m_nWidth)){
 		for (unsigned int i = 0; i < m_vSelItem.size(); i++){
-			pView->SetTreeDragItem(m_pImageList, m_vSelItem[i], this);
+			pView->SetTreeDragItem(m_pImageList, m_vSelItem[i], this);			
 		}
 	}
 
 
-  if( !(MK_CONTROL&nFlags) && !(MK_SHIFT&nFlags) )
-  {
-    if( m_vSelItem.size() > 1 )
-    {
-      ClearSelection();
-      SetItemState(m_hLastSelItem,TVIS_SELECTED,TVIS_SELECTED);
-      m_vSelItem.push_back(m_hLastSelItem);
-    }    
-  }
-  
-  if ( m_bDragging && m_pImageList != NULL ) 
-  {
+	if (!(MK_CONTROL&nFlags) && !(MK_SHIFT&nFlags))
+	{
+		if (m_vSelItem.size() > 1)
+		{
+			ClearSelection();
+			SetItemState(m_hLastSelItem, TVIS_SELECTED, TVIS_SELECTED);
+			m_vSelItem.push_back(m_hLastSelItem);
+		}
+	}
+
+	if (m_bDragging && m_pImageList != NULL)
+	{
 
 
 
-    m_bDragging = FALSE;    
-    KillTimer(1);
-    ReleaseCapture();
+		m_bDragging = FALSE;
+		KillTimer(1);
+		ReleaseCapture();
 		//
 		// Terminate the dragging operation and release the mouse.
 		//
-    m_pImageList->DragLeave (this);
-    m_pImageList->DragLeave (GetParent());
-		m_pImageList->EndDrag ();
-    SelectDropTarget(NULL);
-    delete m_pImageList;
+		m_pImageList->DragLeave(this);
+		m_pImageList->DragLeave(GetParent());
+		m_pImageList->EndDrag();
+		SelectDropTarget(NULL);
+		delete m_pImageList;
 		m_pImageList = NULL;
-    HTREEITEM hItem = HitTest(point,&nFlags);
-    int nListenerCount = m_vEventListener.size();
-    for( int  nListenerIdx = 0; nListenerIdx < nListenerCount; ++nListenerIdx )
-    {
-      m_vEventListener[nListenerIdx]->OnDragRelease(point,hItem);
-    }
+		HTREEITEM hItem = HitTest(point, &nFlags);
+		int nListenerCount = m_vEventListener.size();
+		for (int nListenerIdx = 0; nListenerIdx < nListenerCount; ++nListenerIdx)
+		{
+			m_vEventListener[nListenerIdx]->OnDragRelease(point, hItem);
+		}
 	}
-  CTreeCtrl::OnLButtonUp(nFlags, point);
+	CTreeCtrl::OnLButtonUp(nFlags, point);
 }
 
 void CDragDropTreeCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	ClearSelection();
-  SetFocus();
-  do
-  {	
-    HTREEITEM hItem = HitTest(point,&nFlags);
-    if( nFlags & TVHT_ONITEMBUTTON )
-		{	
+	SetFocus();
+
+	
+
+	do
+	{
+		HTREEITEM hItem = HitTest(point, &nFlags);
+		if (nFlags & TVHT_ONITEMBUTTON)
+		{
 			// Check if any child present
-			if(!ItemHasChildren(hItem))
+			if (!ItemHasChildren(hItem))
 				break;
-			CTreeCtrl::OnLButtonDown(nFlags,point);
+			CTreeCtrl::OnLButtonDown(nFlags, point);
 			break;
 		}
-    if( NULL == hItem )
-    {
-      break;
-    }
-    //if( NULL == GetParentItem(hItem) )
-    //{
-    //  break;
-    //}
-    unsigned short shKeyState = GetKeyState(VK_CONTROL);
-    shKeyState >>= 15;
-    if( shKeyState == 1 )
-    {
-      OnControlKeyPress(hItem);
-      break;
-    } 
-    else
-    {
-      if( m_vSelItem.size() == 0 )
-      {
-        SetItemState(hItem,TVIS_SELECTED,TVIS_SELECTED);
-        m_vSelItem.push_back(hItem);
-        break;
-      }
-      shKeyState = GetKeyState(VK_SHIFT);
-      shKeyState >>= 15;
-      if( shKeyState == 1 )
-      {
-        OnShiftKeyPress(hItem);
-        break;
-      }
-    }
-    m_hLastSelItem = hItem;
-    if( m_vSelItem.size() == 1 )
-    {
-      ClearSelection();
-      SetItemState(m_hLastSelItem,TVIS_SELECTED,TVIS_SELECTED);
-      m_vSelItem.push_back(m_hLastSelItem);
-    }
-  }
-  while(false);
+		if (NULL == hItem)
+		{
+			break;
+		}
+		//if( NULL == GetParentItem(hItem) )
+		//{
+		//  break;
+		//}
+		unsigned short shKeyState = GetKeyState(VK_CONTROL);
+		shKeyState >>= 15;
+		if (shKeyState == 1)
+		{
+			OnControlKeyPress(hItem);
+			break;
+		}
+		else
+		{
+			if (m_vSelItem.size() == 0)
+			{
+				SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+				m_vSelItem.push_back(hItem);
+				break;
+			}
+			shKeyState = GetKeyState(VK_SHIFT);
+			shKeyState >>= 15;
+			if (shKeyState == 1)
+			{
+				OnShiftKeyPress(hItem);
+				break;
+			}
+		}
+		m_hLastSelItem = hItem;
+		if (m_vSelItem.size() == 1)
+		{
+			ClearSelection();
+			SetItemState(m_hLastSelItem, TVIS_SELECTED, TVIS_SELECTED);
+			m_vSelItem.push_back(m_hLastSelItem);
+		}
+	} while (false);
+
+
+
+
+	// Show ready for search item==============================//
+	HTREEITEM hItem = GetRootItem();
+	SetItemState(hItem, 0, TVIS_SELECTED);
+	//SEL_ITEM_LIST::iterator itr;
+	//for (itr = m_vReadyItem.begin(); m_vReadyItem.end() != itr; ++itr)
+	//{
+	//	SetItemState((*itr), TVIS_SELECTED, TVIS_SELECTED);
+	//}
+	//=============================//
+
+
 }
 void CDragDropTreeCtrl::ClearSelection()
 {
-  int nSelItemCount = m_vSelItem.size();
-  for( int nIdx = 0; nIdx < nSelItemCount ; ++nIdx )
-  {
-    SetItemState(m_vSelItem[nIdx],0,TVIS_SELECTED);
-  }
-  m_vSelItem.clear();
+	int nSelItemCount = m_vSelItem.size();
+	for (int nIdx = 0; nIdx < nSelItemCount; ++nIdx)
+	{
+		SetItemState(m_vSelItem[nIdx], 0, TVIS_SELECTED);
+	}
+	m_vSelItem.clear();
 }
 void CDragDropTreeCtrl::RemoveFromSelectionList(HTREEITEM hItem)
 {
-  SEL_ITEM_LIST::iterator itr;
-  for( itr = m_vSelItem.begin(); itr != m_vSelItem.end(); ++itr )
-  {
-    if( (*itr) == hItem )
-    {
-      m_vSelItem.erase(itr);
-      break;
-    }
-  }  
+	SEL_ITEM_LIST::iterator itr;
+	for (itr = m_vSelItem.begin(); itr != m_vSelItem.end(); ++itr)
+	{
+		if ((*itr) == hItem)
+		{
+			m_vSelItem.erase(itr);
+			break;
+		}
+	}
 }
-void CDragDropTreeCtrl::SelectItems(HTREEITEM hItemFrom,HTREEITEM hItemTo)
+void CDragDropTreeCtrl::SelectItems(HTREEITEM hItemFrom, HTREEITEM hItemTo)
 {
-  RECT FromRect;
-  GetItemRect(hItemFrom,&FromRect,FALSE);
-  RECT ToRect;
-  GetItemRect(hItemTo,&ToRect,FALSE);
-  HTREEITEM hTemp;
-  if( FromRect.top > ToRect.top )
-  {
-    hTemp = hItemFrom;
-    hItemFrom = hItemTo;
-    hItemTo = hTemp;
-  }
-  ClearSelection();
-  hTemp = hItemFrom;
-  while(1)
-  {
-    SetItemState(hTemp,TVIS_SELECTED,TVIS_SELECTED);
-    m_vSelItem.push_back(hTemp);
-    if( hTemp ==  hItemTo )
-    {
-      break;
-    }
-    hTemp = GetNextVisibleItem(hTemp);
-  }
+	RECT FromRect;
+	GetItemRect(hItemFrom, &FromRect, FALSE);
+	RECT ToRect;
+	GetItemRect(hItemTo, &ToRect, FALSE);
+	HTREEITEM hTemp;
+	if (FromRect.top > ToRect.top)
+	{
+		hTemp = hItemFrom;
+		hItemFrom = hItemTo;
+		hItemTo = hTemp;
+	}
+	ClearSelection();
+	hTemp = hItemFrom;
+	while (1)
+	{
+		SetItemState(hTemp, TVIS_SELECTED, TVIS_SELECTED);
+		m_vSelItem.push_back(hTemp);
+		if (hTemp == hItemTo)
+		{
+			break;
+		}
+		hTemp = GetNextVisibleItem(hTemp);
+	}
 }
 CImageList* CDragDropTreeCtrl::CreateDragImageEx()
 {
@@ -296,7 +313,7 @@ CImageList* CDragDropTreeCtrl::CreateDragImageEx()
 		ReleaseDC(pDragImageCalcDC);
 
 		// Initialize textRect for the first item
-		rectTextArea.SetRect(1, 1, nMaxWidth , rectFirstItem.Height() );
+		rectTextArea.SetRect(1, 1, nMaxWidth, rectFirstItem.Height());
 
 		// Find the bounding rectangle of the bitmap
 		rectBounding.SetRect(0, 0, nMaxWidth + 2, (rectFirstItem.Height() + 2)*nNumSelected);
@@ -365,127 +382,127 @@ CImageList* CDragDropTreeCtrl::CreateDragImageEx()
 
 void CDragDropTreeCtrl::OnDrag(CPoint point)
 {
-  if( m_vSelItem.size() ==  0 )
-  {
-    return;
-  }
-  m_bDragging = TRUE;
-  UINT nFlags;
-	HTREEITEM hItem = HitTest(point,&nFlags);
-	
-	m_pImageList = CreateDragImageEx();
-  
-  ASSERT (m_pImageList != NULL);
-  
-	if (m_pImageList != NULL)
-  {
-   	CRect rect;
-		GetItemRect (hItem, rect, TRUE);
-	  POINT pt;
-		pt.x = rect.left+5;
-		pt.y = rect.top+5;
+	if (m_vSelItem.size() == 0)
+	{
+		return;
+	}
+	m_bDragging = TRUE;
+	UINT nFlags;
+	HTREEITEM hItem = HitTest(point, &nFlags);
 
-	  ClientToScreen ( &pt ) ;
-    m_pImageList->BeginDrag (0,CPoint(-5,-5));
-   	m_pImageList->DragEnter (NULL, pt);    
-    SetCapture();
-    int nEventListenerCount = m_vEventListener.size();
-    for( int nEventListenerIdx = 0; nEventListenerIdx < nEventListenerCount; 
-                                    ++nEventListenerIdx )
-    {
-      m_vEventListener[nEventListenerIdx]->OnDrag();
-    }
-  }
+	m_pImageList = CreateDragImageEx();
+
+	ASSERT(m_pImageList != NULL);
+
+	if (m_pImageList != NULL)
+	{
+		CRect rect;
+		GetItemRect(hItem, rect, TRUE);
+		POINT pt;
+		pt.x = rect.left + 5;
+		pt.y = rect.top + 5;
+
+		ClientToScreen(&pt);
+		m_pImageList->BeginDrag(0, CPoint(-5, -5));
+		m_pImageList->DragEnter(NULL, pt);
+		SetCapture();
+		int nEventListenerCount = m_vEventListener.size();
+		for (int nEventListenerIdx = 0; nEventListenerIdx < nEventListenerCount;
+			++nEventListenerIdx)
+		{
+			m_vEventListener[nEventListenerIdx]->OnDrag();
+		}
+	}
 }
 void CDragDropTreeCtrl::OnClick(NMHDR* pNMHDR, LRESULT* pResult)
 {
-  //if click is not on any item clear all the selection
-  ClearSelection();    
+	//if click is not on any item clear all the selection
+	ClearSelection();
 }
 void CDragDropTreeCtrl::OnControlKeyPress(HTREEITEM hCurItem)
 {
-  if( m_vSelItem.size() > 0 )
-  {
-    if( !IsInTheSameLevel(hCurItem) )
-    {
-      return;
-    }
-  }
-    
-  int nState = (TVIS_SELECTED == GetItemState(hCurItem,TVIS_SELECTED))?0:TVIS_SELECTED;
-  SetItemState(hCurItem,nState,TVIS_SELECTED);
-  if( 0 == nState )
-  {
-    RemoveFromSelectionList(hCurItem);
-  }
-  else
-  {
-    m_vSelItem.push_back(hCurItem);
-  }
+	if (m_vSelItem.size() > 0)
+	{
+		if (!IsInTheSameLevel(hCurItem))
+		{
+			return;
+		}
+	}
+
+	int nState = (TVIS_SELECTED == GetItemState(hCurItem, TVIS_SELECTED)) ? 0 : TVIS_SELECTED;
+	SetItemState(hCurItem, nState, TVIS_SELECTED);
+	if (0 == nState)
+	{
+		RemoveFromSelectionList(hCurItem);
+	}
+	else
+	{
+		m_vSelItem.push_back(hCurItem);
+	}
 }
 void CDragDropTreeCtrl::OnShiftKeyPress(HTREEITEM hCurItem)
 {
-  if( m_vSelItem.size() > 0 )
-  {
-    if( !IsInTheSameLevel(hCurItem) )
-    {
-      return;
-    }
-  }
-  HTREEITEM hItemFrom = m_vSelItem[0];
-  SetItemState(hCurItem,TVIS_SELECTED,TVIS_SELECTED);
-  SelectItems(hItemFrom,hCurItem);
+	if (m_vSelItem.size() > 0)
+	{
+		if (!IsInTheSameLevel(hCurItem))
+		{
+			return;
+		}
+	}
+	HTREEITEM hItemFrom = m_vSelItem[0];
+	SetItemState(hCurItem, TVIS_SELECTED, TVIS_SELECTED);
+	SelectItems(hItemFrom, hCurItem);
 }
 BOOL CDragDropTreeCtrl::IsItemPresent(HTREEITEM hItem)
 {
-  BOOL bPresent = FALSE;
-  SEL_ITEM_LIST::iterator itr;
-  for( itr = m_vTempSelItemList.begin(); itr!=m_vTempSelItemList.end(); ++itr )
-  {
-    if( hItem == (*itr) )
-    {
-      bPresent = TRUE;
-      break;
-    }
-  }
-  return bPresent;
+	BOOL bPresent = FALSE;
+	SEL_ITEM_LIST::iterator itr;
+	for (itr = m_vTempSelItemList.begin(); itr != m_vTempSelItemList.end(); ++itr)
+	{
+		if (hItem == (*itr))
+		{
+			bPresent = TRUE;
+			break;
+		}
+	}
+	return bPresent;
 }
 BOOL CDragDropTreeCtrl::IsInTheSameLevel(HTREEITEM hItem)
 {
-  BOOL bInTheSameLevel = TRUE;
-  SEL_ITEM_LIST::iterator itr;
-  for( itr = m_vSelItem.begin(); itr != m_vSelItem.end(); ++itr )
-  {
-    if( GetParentItem(hItem) != GetParentItem(*itr) )
-    {
-      bInTheSameLevel = FALSE;
-    }
-  }
-  return bInTheSameLevel;
+	BOOL bInTheSameLevel = TRUE;
+	SEL_ITEM_LIST::iterator itr;
+	for (itr = m_vSelItem.begin(); itr != m_vSelItem.end(); ++itr)
+	{
+		if (GetParentItem(hItem) != GetParentItem(*itr))
+		{
+			bInTheSameLevel = FALSE;
+		}
+	}
+	return bInTheSameLevel;
 }
 
 SEL_ITEM_LIST CDragDropTreeCtrl::GetSelectedItems()
 {
-  return m_vSelItem;
+	return m_vSelItem;
 }
 
 void CDragDropTreeCtrl::RemoveFromSelList(HTREEITEM hItem)
 {
-  SEL_ITEM_LIST::iterator itr;
-  for(  itr = m_vSelItem.begin(); m_vSelItem.end() != itr; ++itr)
-  {
-    if( (*itr) == hItem )
-    {
-      m_vSelItem.erase(itr);
-      m_vSelItem.clear();
-      break;
-    }
-  }
+	SEL_ITEM_LIST::iterator itr;
+	for (itr = m_vSelItem.begin(); m_vSelItem.end() != itr; ++itr)
+	{
+		if ((*itr) == hItem)
+		{
+			m_vSelItem.erase(itr);
+			m_vSelItem.clear();
+			break;
+		}
+	}
 }
 
 void CDragDropTreeCtrl::AddDragEventListener(CDragEventListener *pListener)
 {
-  m_vEventListener.push_back(pListener);
+	m_vEventListener.push_back(pListener);
 }
 
 
@@ -505,7 +522,7 @@ CString CDragDropTreeCtrl::GetItemFullPath(HTREEITEM hItem)
 
 	CString fullpath = L"";
 	if (strItem.size() > 0){
-		
+
 		for (int i = strItem.size() - 1; i >= 1; i--){
 			fullpath += strItem[i];
 			fullpath += "\\";
@@ -524,9 +541,28 @@ void CDragDropTreeCtrl::OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult)
 	ScreenToClient(&pt);
 
 	HTREEITEM hItem = HitTest(pt);
+	bool IsAdded = pView->ProcSetSelectedItem(hItem, this);
 
-	pView->ProcSetSelectedItem(hItem, this);
-
+	if (IsAdded){
+	//	m_vReadyItem.push_back(hItem);
+	//	SetItemState(hItem, 2, TVIS_SELECTED);
+		SetItemImage(hItem, 2, 2);
+	}
+	else{
+		SetItemImage(hItem, 1, 1);
+		SEL_ITEM_LIST::iterator itr;
+		//for (itr = m_vReadyItem.begin(); m_vReadyItem.end() != itr; ++itr)
+		//{
+		//	if ((*itr) == hItem)
+		//	{
+		//		//SetItemState(hItem, 0, TVIS_SELECTED);
+		//		SetItemImage(hItem, 1, 1);
+		//		m_vReadyItem.erase(itr);
+		//		m_vReadyItem.clear();
+		//		break;
+		//	}
+		//}
+	}
 
 	*pResult = 1;
 }
@@ -536,7 +572,6 @@ void CDragDropTreeCtrl::OnNMCustomdraw(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	//HTREEITEM hItem = GetRootItem();
 	//SetItemState(hItem, 0, TVIS_SELECTED);
-
 
 
 	LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);

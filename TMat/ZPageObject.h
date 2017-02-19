@@ -7,6 +7,15 @@
 #include "opencv2/imgproc/imgproc.hpp"
 
 #define DEFAULT_PAGE_SIZE 128
+#define MAX_SLOT_SIZE 4096
+#define MAX_DESP_COLS 35
+#define UPDATE_DISTANCE 200
+#define DEFAULT_X_OFFSET -2000;
+#define DEFAULT_Y_OFFSET 1200;
+#define MAX_CAM_HIGHTLEVEL 5000
+#define MIN_CAM_HIGHTLEVEL 10
+#define MAX_CAM_FOV 45.0f
+
 
 class CZPageObject
 {
@@ -22,7 +31,7 @@ public:
 	void SetPosition(POINT3D pos);
 	void SetRendomPos();
 	//void SetSelecttion(bool _isSel);
-	float SetSelection(int nSlot, float offset);
+	float SetSelection(int nSlot, float xOffset, float yOffset);
 //	void SetImgSize(unsigned short _w, unsigned short _h) { nImgWidth = _w; nImgHeight = _h; };
 
 	void DrawThumbNail(float fAlpha);
@@ -45,11 +54,13 @@ public:
 	bool IsDuplicate(POINT3D pos, int search_size);
 
 	void RotatePos(float fSpeed);
-	bool LoadPageImage(unsigned short resolution);
+	bool LoadThumbImage(unsigned short resolution);
+	GLuint LoadFullImage();
 
 	void ClearMatchResult();
 	std::vector<_MATCHInfo>* GetMatchResult() { return &m_matched_pos; };
 	int GetResultSize() { return m_matched_pos.size(); }
+	bool IsCandidate() { return m_bCandidate; }
 private:
 	CString strPath;
 	CString strPName;

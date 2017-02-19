@@ -84,7 +84,7 @@ void CCamera2Axis::InitializeCamera(GLfloat fov, GLfloat angleX, GLfloat angleZ,
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(m_Cntfovy ,m_aspect, 0.1f,10000.0f);	
+	gluPerspective(m_Cntfovy ,m_aspect, 0.1f,100000.0f);	
 	glGetDoublev(GL_PROJECTION_MATRIX, m_matProjection);	
 
 	SetModelViewMatrix(pLookAt, 0, 0);
@@ -153,7 +153,8 @@ void CCamera2Axis::SetProjectionMatrix(GLfloat fov, GLfloat x, GLfloat y, int wi
 	m_aspect=(GLfloat)width/(GLfloat)height;
 
 //	m_farPlane = m_levelHeight*2.0f;
-	m_farPlane = m_levelHeight*2.5f;
+//	m_farPlane = m_levelHeight*10.0f;
+	m_farPlane = 20000;
 	if(m_farPlane<7000)
 		m_farPlane = 7000;
 	m_nearPlane = m_levelHeight*0.1f;

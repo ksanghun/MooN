@@ -225,58 +225,59 @@ void CTMatView::SetTreeDragItem(CImageList* pImage, HTREEITEM hItem, CDragDropTr
 
 }
 
-void CTMatView::ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl)
+bool CTMatView::ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl)
 {
 	if (m_pViewImage){
 		m_pViewImage->InitCamera();
 	}
 	float offset = 0.0f;
-	SetSelectedItem(hItem, pCtrl, offset);
+	return SetSelectedItem(hItem, pCtrl, offset);
 }
-void CTMatView::SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset)
+bool CTMatView::SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset)
 {
+	bool res = false;
 	USES_CONVERSION;	char* sz = 0;
 	CString strPath, strPName, strName;
 	unsigned long pCode = 0, cCode = 0;
 	HTREEITEM hChildItem = pCtrl->GetChildItem(hItem);
 
-	if (hChildItem != NULL){  // Has Child!! Folder
-	//	HTREEITEM pItem = pCtrl->GetParentItem(hItem);
+	if (hChildItem != NULL){  // Has Child!! Folder  --" change image for cut&search mode
 		strName = pCtrl->GetItemText(hItem);
-	//	strPName = pCtrl->GetItemFullPath(pItem);
 		strPath = pCtrl->GetItemFullPath(hItem);
 
 	//	sz = T2A(strPName);		
 	//	pCode = getHashCode(sz);
 		sz = T2A(strPath);		
 		cCode = getHashCode(sz);
-
 		// Set Page Selected //
-		SINGLETON_TMat::GetInstance()->SelectPages(cCode);
-
+		res = SINGLETON_TMat::GetInstance()->SelectPages(cCode);
 	}
-	//else{		// Has Child : Folder //
+
+	else{		// File - Select a image //
 	//	strPName = pCtrl->GetItemFullPath(hItem);
-	//	sz = T2A(strPName);		pCode = getHashCode(sz);
+		strPath = pCtrl->GetItemFullPath(hItem);
+		sz = T2A(strPath);
+		cCode = getHashCode(sz);
+//		SINGLETON_TMat::GetInstance()->SelectPages(cCode);
+		//while (hChildItem){
+		//	HTREEITEM cItem = pCtrl->GetChildItem(hChildItem);
 
-	//	while (hChildItem){
-	//		HTREEITEM cItem = pCtrl->GetChildItem(hChildItem);
-
-	//		if (cItem == NULL){ // File //
-	//			strName = pCtrl->GetItemText(hChildItem);
-	//			strPath = pCtrl->GetItemFullPath(hChildItem);
-	//			//==================================//
-	//			char* sz = T2A(strPath);			
-	//			cCode = getHashCode(sz);
-	//			// Set Page Selected //
-	//			SINGLETON_TMat::GetInstance()->SelectPages(cCode, pCode);
-	//		}
-	//		else{
-	//			SetSelectedItem(hChildItem, pCtrl, offset);
-	//		}
-	//		hChildItem = pCtrl->GetNextItem(hChildItem, TVGN_NEXT);
-	//	}
-	//}
+		//	if (cItem == NULL){ // File //
+		//		strName = pCtrl->GetItemText(hChildItem);
+		//		strPath = pCtrl->GetItemFullPath(hChildItem);
+		//		//==================================//
+		//		char* sz = T2A(strPath);			
+		//		cCode = getHashCode(sz);
+		//		// Set Page Selected //
+		//		SINGLETON_TMat::GetInstance()->SelectPages(cCode, pCode);
+		//	}
+		//	else{
+		//		SetSelectedItem(hChildItem, pCtrl, offset);
+		//	}
+		//	hChildItem = pCtrl->GetNextItem(hChildItem, TVGN_NEXT);
+		//}
+	}
+	return res;
 }
 
 void CTMatView::AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt)
@@ -291,6 +292,7 @@ void CTMatView::AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt
 		CZPageObject* pimg = new CZPageObject;
 		HTREEITEM pItem = pCtrl->GetParentItem(_item);
 
+		pCtrl->SetItemImage(_item, 4, 4);
 		strName = pCtrl->GetItemText(_item);
 		strPName = pCtrl->GetItemFullPath(pItem);
 		strPath = pCtrl->GetItemFullPath(_item);
@@ -307,11 +309,15 @@ void CTMatView::AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt
 	else{		// Has Child : Folder //
 		strPName = pCtrl->GetItemFullPath(_item);
 		sz = T2A(strPName);		pCode = getHashCode(sz);
-
+		// Change Item Status //
+		pCtrl->SetItemImage(_item, 1, 1);
 		while (hChildItem){
 			HTREEITEM cItem = pCtrl->GetChildItem(hChildItem);
+			
 
 			if (cItem == NULL){ // File //
+
+				pCtrl->SetItemImage(hChildItem, 4, 4);
 				CZPageObject* pimg = new CZPageObject;
 				strName = pCtrl->GetItemText(hChildItem);
 				strPath = pCtrl->GetItemFullPath(hChildItem);
@@ -325,6 +331,7 @@ void CTMatView::AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt
 			}
 
 			else{
+				
 				AddImageData(hChildItem, pCtrl, cnt);
 			}
 			hChildItem = pCtrl->GetNextItem(hChildItem, TVGN_NEXT);

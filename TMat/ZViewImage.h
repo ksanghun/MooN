@@ -1,5 +1,6 @@
 #pragma once
 #include "OGLWnd.h"
+#define ANI_FRAME_CNT 10
 
 
 class CZViewImage :	public COGLWnd
@@ -30,6 +31,9 @@ private:
 
 	bool m_isAnimation;
 	unsigned short m_mouseMode;
+	CPoint m_stratPnt, m_moveVec;
+	short m_nAniCnt;
+	float m_fAniAcceration[ANI_FRAME_CNT];
 
 public:
 	DECLARE_MESSAGE_MAP()

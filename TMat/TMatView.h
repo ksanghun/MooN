@@ -19,8 +19,8 @@ public:
 //	CTMatDoc* GetDocument() const;
 
 	void SetTreeDragItem(CImageList* pImage, HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
-	void ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
-	void SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset);
+	bool ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
+	bool SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset);
 // Operations
 public:
 

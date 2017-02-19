@@ -145,7 +145,7 @@ HTREEITEM CFileView::ExtractFolder(CString strFolder, CString strName, _strlist&
 			{
 				strFileName = strFolder + ("\\") + file_find.GetFileName();
 				filelist.push_back(strFileName);
-				m_wndFileView.InsertItem(file_find.GetFileName(), 2, 2, hRes);
+				m_wndFileView.InsertItem(file_find.GetFileName(), 3, 3, hRes);
 
 				//	nCount++;
 			}

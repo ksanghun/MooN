@@ -31,7 +31,8 @@ private:
 	HTREEITEM  m_hLastTreeItemClicked;   // Holds last tree item clicked
 	DWORD			m_dwTimeLastLButtonDown;
 
-
+	// Manage CutSearch page//
+	//SEL_ITEM_LIST m_vReadyItem;
 
 	void OnDrag(CPoint point);
 	SEL_ITEM_LIST m_vTempSelItemList;
