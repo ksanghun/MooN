@@ -31,8 +31,7 @@ UINT Threadproc(LPVOID param)
 }
 
 CZDataManager::CZDataManager()
-{
-	
+{	
 	m_pPDF = NULL;
 	memset(m_bSlot, 0x00, sizeof(m_bSlot));
 	m_xOffset = DEFAULT_X_OFFSET;
@@ -43,6 +42,17 @@ CZDataManager::CZDataManager()
 	for (int i = 0; i < ANI_FRAME_CNT; i++){
 		m_fAniAcceration[i] = (1.0f - sin(fstepRad*i))*scale;
 	}
+
+	mtSetPoint3D(&m_AccColor[9], 1.0f, 0.0f, 0.0f);
+	mtSetPoint3D(&m_AccColor[8], 1.0f, 0.2f, 0.0f);
+	mtSetPoint3D(&m_AccColor[7], 1.0f, 0.4f, 0.0f);
+	mtSetPoint3D(&m_AccColor[6], 1.0f, 0.6f, 0.0f);
+	mtSetPoint3D(&m_AccColor[5], 1.0f, 0.8f, 0.0f);
+	mtSetPoint3D(&m_AccColor[4], 1.0f, 1.0f, 0.0f);
+	mtSetPoint3D(&m_AccColor[3], 0.8f, 1.0f, 0.0f);
+	mtSetPoint3D(&m_AccColor[2], 0.6f, 1.0f, 0.0f);
+	mtSetPoint3D(&m_AccColor[1], 0.4f, 1.0f, 0.0f);
+	mtSetPoint3D(&m_AccColor[0], 0.2f, 1.0f, 0.0f);
 }
 
 float CZDataManager::GetAniAcceration(int idx)
@@ -227,4 +237,15 @@ void CZDataManager::UpdatePageStatus(POINT3D camPos)
 			}
 		}
 	}
+}
+
+POINT3D CZDataManager::GetColor(float fvalue)
+{
+	int idx = fvalue * 10;
+	if (idx<0)
+		idx = 0;
+	if (idx>9)
+		idx = 9;
+
+	return m_AccColor[idx];
 }

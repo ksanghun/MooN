@@ -235,6 +235,10 @@ void CPropertiesWnd::InitPropList()
 
 	pGroup4->Expand(FALSE);
 	m_wndPropList.AddProperty(pGroup4);
+
+
+
+	m_wndPropList.SetAlphabeticMode(true);
 }
 
 void CPropertiesWnd::OnSetFocus(CWnd* pOldWnd)

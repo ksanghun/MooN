@@ -24,10 +24,14 @@ CZPageObject::CZPageObject()
 	m_fXScale = 1.0f;
 	m_fYScale = 1.0f;
 
+	m_fImgCols = 0.0f;
+	m_fImgRows = 0.0f;
+
 	SetSize(DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE);
 	m_bCandidate = false;
 	m_bIsSelected = false;
 	m_bAniPos = false;
+
 }
 
 
@@ -48,7 +52,7 @@ void CZPageObject::SetRendomPos()
 {
 	float fScale = 20.0f;
 	m_pos.x = (rand() % MAX_CAM_HIGHTLEVEL) - MAX_CAM_HIGHTLEVEL*0.5f;
-	m_pos.y = (rand() % MAX_CAM_HIGHTLEVEL) - MAX_CAM_HIGHTLEVEL*0.5f;
+	m_pos.y = (rand() % MAX_CAM_HIGHTLEVEL*0.5f) - MAX_CAM_HIGHTLEVEL*0.5f*0.5f;
 	m_pos.z = -((rand() % MAX_CAM_HIGHTLEVEL) - MAX_CAM_HIGHTLEVEL*0.5f);
 
 	m_pos.x = m_pos.x*fScale;
@@ -129,6 +133,9 @@ void CZPageObject::SetSize(unsigned short _w, unsigned short _h, float _size)
 	mtSetPoint3D(&m_vertexBg[3], -_size*0.5f, _size*0.5f, 0.0f);
 
 	m_fRectWidth = _size*fARatio;
+
+	m_RectImg.set(m_vertex[0].x, m_vertex[1].x, m_vertex[0].y, m_vertex[2].y);
+
 }
 
 
@@ -140,10 +147,10 @@ void CZPageObject::DrawForPicking()
 	// Background//	
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
-	glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
-	glVertex3f(m_vertex[1].x, m_vertex[1].y, m_vertex[1].z);
-	glVertex3f(m_vertex[2].x, m_vertex[2].y, m_vertex[2].z);
-	glVertex3f(m_vertex[3].x, m_vertex[3].y, m_vertex[3].z);
+	glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
+	glVertex3f(m_vertexBg[1].x, m_vertexBg[1].y, m_vertexBg[1].z);
+	glVertex3f(m_vertexBg[2].x, m_vertexBg[2].y, m_vertexBg[2].z);
+	glVertex3f(m_vertexBg[3].x, m_vertexBg[3].y, m_vertexBg[3].z);
 	glEnd();
 	//==================//
 	glPopMatrix();
@@ -170,6 +177,7 @@ float CZPageObject::SetSelectionPosition(int nSlot, float xOffset, float yOffset
 		targetPos.y = yOffset;
 		targetPos.z = 0.0f;
 
+
 		if (m_bAniPos){
 			m_nAniCnt = 0;
 			m_MoveVec = targetPos - m_pos;
@@ -178,7 +186,7 @@ float CZPageObject::SetSelectionPosition(int nSlot, float xOffset, float yOffset
 			m_pos = targetPos;
 		}
 		m_bCandidate = true;
-		return m_fRectWidth+2;
+		return DEFAULT_PAGE_SIZE+2;
 	}
 	else{
 		float fScale = 20.0f;
@@ -189,6 +197,8 @@ float CZPageObject::SetSelectionPosition(int nSlot, float xOffset, float yOffset
 		targetPos.x = targetPos.x*fScale;
 		targetPos.y = targetPos.y*fScale;
 		targetPos.z = targetPos.z*fScale - Z_TRANS;
+
+
 
 		if (IsAni){
 			m_nAniCnt = 0;
@@ -202,15 +212,16 @@ float CZPageObject::SetSelectionPosition(int nSlot, float xOffset, float yOffset
 	}	
 }
 
-void CZPageObject::AnimatePos()
+void CZPageObject::AnimatePos(bool IsZvalue)
 {
 	float fDelta = SINGLETON_TMat::GetInstance()->GetAniAcceration(m_nAniCnt);
 	m_pos.x = m_pos.x + m_MoveVec.x*fDelta;
 	m_pos.y = m_pos.y + m_MoveVec.y*fDelta;
 	m_pos.z = m_pos.z + m_MoveVec.z*fDelta;
 	m_nAniCnt++;
-	if (m_nAniCnt >= ANI_FRAME_CNT){
+	if (m_nAniCnt >= ANI_FRAME_CNT){	
 		m_bAniPos = false;
+		if (IsZvalue) m_pos.z = 0.0f;
 	}
 }
 
@@ -288,11 +299,8 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 		fAlpha = 0.95f;
 	}
 	if (m_bAniPos){
-		AnimatePos();
-	}
-
-	glPushMatrix();
-	glTranslatef(m_pos.x, m_pos.y, m_pos.z);
+		AnimatePos(m_bCandidate);
+	}		
 
 	// Background//
 	//	glDisable(GL_TEXTURE_2D);
@@ -315,65 +323,64 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, fAlpha);
 
-	glBegin(GL_QUADS);
+	glPushMatrix();
+		glTranslatef(m_pos.x, m_pos.y, m_pos.z);
 
-	glTexCoord2f(m_texcoord[0].x, m_texcoord[0].y);
-	glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
-
-	glTexCoord2f(m_texcoord[1].x, m_texcoord[1].y);
-	glVertex3f(m_vertex[1].x, m_vertex[1].y, m_vertex[1].z);
-
-	glTexCoord2f(m_texcoord[2].x, m_texcoord[2].y);
-	glVertex3f(m_vertex[2].x, m_vertex[2].y, m_vertex[2].z);
-
-	glTexCoord2f(m_texcoord[3].x, m_texcoord[3].y);
-	glVertex3f(m_vertex[3].x, m_vertex[3].y, m_vertex[3].z);
-	glEnd();
-
-	glDisable(GL_TEXTURE_2D);
-
-
-	// Detected //
-	if (m_matched_pos.size() > 0){
-		glColor4f(1.0f, 0.2f, 0.1f, fAlpha);
-		glBegin(GL_LINE_STRIP);
+		glBegin(GL_QUADS);
+		glTexCoord2f(m_texcoord[0].x, m_texcoord[0].y);
 		glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
+		glTexCoord2f(m_texcoord[1].x, m_texcoord[1].y);
 		glVertex3f(m_vertex[1].x, m_vertex[1].y, m_vertex[1].z);
+		glTexCoord2f(m_texcoord[2].x, m_texcoord[2].y);
 		glVertex3f(m_vertex[2].x, m_vertex[2].y, m_vertex[2].z);
+		glTexCoord2f(m_texcoord[3].x, m_texcoord[3].y);
 		glVertex3f(m_vertex[3].x, m_vertex[3].y, m_vertex[3].z);
-		glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
 		glEnd();
+		glDisable(GL_TEXTURE_2D);
 
-		// Draw detected position //
-		glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
-		glPushMatrix();
-		glScalef(m_fXScale, m_fYScale, 1.0f);
-		glTranslatef(-nImgWidth*0.5f, -nImgHeight*0.5f, 0.0f);
-		glBegin(GL_POINTS);
-		for (int i = 0; i < m_matched_pos.size(); i++){
-			glColor4f(m_matched_pos[i].color.x, m_matched_pos[i].color.y, m_matched_pos[i].color.z, 0.7f);
-			glVertex3f(m_matched_pos[i].pos.x, nImgHeight - m_matched_pos[i].pos.y, 0.0f);
+		if (m_bIsSelected)
+			glLineWidth(2);
+		glColor4f(m_vBgColor.x, m_vBgColor.y, m_vBgColor.z, 0.7f);
+		glBegin(GL_LINE_STRIP);
+		glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
+		glVertex3f(m_vertexBg[1].x, m_vertexBg[1].y, m_vertexBg[1].z);
+		glVertex3f(m_vertexBg[2].x, m_vertexBg[2].y, m_vertexBg[2].z);
+		glVertex3f(m_vertexBg[3].x, m_vertexBg[3].y, m_vertexBg[3].z);
+		glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
+		glEnd();
+		glLineWidth(1);
+		
+		if (m_matched_pos.size() > 0){
+			glColor4f(1.0f, 0.2f, 0.1f, fAlpha);
+			glBegin(GL_LINE_STRIP);
+			glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
+			glVertex3f(m_vertex[1].x, m_vertex[1].y, m_vertex[1].z);
+			glVertex3f(m_vertex[2].x, m_vertex[2].y, m_vertex[2].z);
+			glVertex3f(m_vertex[3].x, m_vertex[3].y, m_vertex[3].z);
+			glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
+			glEnd();
 		}
-		glEnd();
-		glPopMatrix();
-
-	}
+	
+		// Show Result ==============================//
+		if (m_matched_pos.size() > 0){
+			// Draw detected position //
+			glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
+			glPushMatrix();
+				glScalef(m_fXScale, m_fYScale, 1.0f);
+				glTranslatef(-nImgWidth*0.5f, -nImgHeight*0.5f, 0.0f);				
+				glBegin(GL_POINTS);
+				for (int i = 0; i < m_matched_pos.size(); i++){
+					glColor4f(m_matched_pos[i].color.x, m_matched_pos[i].color.y, m_matched_pos[i].color.z, 0.7f);
+					glVertex3f(m_matched_pos[i].pos.x, nImgHeight - m_matched_pos[i].pos.y, 0.0f);
+				}
+				glEnd();
+			glPopMatrix();
+		}
+	glPopMatrix();
 
 
 //	glColor4f(0.3f, 0.7f, 0.9f, 0.7f);
-	if (m_bIsSelected)
-		glLineWidth(2);
-	glColor4f(m_vBgColor.x, m_vBgColor.y, m_vBgColor.z, 0.7f);
-	glBegin(GL_LINE_STRIP);	
-	glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
-	glVertex3f(m_vertexBg[1].x, m_vertexBg[1].y, m_vertexBg[1].z);
-	glVertex3f(m_vertexBg[2].x, m_vertexBg[2].y, m_vertexBg[2].z);
-	glVertex3f(m_vertexBg[3].x, m_vertexBg[3].y, m_vertexBg[3].z);
-	glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
-	glEnd();
-	glLineWidth(1);
-
-	glPopMatrix();
+	
 
 }
 
@@ -411,7 +418,6 @@ bool CZPageObject::IsDuplicate(POINT3D pos, int search_size)
 }
 
 
-
 GLuint CZPageObject::LoadFullImage()
 {
 	if (texId != 0){
@@ -438,8 +444,13 @@ GLuint CZPageObject::LoadFullImage()
 		//glTexImage2D(GL_TEXTURE_2D, 0, 3, m_texture->sizeX,m_texture->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE,m_texture->data);
 		gluBuild2DMipmaps(GL_TEXTURE_2D, 3, pimg->width, pimg->height, GL_RGB, GL_UNSIGNED_BYTE, pimg->imageData);
 		//======================================================================================//
-		cvReleaseImage(&pimg);
-	}
+		
+	}	
+
+	m_fImgCols = pimg->width;
+	m_fImgRows = pimg->height;
+
+	cvReleaseImage(&pimg);
 	return texId;
 }
 
@@ -479,5 +490,60 @@ bool CZPageObject::LoadThumbImage(unsigned short resolution)
 
 	src.release();
 	return true;
+
+}
+
+RECT2D CZPageObject::ConvertVec3DtoImgateCoord(POINT3D v1, POINT3D v2)
+{
+	v1 = v1 - m_pos;
+	v2 = v2 - m_pos;
+	
+	v1.x -= m_RectImg.x1;
+	v1.y -= m_RectImg.y1;
+	v2.x -= m_RectImg.x1;
+	v2.y -= m_RectImg.y1;
+
+	v1.y = m_RectImg.height - v1.y;
+	v2.y = m_RectImg.height - v2.y;
+	
+	RECT2D selRect;
+	if (v1.x < v2.x){
+		selRect.x1 = v1.x;		selRect.x2 = v2.x;
+	}
+	else{
+		selRect.x1 = v2.x;		selRect.x2 = v1.x;
+	}
+	if (v1.y < v2.y){
+		selRect.y1 = v1.y;		selRect.y2 = v2.y;
+	}
+	else{
+		selRect.y1 = v2.y;		selRect.y2 = v1.y;
+	}
+
+	if (selRect.x1 < 0)	selRect.x1 = 0;
+	if (selRect.x2 > m_RectImg.width - 1)	selRect.x2 = m_RectImg.width - 1;
+	if (selRect.y1 < 0)	selRect.y1 = 0;
+	if (selRect.y2 > m_RectImg.height - 1)	selRect.y2 = m_RectImg.height - 1;
+	
+
+	selRect.width = selRect.x2 - selRect.x1;
+	selRect.height = selRect.y2 - selRect.y1;
+
+	if ((selRect.width == 0) || (selRect.height == 0)){
+		return RECT2D(0, 0, 0, 0);
+	}
+
+	float xScale = m_fImgCols / m_RectImg.width;
+	float yScale = m_fImgRows / m_RectImg.height;
+
+	selRect.x1 *= xScale;
+	selRect.x2 *= xScale;
+	selRect.y1 *= yScale;
+	selRect.y2 *= yScale;
+
+	selRect.width *= xScale;
+	selRect.height *= yScale;
+
+	return selRect;
 
 }

@@ -95,7 +95,7 @@ BEGIN
     BUTTON      ID_VIEW_LOGVIEW
     BUTTON      ID_VIEW_INITIALIZE
     SEPARATOR
-	BUTTON      ID_FILE_CONFIGURATION
+    BUTTON      ID_FILE_CONFIGURATION
     SEPARATOR
     BUTTON      ID_ANALYZE_UPLOADRESULT
     BUTTON      ID_ANALYZE_DOWNLOADRESULT
@@ -360,23 +360,29 @@ BEGIN
     ID_FILE_PRINT           "Print the active document\nPrint"
     ID_FILE_PRINT_DIRECT    "Print the active document using current options\nQuick Print"
     ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
+END
 
+STRINGTABLE
+BEGIN
+    ID_VIEW_LOGVIEW         "Change View an existing document\nLogView"
+    ID_PROJECT_CLEARRESULT  "Open an existing document\nClear Result"
+    ID_ANALYZE_EXTRACTTEXT  "Open an existing document\nExtract Text(Word)"
+    ID_PROJECT_CONFIGURATION "Open an existing document\nConfiguration"
+    ID_FILE_OPENFILE        "Open an existing document\nOpen"
+    ID_HELP_ABOUT           "Display program information, version number and copyright\nAbout"
+    ID_ANALYZE_UPLOADRESULT "Open an existing document\nUpload into DB"
+    ID_ANALYZE_DOWNLOADRESULT "Open an existing document\nDownload From DB"
+    ID_PROJECT_KEYWORDSEARCH "Open an existing document\nKeyowrd Search"
+END
 
-	ID_FILE_OPENFILE			"Open an existing document\nOpen"
-	ID_VIEW_LOGVIEW				"Change View an existing document\nLogView"
-	ID_VIEW_2DVIEW				"Open an existing document\n2D View"
-	ID_VIEW_3DVIEW				"Open an existing document\n3D View"
-	ID_VIEW_INITIALIZE			"Open an existing document\nInitialize View"
-	ID_PROJECT_ADDIMAGE			"Open an existing document\nAdd Image"
-	ID_PROJECT_REMOVEIMAGE		"Open an existing document\nRemove Image"
-	ID_PROJECT_SEARCH			"Search an existing document\nCut&Search"
-	ID_PROJECT_CLEARRESULT		"Open an existing document\nClear Result"
-	ID_PROJECT_KEYWORDSEARCH	"Open an existing document\nKeyowrd Search"
-	ID_PROJECT_CONFIGURATION	"Open an existing document\nConfiguration"
-	ID_ANALYZE_EXTRACTTEXT		"Open an existing document\nExtract Text(Word)"
-	ID_ANALYZE_UPLOADRESULT		"Open an existing document\nUpload into DB"
-	ID_ANALYZE_DOWNLOADRESULT	"Open an existing document\nDownload From DB"
-	ID_HELP_ABOUT				"Display program information, version number and copyright\nAbout"
+STRINGTABLE
+BEGIN
+    ID_PROJECT_ADDIMAGE     "Open an existing document\nAdd Image"
+    ID_PROJECT_REMOVEIMAGE  "Open an existing document\nRemove Image"
+    ID_VIEW_2DVIEW          "Open an existing document\n2D View"
+    ID_VIEW_3DVIEW          "Open an existing document\n3D View"
+    ID_VIEW_INITIALIZE      "Open an existing document\nInitialize View"
+    ID_PROJECT_SEARCH       "Search an existing document\nCut&Search"
 END
 
 STRINGTABLE
@@ -640,6 +646,13 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_CURSOR_SEARCH       CURSOR                  "res\\cursor1.cur"
 #endif    // English (Canada) resources
 /////////////////////////////////////////////////////////////////////////////
 

@@ -6,6 +6,7 @@
 
 #include "ZViewImage.h"
 #include "ZViewResult.h"
+#include "ZMatching.h"
 
 class CDragDropTreeCtrl;
 class CTMatView : public CView
@@ -22,6 +23,8 @@ public:
 	short ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
 	short SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset);
 	void InitCamera();
+
+	void DoCurNSearch();
 // Operations
 public:
 
@@ -29,6 +32,9 @@ private:
 	CMFCTabCtrl m_ctrlTab;
 	CZViewImage* m_pViewImage;
 	CZViewResult* m_pViewResult;
+	CZMatching* m_pMatchingProcessor;
+
+	unsigned int m_searchCnt;
 
 
 	void AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt);
@@ -62,6 +68,9 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	virtual void OnInitialUpdate();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };
 
 #ifndef _DEBUG  // debug version in TMatView.cpp

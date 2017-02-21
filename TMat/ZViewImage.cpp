@@ -2,6 +2,7 @@
 #include "ZViewImage.h"
 #include "ZDataManager.h"
 #include "MainFrm.h"
+#include "resource.h"
 
 enum TIMEREVNT { _RENDER = 100, _ADDIMG, _SEARCHIMG, _MOVECAMANI, _UPDATE_PAGE};
 
@@ -12,9 +13,15 @@ CZViewImage::CZViewImage()
 	m_isAnimation = true;
 	m_mouseMode = 0;
 
-
 	m_pSelectPageForCNS = NULL;
+	m_bIsCutNSearchMode = false;
 	
+	mtSetPoint3D(&m_PO, 0.0f, 0.0f, 0.0f);	
+	mtSetPoint3D(&m_PN, 0.0f, 0.0f, 1.0f);
+
+	mtSetPoint3D(&m_CNSRectEnd, 0.0f, 0.0f, MAX_CAM_HIGHTLEVEL*3);
+	m_CNSRectStart = m_CNSRectEnd;
+
 }
 
 
@@ -37,8 +44,9 @@ void CZViewImage::InitGLview(int _nWidth, int _nHeight)
 void CZViewImage::InitCamera()
 {
 	mtSetPoint3D(&m_lookAt, 0, 0, 0);
-	m_cameraPri.SetModelViewMatrix(m_lookAt, 0, 0);
+	
 	m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL*2);
+	m_cameraPri.SetModelViewMatrix(m_lookAt, 0, 0);
 }
 
 void CZViewImage::MouseWheel(short zDelta)
@@ -54,6 +62,7 @@ void CZViewImage::MouseWheel(short zDelta)
 	if (fLevelHeight < MIN_CAM_HIGHTLEVEL){ fLevelHeight = MIN_CAM_HIGHTLEVEL; }
 
 	m_cameraPri.SetInitLevelHeight(fLevelHeight);
+	m_cameraPri.SetModelViewMatrix(m_lookAt, 0, 0);
 }
 
 void CZViewImage::ProcGenerateThumbnail()
@@ -95,13 +104,17 @@ void CZViewImage::Render()
 	glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	glPointSize(5);
 	if (m_isAnimation){
 		DrawBGPageAni();
 	}
 	else{
 		DrawBGPage();
 	}
+	glPointSize(1);
 	
+	DrawCNSRect(0.0f, 0.99f, 0.1f, 1.0f);
+
 	Render2D();
 	SwapBuffers(m_CDCPtr->GetSafeHdc());
 }
@@ -109,7 +122,9 @@ void CZViewImage::Render()
 void CZViewImage::Render2D()
 {
 
-}BEGIN_MESSAGE_MAP(CZViewImage, COGLWnd)
+}
+
+BEGIN_MESSAGE_MAP(CZViewImage, COGLWnd)
 ON_WM_LBUTTONDOWN()
 ON_WM_SIZE()
 ON_WM_TIMER()
@@ -118,22 +133,51 @@ ON_WM_MOUSEMOVE()
 ON_WM_LBUTTONUP()
 ON_WM_MBUTTONDBLCLK()
 ON_WM_LBUTTONDBLCLK()
+ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
 
 void CZViewImage::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
+
+	// move away from screen //
+	mtSetPoint3D(&m_CNSRectEnd, 0.0f, 0.0f, MAX_CAM_HIGHTLEVEL * 3);
+	m_CNSRectStart = m_CNSRectEnd;
+	//=======================//
+
 	SelectObject3D(point.x, point.y, 2, 2, 0);
-
-	m_mouseMode = 2;
-	IDragMap(point.x, point.y, 0);
-	SetCapture();
-
 	m_stratPnt = point;
 
+	if (m_bIsCutNSearchMode){		
+		m_cameraPri.InsetsectRayToPlane(m_PN, m_PO, point.x, point.y, m_CNSRectStart);
+		m_CNSRectEnd = m_CNSRectStart;		
+	}
+	else{		
+		m_mouseMode = 2;
+		IDragMap(point.x, point.y, 0);		
+	}
+
+	SetCapture();
 	COGLWnd::OnLButtonDown(nFlags, point);
 }
+
+void CZViewImage::DrawCNSRect(float r, float g, float b, float a)
+{
+	glLineWidth(2);
+	glDisable(GL_DEPTH_TEST);
+	glColor4f(r, g, b, a);
+	glBegin(GL_LINE_STRIP);
+	glVertex3f(m_CNSRectStart.x, m_CNSRectStart.y, 0);
+	glVertex3f(m_CNSRectStart.x, m_CNSRectEnd.y, 0);
+	glVertex3f(m_CNSRectEnd.x, m_CNSRectEnd.y, 0);
+	glVertex3f(m_CNSRectEnd.x, m_CNSRectStart.y, 0);
+	glVertex3f(m_CNSRectStart.x, m_CNSRectStart.y, 0);
+	glEnd();
+	glEnable(GL_DEPTH_TEST);
+	glLineWidth(1);
+}
+
 
 
 void CZViewImage::OnSize(UINT nType, int cx, int cy)
@@ -162,16 +206,15 @@ void CZViewImage::OnTimer(UINT_PTR nIDEvent)
 		//m_stratPnt.x += m_moveVec.x*SINGLETON_TMat::GetInstance()->GetAniAcceration(m_nAniCnt);
 		//m_stratPnt.y += m_moveVec.y*SINGLETON_TMat::GetInstance()->GetAniAcceration(m_nAniCnt);
 		//IDragMap(m_stratPnt.x, m_stratPnt.y, 1);
-
 		float fDelta = SINGLETON_TMat::GetInstance()->GetAniAcceration(m_nAniCnt);
 
 		m_lookAt.x = m_lookAt.x + m_AniMoveVec.x * fDelta;
 		m_lookAt.y = m_lookAt.y + m_AniMoveVec.y * fDelta;
 		m_lookAt.z = m_lookAt.z + m_AniMoveVec.z * fDelta;
 
-		float levelheight = m_cameraPri.GetLevelHeight() - m_fAniMoveSca*fDelta;
-		m_cameraPri.SetModelViewMatrix(m_lookAt, 0, 0);
+		float levelheight = m_cameraPri.GetLevelHeight() - m_fAniMoveSca*fDelta;		
 		m_cameraPri.SetInitLevelHeight(levelheight);
+		m_cameraPri.SetModelViewMatrix(m_lookAt, 0, 0);
 
 		m_nAniCnt++;
 		if (m_nAniCnt >= ANI_FRAME_CNT){
@@ -215,27 +258,28 @@ void CZViewImage::OnMouseHover(UINT nFlags, CPoint point)
 void CZViewImage::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
+	if (GetCapture()){
+		if (m_bIsCutNSearchMode){
+			m_cameraPri.InsetsectRayToPlane(m_PN, m_PO, point.x, point.y, m_CNSRectEnd);
+		}
+		else{
+			int xDelta = point.x - m_stratPnt.x;
+			int yDelta = point.y - m_stratPnt.y;
 
-	int xDelta = point.x - m_stratPnt.x;
-	int yDelta = point.y - m_stratPnt.y;
-
-	if (xDelta*xDelta > yDelta*yDelta){
-		m_moveVec.x = 1.0f;
-		m_moveVec.y = 0;
-	}
-	else{
-		m_moveVec.y = 1.0f;
-		m_moveVec.x = 0;
-	}
-
-
-	if (m_mouseMode == 2)		// Move
-	{
-		if ((point.x>0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight))
-		{
-			IDragMap(point.x, point.y, 1);
+			if (xDelta*xDelta > yDelta*yDelta){
+				m_moveVec.x = 1.0f;			m_moveVec.y = 0;
+			}
+			else{
+				m_moveVec.y = 1.0f;			m_moveVec.x = 0;
+			}
+			if (m_mouseMode == 2){		// MOVE
+				if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
+					IDragMap(point.x, point.y, 1);
+				}
+			}
 		}
 	}
+	
 	COGLWnd::OnMouseMove(nFlags, point);
 }
 
@@ -290,31 +334,14 @@ void CZViewImage::IDragMap(int x, int y, short sFlag)
 void CZViewImage::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
-	//if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
+	if (m_bIsCutNSearchMode){
+	}
+	else{
+		m_mouseMode = 0;
+		IDragMap(point.x, point.y, 2);
+	}
 
-	//	int xDelta = point.x - m_stratPnt.x;
-	//	int yDelta = point.y - m_stratPnt.y;
-
-	//	if (xDelta*xDelta > yDelta*yDelta){
-	//		m_moveVec.x = (float)xDelta / (float)ANI_FRAME_CNT;
-	//		m_moveVec.y = 0;
-	//	}
-	//	else{
-	//		m_moveVec.y = (float)yDelta / (float)ANI_FRAME_CNT;
-	//		m_moveVec.x = 0;
-	//	}
-
-	//	m_mouseMode = 2;
-	//	SetCapture();
-	//	IDragMap(m_stratPnt.x, m_stratPnt.y, 0);
-
-	//	m_nAniCnt = 0;
-	//	SetTimer(_MOVEANI, 20, NULL);
-	//}
-
-	m_mouseMode = 0;
-	IDragMap(point.x, point.y, 2);
-
+	ReleaseCapture();
 	COGLWnd::OnLButtonUp(nFlags, point);
 }
 
@@ -392,4 +419,68 @@ void CZViewImage::OnLButtonDblClk(UINT nFlags, CPoint point)
 		SetTimer(_MOVECAMANI, 20, NULL);		
 	}
 	COGLWnd::OnLButtonDblClk(nFlags, point);
+}
+
+
+void CZViewImage::EnableCutSearchMode(bool IsEnable) 
+{ 
+	m_bIsCutNSearchMode = IsEnable; 
+}
+
+BOOL CZViewImage::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (m_bIsCutNSearchMode){
+		SetCursor(LoadCursor(NULL, IDC_CROSS));
+	//	mtSetPoint3D(&m_CNSRectEnd, 0.0f, 0.0f, MAX_CAM_HIGHTLEVEL * 3);
+	//	m_CNSRectStart = m_CNSRectEnd;
+		return TRUE;
+	}
+	else{
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+		return TRUE;
+	}
+	return COGLWnd::OnSetCursor(pWnd, nHitTest, message);
+}
+
+
+void CZViewImage::MovePrePage()
+{
+	if (m_cameraPri.GetLevelHeight() < DEFAULT_PAGE_SIZE + 50){
+		SelectObject3D(10, m_rectHeight*0.5f, 2, 2, 0);
+		if (m_pSelectPageForCNS){
+
+			KillTimer(_MOVECAMANI);
+			m_nAniCnt = 0;
+			m_AniMoveVec = m_pSelectPageForCNS->GetPos() - m_lookAt;
+			m_fAniMoveSca = m_cameraPri.GetLevelHeight() - DEFAULT_PAGE_SIZE;
+
+			SetTimer(_MOVECAMANI, 20, NULL);
+		}
+	}
+}
+void CZViewImage::MoveNextPage()
+{
+	if (m_cameraPri.GetLevelHeight() < DEFAULT_PAGE_SIZE + 50){
+		SelectObject3D(m_rectWidth - 10, m_rectHeight*0.5f, 2, 2, 0);
+		if (m_pSelectPageForCNS){
+
+			KillTimer(_MOVECAMANI);
+			m_nAniCnt = 0;
+			m_AniMoveVec = m_pSelectPageForCNS->GetPos() - m_lookAt;
+			m_fAniMoveSca = m_cameraPri.GetLevelHeight() - DEFAULT_PAGE_SIZE;
+
+			SetTimer(_MOVECAMANI, 20, NULL);
+		}
+	}
+}
+
+
+RECT2D CZViewImage::GetSelectedAreaForCNS()
+{
+	if (m_pSelectPageForCNS){
+		RECT2D selRect = m_pSelectPageForCNS->ConvertVec3DtoImgateCoord(m_CNSRectStart, m_CNSRectEnd);
+		return selRect;
+	}
+	return RECT2D(0, 0, 0, 0);
 }

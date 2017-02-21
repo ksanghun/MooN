@@ -23,6 +23,7 @@
 
 
 // CTMatView
+enum SEARCH_TIMER { _TIMER_SEARCH_PAGE = 1000 };
 
 IMPLEMENT_DYNCREATE(CTMatView, CView)
 
@@ -36,6 +37,9 @@ BEGIN_MESSAGE_MAP(CTMatView, CView)
 	ON_WM_CREATE()
 	ON_WM_SIZE()
 	ON_WM_MOUSEWHEEL()
+	ON_WM_KEYDOWN()
+	ON_WM_KEYUP()
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 // CTMatView construction/destruction
@@ -47,7 +51,8 @@ CTMatView::CTMatView()
 
 	m_pViewImage = NULL;
 	m_pViewResult = NULL;
-	
+	m_pMatchingProcessor = NULL;
+	m_searchCnt = 0;
 	// Init Data Manager //
 	SINGLETON_TMat::GetInstance()->InitData();
 }
@@ -58,9 +63,11 @@ CTMatView::~CTMatView()
 	if (m_pViewImage != NULL){
 		delete m_pViewImage;
 	}
-	if (m_pViewResult != NULL)
-	{
+	if (m_pViewResult != NULL)	{
 		delete m_pViewResult;
+	}
+	if (m_pMatchingProcessor != NULL){
+		delete m_pMatchingProcessor;
 	}
 }
 
@@ -182,6 +189,8 @@ int CTMatView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_ctrlTab.AddTab(m_pViewImage, L"Image View", (UINT)0);
 	m_ctrlTab.AddTab(m_pViewResult, L"Result View", (UINT)1);
 
+
+	m_pMatchingProcessor = new CZMatching;
 
 	return 0;
 }
@@ -354,4 +363,86 @@ BOOL CTMatView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	}
 
 	return CView::OnMouseWheel(nFlags, zDelta, pt);
+}
+
+
+void CTMatView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	// TODO: Add your message handler code here and/or call default
+    if(nChar == 90){  // Ctrl key
+		if (m_pViewImage){
+			m_pViewImage->EnableCutSearchMode(true);
+			m_pViewImage->SendMessage(WM_SETCURSOR);
+		}
+	}
+
+	else if (nChar == 39){
+		if (m_pViewImage){
+			m_pViewImage->MoveNextPage();
+		}
+	}
+	else if (nChar == 37){
+		if (m_pViewImage){
+			m_pViewImage->MovePrePage();
+		}
+	}
+
+	CView::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+
+void CTMatView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (nChar == 90){  // Ctrl key
+		if (m_pViewImage){
+			m_pViewImage->EnableCutSearchMode(false);
+			m_pViewImage->SendMessage(WM_SETCURSOR);
+		}
+	}
+	CView::OnKeyUp(nChar, nRepCnt, nFlags);
+}
+
+void CTMatView::DoCurNSearch()
+{
+	if ((m_pViewImage)&&(m_pMatchingProcessor)){
+		m_pMatchingProcessor->PrepareCutNSearch(m_pViewImage->GetSelectedPageForCNS(), m_pViewImage->GetSelectedAreaForCNS());
+
+		m_searchCnt = 0;
+		SetTimer(_TIMER_SEARCH_PAGE, 10, NULL);
+		CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();
+		pM->AddOutputString(_T("Start Search Process...."), true);
+	}
+}
+
+void CTMatView::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	if (nIDEvent == _TIMER_SEARCH_PAGE){
+		CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();
+
+		KillTimer(_TIMER_SEARCH_PAGE);
+		if (m_pMatchingProcessor->DoSearch(m_searchCnt) == false){
+			
+
+			float complete = (float)m_searchCnt / (float)SINGLETON_TMat::GetInstance()->GetImgVec().size();
+			CString str;
+			str.Format(_T("Searching images.....%d"), int(complete * 100));
+			str += _T("%");
+			str += _T(" completed.");
+			pM->AddOutputString(str, true);
+
+			SetTimer(_TIMER_SEARCH_PAGE, 10, NULL);		// Continue //
+		}
+		else{			
+			float complete = (float)m_searchCnt / (float)SINGLETON_TMat::GetInstance()->GetImgVec().size();
+			CString str;
+			str.Format(_T("Searching images.....%d"), int(complete * 100));
+			str += _T("%");
+			str += _T(" completed.");
+			pM->AddOutputString(str, true);
+		}
+	}
+	CView::OnTimer(nIDEvent);
 }

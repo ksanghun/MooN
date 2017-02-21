@@ -11,8 +11,8 @@
 #define MAX_DESP_COLS 25
 #define UPDATE_DISTANCE 200
 
-#define DEFAULT_X_OFFSET -6000;
-#define DEFAULT_Y_OFFSET 250;
+#define DEFAULT_X_OFFSET -5800;
+#define DEFAULT_Y_OFFSET 2500;
 
 #define MAX_CAM_HIGHTLEVEL 5000
 #define MIN_CAM_HIGHTLEVEL 10
@@ -65,7 +65,9 @@ public:
 	bool IsCandidate() { return m_bCandidate; }
 
 	void SetSelection(bool IsSel);
-	void AnimatePos();
+	void AnimatePos(bool IsZvalue);
+
+	RECT2D ConvertVec3DtoImgateCoord(POINT3D v1, POINT3D v2);
 
 private:
 	CString strPath;
@@ -84,6 +86,7 @@ private:
 	float	m_fRectWidth;
 	POINT3D m_pos;
 	POINT3D m_targetPos;
+
 	
 
 	POINT3D m_vertex[4];
@@ -96,6 +99,9 @@ private:
 	unsigned short nImgWidth;
 	unsigned short nImgHeight;
 	
+	float m_fImgCols;
+	float m_fImgRows;
+
 	std::vector<_MATCHInfo> m_matched_pos;
 	float m_fXScale, m_fYScale;
 
@@ -105,6 +111,6 @@ private:
 
 	bool m_bCandidate;
 
-
+	RECT2D m_RectImg;
 };
 

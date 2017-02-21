@@ -18,11 +18,20 @@ public:
 
 	void DrawBGPageAni();
 	void DrawBGPage();
+	void DrawCNSRect(float r, float g, float b, float a);
 	
 	void IDragMap(int x, int y, short sFlag);
 	void InitCamera();
 	void DrawImageByOrderForPicking();
 	int SelectObject3D(int x, int y, int rect_width, int rect_height, int selmode);
+	void EnableCutSearchMode(bool IsEnable);
+
+	void MovePrePage();
+	void MoveNextPage();
+
+	CZPageObject* GetSelectedPageForCNS() { return m_pSelectPageForCNS; }
+	RECT2D GetSelectedAreaForCNS();
+	
 
 private:
 	POINT3D m_lookAt;
@@ -36,11 +45,19 @@ private:
 	unsigned short m_mouseMode;
 	CPoint m_stratPnt, m_moveVec;
 
+	bool m_bIsCutNSearchMode;
+
 
 	short m_nAniCnt;
 	POINT3D  m_AniMoveVec;
 	float  m_fAniMoveSca;
 	CZPageObject* m_pSelectPageForCNS;
+
+	
+
+	// For Cut & Search  //
+	POINT3D m_PN, m_PO, m_CNSRectStart, m_CNSRectEnd;
+
 
 
 public:
@@ -53,5 +70,7 @@ public:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 };
 

@@ -547,6 +547,7 @@ void CMainFrame::OnProjectRemoveimage()
 void CMainFrame::OnProjectSearch()
 {
 	// TODO: Add your command handler code here
+	pView->DoCurNSearch();
 }
 
 

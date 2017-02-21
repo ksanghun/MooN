@@ -48,6 +48,7 @@ public:
 
 	CZPageObject* GetPageByOrderID(int idx);
 
+	POINT3D GetColor(float fvalue);
 private:
 	CZPDFConverter* m_pPDF;
 	THREADINFO m_vecImageData;
@@ -60,6 +61,8 @@ private:
 //	_vecPageObj m_vecImageData;
 
 	float m_fAniAcceration[ANI_FRAME_CNT];
+
+	POINT3D m_AccColor[10];
 };
 
 typedef CZSingtonTMat<CZDataManager> SINGLETON_TMat;

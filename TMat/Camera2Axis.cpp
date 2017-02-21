@@ -79,7 +79,10 @@ void CCamera2Axis::InitializeCamera(GLfloat fov, GLfloat angleX, GLfloat angleZ,
 
 	m_nWidthDisp=width;
 	m_nHeightDisp=height;
-	m_aspect=GLfloat(width)/height;
+	if (height > 0)
+		m_aspect = GLfloat(width) / height;
+	else
+		m_aspect = 1.0f;
 	
 	
 	glMatrixMode(GL_PROJECTION);

@@ -254,5 +254,11 @@
     <None Include="res\TMat.rc2">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\cursor1.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\cur00001.cur">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
