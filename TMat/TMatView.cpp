@@ -446,3 +446,19 @@ void CTMatView::OnTimer(UINT_PTR nIDEvent)
 	}
 	CView::OnTimer(nIDEvent);
 }
+
+
+void CTMatView::SetThresholdValue(float _th)
+{
+	if (m_pMatchingProcessor){
+		m_pMatchingProcessor->SetThreshold(_th);
+	}
+}
+void CTMatView::SetResultColor(int R, int G, int B)
+{
+	if (m_pMatchingProcessor){
+		POINT3D color;
+		mtSetPoint3D(&color, (float)R / 255.0f, (float)G / 255.0f, (float)B / 255.0f);
+		m_pMatchingProcessor->SetResColor(color);
+	}
+}

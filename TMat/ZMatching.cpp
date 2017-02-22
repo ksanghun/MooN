@@ -23,6 +23,9 @@ CZMatching::~CZMatching()
 
 void CZMatching::SetThreshold(float _th)
 {
+	if (_th == 1.0)
+		_th = 0.9999f;
+
 	m_Threshold = _th;
 	m_colorAccScale = 1.0f / (1.0f - m_Threshold);
 }
@@ -90,7 +93,9 @@ bool CZMatching::DoSearch(unsigned int& sCnt)
 					mInfo.pos.y = y + m_pCut->height*0.5f;
 					mInfo.pos.z = 0;
 					mInfo.accuracy = fD;
-					mInfo.color = SINGLETON_TMat::GetInstance()->GetColor((fD)*1.1f);
+				//	mInfo.color = SINGLETON_TMat::GetInstance()->GetColor((fD)*1.1f);
+					m_resColor.a = ((fD - m_Threshold)*m_colorAccScale) + 0.2f;
+					mInfo.color = m_resColor;
 					pImgVec[sCnt]->AddMatchedPoint(std::move(mInfo), search_size);
 				}
 			}

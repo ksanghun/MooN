@@ -25,7 +25,7 @@ typedef short SHORT;
 
 struct POINT3D
 {
-   float x,y,z;
+    float x,y,z;
 };
 
 
@@ -50,6 +50,14 @@ struct COLORi
 	BYTE g;
 	BYTE b;
 	BYTE a;
+};
+
+struct COLORf
+{
+	float r;
+	float g;
+	float b;
+	float a;
 };
 
 typedef POINT2D UV;
@@ -430,7 +438,7 @@ typedef struct _SNIMAGE
 typedef struct _MATCHInfo
 {
 	POINT3D pos;
-	POINT3D color;
+	COLORf color;
 	float accuracy;
 }_MATCHInfo;
 

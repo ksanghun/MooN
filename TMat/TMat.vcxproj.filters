@@ -96,6 +96,9 @@
     <ClInclude Include="DragEventListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PropGridSlider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TMat.cpp">
@@ -159,6 +162,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DragDropTreeCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PropGridSlider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

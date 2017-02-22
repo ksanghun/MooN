@@ -1,10 +1,13 @@
-
+﻿
 #include "stdafx.h"
 
+#include "TMatView.h"
 #include "PropertiesWnd.h"
 #include "Resource.h"
 #include "MainFrm.h"
 #include "TMat.h"
+
+#include "PropGridSlider.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -14,6 +17,9 @@ static char THIS_FILE[]=__FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CResourceViewBar
+
+#define _PROP_THRESHOLD  1000
+#define _PROP_RES_COLOR  1001
 
 CPropertiesWnd::CPropertiesWnd()
 {
@@ -37,6 +43,8 @@ BEGIN_MESSAGE_MAP(CPropertiesWnd, CDockablePane)
 	ON_UPDATE_COMMAND_UI(ID_PROPERTIES2, OnUpdateProperties2)
 	ON_WM_SETFOCUS()
 	ON_WM_SETTINGCHANGE()
+
+	ON_REGISTERED_MESSAGE(AFX_WM_PROPERTY_CHANGED, OnPropertyChanged)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -52,10 +60,10 @@ void CPropertiesWnd::AdjustLayout()
 	CRect rectClient;
 	GetClientRect(rectClient);
 
-	int cyTlb = m_wndToolBar.CalcFixedLayout(FALSE, TRUE).cy;
-
-	m_wndObjectCombo.SetWindowPos(NULL, rectClient.left, rectClient.top, rectClient.Width(), m_nComboHeight, SWP_NOACTIVATE | SWP_NOZORDER);
-	m_wndToolBar.SetWindowPos(NULL, rectClient.left, rectClient.top + m_nComboHeight, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
+	//int cyTlb = m_wndToolBar.CalcFixedLayout(FALSE, TRUE).cy;
+	int cyTlb = 0;
+//	m_wndObjectCombo.SetWindowPos(NULL, rectClient.left, rectClient.top, rectClient.Width(), m_nComboHeight, SWP_NOACTIVATE | SWP_NOZORDER);
+//	m_wndToolBar.SetWindowPos(NULL, rectClient.left, rectClient.top + m_nComboHeight, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
 	m_wndPropList.SetWindowPos(NULL, rectClient.left, rectClient.top + m_nComboHeight + cyTlb, rectClient.Width(), rectClient.Height() -(m_nComboHeight+cyTlb), SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
@@ -70,20 +78,19 @@ int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Create combo:
 	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_BORDER | CBS_SORT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
-	if (!m_wndObjectCombo.Create(dwViewStyle, rectDummy, this, 1))
-	{
-		TRACE0("Failed to create Properties Combo \n");
-		return -1;      // fail to create
-	}
+	//if (!m_wndObjectCombo.Create(dwViewStyle, rectDummy, this, 1))
+	//{
+	//	TRACE0("Failed to create Properties Combo \n");
+	//	return -1;      // fail to create
+	//}
+	//m_wndObjectCombo.AddString(_T("Application"));
+	//m_wndObjectCombo.AddString(_T("Properties Window"));
+	//m_wndObjectCombo.SetCurSel(0);
 
-	m_wndObjectCombo.AddString(_T("Application"));
-	m_wndObjectCombo.AddString(_T("Properties Window"));
-	m_wndObjectCombo.SetCurSel(0);
+	//CRect rectCombo;
+	//m_wndObjectCombo.GetClientRect (&rectCombo);
 
-	CRect rectCombo;
-	m_wndObjectCombo.GetClientRect (&rectCombo);
-
-	m_nComboHeight = rectCombo.Height();
+/*	m_nComboHeight = rectCombo.Height()*/;
 
 	if (!m_wndPropList.Create(WS_VISIBLE | WS_CHILD, rectDummy, this, 2))
 	{
@@ -93,17 +100,17 @@ int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	InitPropList();
 
-	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_PROPERTIES);
-	m_wndToolBar.LoadToolBar(IDR_PROPERTIES, 0, 0, TRUE /* Is locked */);
-	m_wndToolBar.CleanUpLockedImages();
-	m_wndToolBar.LoadBitmap(theApp.m_bHiColorIcons ? IDB_PROPERTIES_HC : IDR_PROPERTIES, 0, 0, TRUE /* Locked */);
+	//m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_PROPERTIES);
+	//m_wndToolBar.LoadToolBar(IDR_PROPERTIES, 0, 0, TRUE /* Is locked */);
+	//m_wndToolBar.CleanUpLockedImages();
+	//m_wndToolBar.LoadBitmap(theApp.m_bHiColorIcons ? IDB_PROPERTIES_HC : IDR_PROPERTIES, 0, 0, TRUE /* Locked */);
 
-	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
-	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
-	m_wndToolBar.SetOwner(this);
+	//m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
+	//m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
+	//m_wndToolBar.SetOwner(this);
 
 	// All commands will be routed via this control , not via the parent frame:
-	m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
+	//m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
 
 	AdjustLayout();
 	return 0;
@@ -137,16 +144,19 @@ void CPropertiesWnd::OnUpdateSortProperties(CCmdUI* pCmdUI)
 void CPropertiesWnd::OnProperties1()
 {
 	// TODO: Add your command handler code here
+	int z = 0;
 }
 
 void CPropertiesWnd::OnUpdateProperties1(CCmdUI* /*pCmdUI*/)
 {
 	// TODO: Add your command update UI handler code here
+	int z = 0;
 }
 
 void CPropertiesWnd::OnProperties2()
 {
-	// TODO: Add your command handler code here
+	// TODO: Add your command handler code hereç
+	int z = 0;
 }
 
 void CPropertiesWnd::OnUpdateProperties2(CCmdUI* /*pCmdUI*/)
@@ -156,6 +166,10 @@ void CPropertiesWnd::OnUpdateProperties2(CCmdUI* /*pCmdUI*/)
 
 void CPropertiesWnd::InitPropList()
 {
+	pView->SetThresholdValue(0.75f);
+	pView->SetResultColor(255,0,0);  // RED
+
+
 	SetPropListFont();
 
 	m_wndPropList.EnableHeaderCtrl(FALSE);
@@ -163,82 +177,99 @@ void CPropertiesWnd::InitPropList()
 	m_wndPropList.SetVSDotNetLook();
 	m_wndPropList.MarkModifiedProperties();
 
-	CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Appearance"));
 
-	pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("3D Look"), (_variant_t) false, _T("Specifies the window's font will be non-bold and controls will have a 3D border")));
+	CMFCPropertyGridProperty *groupSearch = new CMFCPropertyGridProperty(_T("Search"));
+//	groupSearch->SetData(_PROP_THRESHOLD);
 
-	CMFCPropertyGridProperty* pProp = new CMFCPropertyGridProperty(_T("Border"), _T("Dialog Frame"), _T("One of: None, Thin, Resizable, or Dialog Frame"));
-	pProp->AddOption(_T("None"));
-	pProp->AddOption(_T("Thin"));
-	pProp->AddOption(_T("Resizable"));
-	pProp->AddOption(_T("Dialog Frame"));
-	pProp->AllowEdit(FALSE);
+	CPropGridSlider *pPropSlider = new CPropGridSlider(_T("Threshold"), 0.75f, _T("Threshold value must be between 0.0 and 1.0"), 0.0f, 1.0f, 100, -3);
+	pPropSlider->SetData(_PROP_THRESHOLD);
+	groupSearch->AddSubItem(pPropSlider);
 
-	pGroup1->AddSubItem(pProp);
-	pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("Caption"), (_variant_t) _T("About"), _T("Specifies the text that will be displayed in the window's title bar")));
-
-	m_wndPropList.AddProperty(pGroup1);
-
-	CMFCPropertyGridProperty* pSize = new CMFCPropertyGridProperty(_T("Window Size"), 0, TRUE);
-
-	pProp = new CMFCPropertyGridProperty(_T("Height"), (_variant_t) 250l, _T("Specifies the window's height"));
-	pProp->EnableSpinControl(TRUE, 50, 300);
-	pSize->AddSubItem(pProp);
-
-	pProp = new CMFCPropertyGridProperty( _T("Width"), (_variant_t) 150l, _T("Specifies the window's width"));
-	pProp->EnableSpinControl(TRUE, 50, 200);
-	pSize->AddSubItem(pProp);
-
-	m_wndPropList.AddProperty(pSize);
-
-	CMFCPropertyGridProperty* pGroup2 = new CMFCPropertyGridProperty(_T("Font"));
-
-	LOGFONT lf;
-	CFont* font = CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT));
-	font->GetLogFont(&lf);
-
-	lstrcpy(lf.lfFaceName, _T("Arial"));
-
-	pGroup2->AddSubItem(new CMFCPropertyGridFontProperty(_T("Font"), lf, CF_EFFECTS | CF_SCREENFONTS, _T("Specifies the default font for the window")));
-	pGroup2->AddSubItem(new CMFCPropertyGridProperty(_T("Use System Font"), (_variant_t) true, _T("Specifies that the window uses MS Shell Dlg font")));
-
-	m_wndPropList.AddProperty(pGroup2);
-
-	CMFCPropertyGridProperty* pGroup3 = new CMFCPropertyGridProperty(_T("Misc"));
-	pProp = new CMFCPropertyGridProperty(_T("(Name)"), _T("Application"));
-	pProp->Enable(FALSE);
-	pGroup3->AddSubItem(pProp);
-
-	CMFCPropertyGridColorProperty* pColorProp = new CMFCPropertyGridColorProperty(_T("Window Color"), RGB(210, 192, 254), NULL, _T("Specifies the default window color"));
+	CMFCPropertyGridColorProperty* pColorProp = new CMFCPropertyGridColorProperty(_T("Result Color"), RGB(255, 50, 50), NULL, _T("Specifies the searching result color"));
 	pColorProp->EnableOtherButton(_T("Other..."));
 	pColorProp->EnableAutomaticButton(_T("Default"), ::GetSysColor(COLOR_3DFACE));
-	pGroup3->AddSubItem(pColorProp);
-
-	static const TCHAR szFilter[] = _T("Icon Files(*.ico)|*.ico|All Files(*.*)|*.*||");
-	pGroup3->AddSubItem(new CMFCPropertyGridFileProperty(_T("Icon"), TRUE, _T(""), _T("ico"), 0, szFilter, _T("Specifies the window icon")));
-
-	pGroup3->AddSubItem(new CMFCPropertyGridFileProperty(_T("Folder"), _T("c:\\")));
-
-	m_wndPropList.AddProperty(pGroup3);
-
-	CMFCPropertyGridProperty* pGroup4 = new CMFCPropertyGridProperty(_T("Hierarchy"));
-
-	CMFCPropertyGridProperty* pGroup41 = new CMFCPropertyGridProperty(_T("First sub-level"));
-	pGroup4->AddSubItem(pGroup41);
-
-	CMFCPropertyGridProperty* pGroup411 = new CMFCPropertyGridProperty(_T("Second sub-level"));
-	pGroup41->AddSubItem(pGroup411);
-
-	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 1"), (_variant_t) _T("Value 1"), _T("This is a description")));
-	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 2"), (_variant_t) _T("Value 2"), _T("This is a description")));
-	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 3"), (_variant_t) _T("Value 3"), _T("This is a description")));
-
-	pGroup4->Expand(FALSE);
-	m_wndPropList.AddProperty(pGroup4);
+	pColorProp->SetData(_PROP_RES_COLOR);
+	groupSearch->AddSubItem(pColorProp);
+	
+	m_wndPropList.AddProperty(groupSearch);
 
 
+	//CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Appearance"));
 
-	m_wndPropList.SetAlphabeticMode(true);
+	//pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("3D Look"), (_variant_t) false, _T("Specifies the window's font will be non-bold and controls will have a 3D border")));
+
+	//CMFCPropertyGridProperty* pProp = new CMFCPropertyGridProperty(_T("Border"), _T("Dialog Frame"), _T("One of: None, Thin, Resizable, or Dialog Frame"));
+	//pProp->AddOption(_T("None"));
+	//pProp->AddOption(_T("Thin"));
+	//pProp->AddOption(_T("Resizable"));
+	//pProp->AddOption(_T("Dialog Frame"));
+	//pProp->AllowEdit(FALSE);
+
+	//pGroup1->AddSubItem(pProp);
+	//pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("Caption"), (_variant_t) _T("About"), _T("Specifies the text that will be displayed in the window's title bar")));
+
+	//m_wndPropList.AddProperty(pGroup1);
+
+	//CMFCPropertyGridProperty* pSize = new CMFCPropertyGridProperty(_T("Window Size"), 0, TRUE);
+
+	//pProp = new CMFCPropertyGridProperty(_T("Height"), (_variant_t) 250l, _T("Specifies the window's height"));
+	//pProp->EnableSpinControl(TRUE, 50, 300);
+	//pSize->AddSubItem(pProp);
+
+	//pProp = new CMFCPropertyGridProperty( _T("Width"), (_variant_t) 150l, _T("Specifies the window's width"));
+	//pProp->EnableSpinControl(TRUE, 50, 200);
+	//pSize->AddSubItem(pProp);
+
+	//m_wndPropList.AddProperty(pSize);
+
+	//CMFCPropertyGridProperty* pGroup2 = new CMFCPropertyGridProperty(_T("Font"));
+
+	//LOGFONT lf;
+	//CFont* font = CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT));
+	//font->GetLogFont(&lf);
+
+	//lstrcpy(lf.lfFaceName, _T("Arial"));
+
+	//pGroup2->AddSubItem(new CMFCPropertyGridFontProperty(_T("Font"), lf, CF_EFFECTS | CF_SCREENFONTS, _T("Specifies the default font for the window")));
+	//pGroup2->AddSubItem(new CMFCPropertyGridProperty(_T("Use System Font"), (_variant_t) true, _T("Specifies that the window uses MS Shell Dlg font")));
+
+	//m_wndPropList.AddProperty(pGroup2);
+
+	//CMFCPropertyGridProperty* pGroup3 = new CMFCPropertyGridProperty(_T("Misc"));
+	////pProp = new CMFCPropertyGridProperty(_T("(Name)"), _T("Application"));
+	////pProp->Enable(FALSE);
+	////pGroup3->AddSubItem(pProp);
+
+	//CMFCPropertyGridColorProperty* pColorProp = new CMFCPropertyGridColorProperty(_T("Window Color"), RGB(210, 192, 254), NULL, _T("Specifies the default window color"));
+	//pColorProp->EnableOtherButton(_T("Other..."));
+	//pColorProp->EnableAutomaticButton(_T("Default"), ::GetSysColor(COLOR_3DFACE));
+	//pGroup3->AddSubItem(pColorProp);
+
+	//static const TCHAR szFilter[] = _T("Icon Files(*.ico)|*.ico|All Files(*.*)|*.*||");
+	//pGroup3->AddSubItem(new CMFCPropertyGridFileProperty(_T("Icon"), TRUE, _T(""), _T("ico"), 0, szFilter, _T("Specifies the window icon")));
+
+	//pGroup3->AddSubItem(new CMFCPropertyGridFileProperty(_T("Folder"), _T("c:\\")));
+
+	//m_wndPropList.AddProperty(pGroup3);
+
+	//CMFCPropertyGridProperty* pGroup4 = new CMFCPropertyGridProperty(_T("Hierarchy"));
+
+	//CMFCPropertyGridProperty* pGroup41 = new CMFCPropertyGridProperty(_T("First sub-level"));
+	//pGroup4->AddSubItem(pGroup41);
+
+	//CMFCPropertyGridProperty* pGroup411 = new CMFCPropertyGridProperty(_T("Second sub-level"));
+	//pGroup41->AddSubItem(pGroup411);
+
+	//pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 1"), (_variant_t) _T("Value 1"), _T("This is a description")));
+	//pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 2"), (_variant_t) _T("Value 2"), _T("This is a description")));
+	//pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 3"), (_variant_t) _T("Value 3"), _T("This is a description")));
+
+	//pGroup4->Expand(FALSE);
+	//m_wndPropList.AddProperty(pGroup4);
+
+
+
+	m_wndPropList.SetAlphabeticMode(false);
 }
 
 void CPropertiesWnd::OnSetFocus(CWnd* pOldWnd)
@@ -272,5 +303,43 @@ void CPropertiesWnd::SetPropListFont()
 	m_fntPropList.CreateFontIndirect(&lf);
 
 	m_wndPropList.SetFont(&m_fntPropList);
-	m_wndObjectCombo.SetFont(&m_fntPropList);
+	//m_wndObjectCombo.SetFont(&m_fntPropList);
+}
+
+LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM wParam, LPARAM lParam)
+{
+
+//	unsigned short x = m_wndPropList.GetProperty(0)->GetSubItem(0)->GetValue().iVal;
+//	unsigned short type = m_wndPropList.GetProperty(1)->GetSubItem(0)->GetValue().iVal;
+////	COleVariant v = m_wndPropList.GetProperty(1000)->GetSubItem(1001)->GetValue();
+//
+//	unsigned short h = m_wndPropList.GetProperty(3)->GetSubItem(0)->GetValue().iVal;
+
+	CMFCPropertyGridProperty *pProp = (CMFCPropertyGridProperty*)lParam;
+	CMFCPropertyGridColorProperty* pColorProp = (CMFCPropertyGridColorProperty*)lParam;
+
+	if (!pProp) return 0;
+
+	float th;
+	int R, G, B;
+
+	switch (pProp->GetData())
+	{
+	case _PROP_THRESHOLD:
+		pView->SetThresholdValue(pProp->GetValue().fltVal);
+		break;
+	case _PROP_RES_COLOR:
+		R = pColorProp->GetColor() & 0x0000ff;
+		G = (pColorProp->GetColor() & 0x00ff00) >> 8;
+		B = (pColorProp->GetColor() & 0xff0000) >> 16;
+		pView->SetResultColor(R,G,B);
+		break;
+	}
+	return 0;
+}
+
+void CPropertiesWnd::OnStnClicked()
+{
+	// TODO: Add your control notification handler code here
+	int a = 0;
 }

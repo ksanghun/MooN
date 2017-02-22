@@ -25,6 +25,8 @@ public:
 	void InitCamera();
 
 	void DoCurNSearch();
+	void SetThresholdValue(float _th);
+	void SetResultColor(int R, int G, int B);
 // Operations
 public:
 
@@ -46,6 +48,7 @@ protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
+
 
 // Implementation
 public:

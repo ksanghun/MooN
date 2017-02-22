@@ -30,8 +30,8 @@ public:
 
 protected:
 	CFont m_fntPropList;
-	CComboBox m_wndObjectCombo;
-	CPropertiesToolBar m_wndToolBar;
+//	CComboBox m_wndObjectCombo;
+//	CPropertiesToolBar m_wndToolBar;
 	CMFCPropertyGridCtrl m_wndPropList;
 
 // Implementation
@@ -51,6 +51,9 @@ protected:
 	afx_msg void OnUpdateProperties2(CCmdUI* pCmdUI);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
+
+	afx_msg LRESULT OnPropertyChanged(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnStnClicked();
 
 	DECLARE_MESSAGE_MAP()
 

@@ -370,7 +370,7 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 				glTranslatef(-nImgWidth*0.5f, -nImgHeight*0.5f, 0.0f);				
 				glBegin(GL_POINTS);
 				for (int i = 0; i < m_matched_pos.size(); i++){
-					glColor4f(m_matched_pos[i].color.x, m_matched_pos[i].color.y, m_matched_pos[i].color.z, 0.7f);
+					glColor4f(m_matched_pos[i].color.r, m_matched_pos[i].color.g, m_matched_pos[i].color.b, m_matched_pos[i].color.a);
 					glVertex3f(m_matched_pos[i].pos.x, nImgHeight - m_matched_pos[i].pos.y, 0.0f);
 				}
 				glEnd();
