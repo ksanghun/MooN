@@ -387,6 +387,22 @@ void CTMatView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		}
 	}
 
+	else if (nChar == 38){
+		if (m_pViewImage){
+			m_pViewImage->MoveNextUp();
+		}
+	}
+
+	else if (nChar == 40){
+		if (m_pViewImage){
+			m_pViewImage->MoveNextDown();
+		}
+	}
+
+	else if (nChar == 88){	// excute search
+		DoCurNSearch();
+	}
+
 	CView::OnKeyDown(nChar, nRepCnt, nFlags);
 }
 

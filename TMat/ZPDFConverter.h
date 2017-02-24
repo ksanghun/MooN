@@ -12,13 +12,14 @@ public:
 	CZPDFConverter();
 	~CZPDFConverter();
 
-	IplImage* LoadPDF();
+	IplImage* LoadPDF(CString strpath, unsigned short nChannel);
 
+	
 	
 
 private:
-	IplImage* m_pLoadImg;
-	IplImage* m_pGrayImg;
 	fz_context *m_ctx;
+
+	
 };
 

@@ -30,6 +30,7 @@ CZViewImage::~CZViewImage()
 }
 
 
+
 void CZViewImage::InitGLview(int _nWidth, int _nHeight)
 {
 	mtSetPoint3D(&m_lookAt, 0, 0, 0);
@@ -38,6 +39,12 @@ void CZViewImage::InitGLview(int _nWidth, int _nHeight)
 	SetTimer(_RENDER, 30, NULL);
 	SetTimer(_UPDATE_PAGE, 500, NULL);
 
+
+	// Load Default PDF Texture //
+	GLuint pdfTexid = 0;
+	SINGLETON_TMat::GetInstance()->LoadImageTexture(L"./img/pdf.bmp", pdfTexid);
+	SINGLETON_TMat::GetInstance()->SetPdfTexId(pdfTexid);
+	
 	glInitNames();
 }
 
@@ -232,19 +239,22 @@ void CZViewImage::OnTimer(UINT_PTR nIDEvent)
 void CZViewImage::DrawBGPageAni()
 {
 	_vecPageObj::iterator iter = SINGLETON_TMat::GetInstance()->GetVecImageBegin();
+	
 	for (; iter != SINGLETON_TMat::GetInstance()->GetVecImageEnd(); iter++){
 		(*iter)->DrawThumbNail(0.3f);
 		(*iter)->RotatePos(1.0f);
 	}
+	glPointSize(1);
 }
 
 void CZViewImage::DrawBGPage()
 {
 	_vecPageObj::iterator iter = SINGLETON_TMat::GetInstance()->GetVecImageBegin();
-	
+	glPointSize(2);
 	for (; iter != SINGLETON_TMat::GetInstance()->GetVecImageEnd(); iter++){
 		(*iter)->DrawThumbNail(0.3f);
 	}
+	glPointSize(1);
 
 }
 
@@ -414,7 +424,7 @@ void CZViewImage::OnLButtonDblClk(UINT nFlags, CPoint point)
 		KillTimer(_MOVECAMANI);
 		m_nAniCnt = 0;
 		m_AniMoveVec = m_pSelectPageForCNS->GetPos() - m_lookAt;
-		m_fAniMoveSca = m_cameraPri.GetLevelHeight() - DEFAULT_PAGE_SIZE;
+		m_fAniMoveSca = m_cameraPri.GetLevelHeight() - DEFAULT_PAGE_SIZE-200;
 		
 		SetTimer(_MOVECAMANI, 20, NULL);		
 	}
@@ -446,14 +456,14 @@ BOOL CZViewImage::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 void CZViewImage::MovePrePage()
 {
-	if (m_cameraPri.GetLevelHeight() < DEFAULT_PAGE_SIZE + 50){
+	if (m_cameraPri.GetLevelHeight() < DEFAULT_PAGE_SIZE + 250){
 		SelectObject3D(10, m_rectHeight*0.5f, 2, 2, 0);
 		if (m_pSelectPageForCNS){
 
 			KillTimer(_MOVECAMANI);
 			m_nAniCnt = 0;
 			m_AniMoveVec = m_pSelectPageForCNS->GetPos() - m_lookAt;
-			m_fAniMoveSca = m_cameraPri.GetLevelHeight() - DEFAULT_PAGE_SIZE;
+			m_fAniMoveSca = m_cameraPri.GetLevelHeight() - DEFAULT_PAGE_SIZE-200;
 
 			SetTimer(_MOVECAMANI, 20, NULL);
 		}
@@ -461,20 +471,52 @@ void CZViewImage::MovePrePage()
 }
 void CZViewImage::MoveNextPage()
 {
-	if (m_cameraPri.GetLevelHeight() < DEFAULT_PAGE_SIZE + 50){
+	if (m_cameraPri.GetLevelHeight() < DEFAULT_PAGE_SIZE + 250){
 		SelectObject3D(m_rectWidth - 10, m_rectHeight*0.5f, 2, 2, 0);
 		if (m_pSelectPageForCNS){
 
 			KillTimer(_MOVECAMANI);
 			m_nAniCnt = 0;
 			m_AniMoveVec = m_pSelectPageForCNS->GetPos() - m_lookAt;
-			m_fAniMoveSca = m_cameraPri.GetLevelHeight() - DEFAULT_PAGE_SIZE;
+			m_fAniMoveSca = m_cameraPri.GetLevelHeight() - DEFAULT_PAGE_SIZE-200;
 
 			SetTimer(_MOVECAMANI, 20, NULL);
 		}
 	}
 }
 
+
+void CZViewImage::MoveNextUp()
+{
+	if (m_cameraPri.GetLevelHeight() < DEFAULT_PAGE_SIZE + 250){
+		SelectObject3D(m_rectWidth*0.5f, 10, 2, 2, 0);
+		if (m_pSelectPageForCNS){
+
+			KillTimer(_MOVECAMANI);
+			m_nAniCnt = 0;
+			m_AniMoveVec = m_pSelectPageForCNS->GetPos() - m_lookAt;
+			m_fAniMoveSca = m_cameraPri.GetLevelHeight() - DEFAULT_PAGE_SIZE - 200;
+
+			SetTimer(_MOVECAMANI, 20, NULL);
+		}
+	}
+}
+
+void CZViewImage::MoveNextDown()
+{
+	if (m_cameraPri.GetLevelHeight() < DEFAULT_PAGE_SIZE + 250){
+		SelectObject3D(m_rectWidth*0.5f, m_rectHeight-10, 2, 2, 0);
+		if (m_pSelectPageForCNS){
+
+			KillTimer(_MOVECAMANI);
+			m_nAniCnt = 0;
+			m_AniMoveVec = m_pSelectPageForCNS->GetPos() - m_lookAt;
+			m_fAniMoveSca = m_cameraPri.GetLevelHeight() - DEFAULT_PAGE_SIZE - 200;
+
+			SetTimer(_MOVECAMANI, 20, NULL);
+		}
+	}
+}
 
 RECT2D CZViewImage::GetSelectedAreaForCNS()
 {

@@ -43,24 +43,18 @@ void CZMatching::PrepareCutNSearch(CZPageObject* pSelPage, RECT2D selRect)
 		m_pCut = NULL;
 	}
 
+	CString strpath = pSelPage->GetPath();
 	USES_CONVERSION;
-	char* sz = T2A(pSelPage->GetPath());
-	IplImage *pSrc = cvLoadImage(sz);
+	char* sz = T2A(strpath);
+	IplImage *pSrc = SINGLETON_TMat::GetInstance()->LoadIplImagePDF(strpath, 1);
+
 	if (pSrc != NULL){
-		IplImage *gray = cvCreateImage(cvSize(pSrc->width, pSrc->height), 8, 1);
-		if (pSrc->nChannels == 3){
-			cvCvtColor(pSrc, gray, CV_RGB2GRAY);//Change from RGB to GrayScale
-		}
-		else{
-			cvCopy(pSrc, gray);
-		}	
-		
-		m_pCut = cvCreateImage(cvSize(selRect.width, selRect.height), gray->depth, gray->nChannels);
-		cvSetImageROI(gray, cvRect(selRect.x1, selRect.y1, selRect.width, selRect.height));		// posx, posy = left - top
-		cvCopy(gray, m_pCut);
-	//	cvShowImage("crop", m_pCut);
-		m_IsReadyToSearch = true;
+		m_pCut = cvCreateImage(cvSize(selRect.width, selRect.height), pSrc->depth, pSrc->nChannels);
+		cvSetImageROI(pSrc, cvRect(selRect.x1, selRect.y1, selRect.width, selRect.height));		// posx, posy = left - top
+		cvCopy(pSrc, m_pCut);
+		m_IsReadyToSearch = true;		
 	}
+	cvReleaseImage(&pSrc);
 }
 
 bool CZMatching::DoSearch(unsigned int& sCnt)
@@ -78,7 +72,7 @@ bool CZMatching::DoSearch(unsigned int& sCnt)
 
 		USES_CONVERSION;
 		char* sz = T2A(pImgVec[sCnt]->GetPath());
-		IplImage *gray = cvLoadImage(sz, CV_LOAD_IMAGE_GRAYSCALE);
+		IplImage *gray = SINGLETON_TMat::GetInstance()->LoadIplImagePDF(pImgVec[sCnt]->GetPath(), 1);
 		IplImage *result_img = cvCreateImage(cvSize(gray->width - m_pCut->width + 1, gray->height - m_pCut->height + 1),IPL_DEPTH_32F, 1);
 		cvMatchTemplate(gray, m_pCut, result_img, CV_TM_CCOEFF_NORMED);
 

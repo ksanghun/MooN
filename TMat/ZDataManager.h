@@ -45,10 +45,15 @@ public:
 	int  GetEmptySlot();
 	void ReturnSlot(int idx);
 	float GetAniAcceration(int idx);
+	void LoadImageTexture(CString strpath, GLuint &_texid);
+	IplImage* LoadPDFImage(CString strpath, unsigned short nChannel);
 
 	CZPageObject* GetPageByOrderID(int idx);
 
 	POINT3D GetColor(float fvalue);
+	void SetPdfTexId(GLuint _texid) { m_pdfTexid = _texid; }
+	GLuint GetPdfTexId() { return m_pdfTexid; }
+	IplImage* LoadIplImagePDF(CString strpath, unsigned short ch);
 private:
 	CZPDFConverter* m_pPDF;
 	THREADINFO m_vecImageData;
@@ -63,6 +68,7 @@ private:
 	float m_fAniAcceration[ANI_FRAME_CNT];
 
 	POINT3D m_AccColor[10];
+	GLuint m_pdfTexid;
 };
 
 typedef CZSingtonTMat<CZDataManager> SINGLETON_TMat;

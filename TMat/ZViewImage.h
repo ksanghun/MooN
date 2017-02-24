@@ -28,12 +28,17 @@ public:
 
 	void MovePrePage();
 	void MoveNextPage();
+	void MoveNextDown();
+	void MoveNextUp();
 
 	CZPageObject* GetSelectedPageForCNS() { return m_pSelectPageForCNS; }
 	RECT2D GetSelectedAreaForCNS();
 	
 
 private:
+
+	
+
 	POINT3D m_lookAt;
 	unsigned short m_rectWidth, m_rectHeight;
 	VA_DRAG_OPER m_dragOper;

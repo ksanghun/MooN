@@ -97,6 +97,33 @@ void CZDataManager::InitData()
 }
 
 
+void CZDataManager::LoadImageTexture(CString strpath, GLuint &_texid)
+{
+	USES_CONVERSION;
+	char* sz = T2A(strpath);
+
+	IplImage *pimg = cvLoadImage(sz);
+	if (pimg){
+		//	cvShowImage(sz, pimg);
+		cvCvtColor(pimg, pimg, CV_BGR2RGB);
+
+		// glupload Image - Thumnail image=======================================================//
+		glGenTextures(1, &_texid);
+		glBindTexture(GL_TEXTURE_2D, _texid);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
+		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		//glTexImage2D(GL_TEXTURE_2D, 0, 3, m_texture->sizeX,m_texture->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE,m_texture->data);
+		gluBuild2DMipmaps(GL_TEXTURE_2D, 3, pimg->width, pimg->height, GL_RGB, GL_UNSIGNED_BYTE, pimg->imageData);
+		//======================================================================================//
+
+	}
+	cvReleaseImage(&pimg);
+}
+
 void CZDataManager::PushImageDataSet(unsigned long _code, unsigned long _pcode, CZPageObject* pimg)
 {
 	std::map<unsigned long, PAGEGROUP>::iterator iter_gr;
@@ -232,7 +259,7 @@ void CZDataManager::UpdatePageStatus(POINT3D camPos)
 	for (int i = 0; i < m_vecImageData.img.size(); i++){
 		if (m_vecImageData.img[i]->IsCandidate()){
 			float fDist = mtDistance(camPos, m_vecImageData.img[i]->GetPos());
-			if (fDist < DEFAULT_PAGE_SIZE*1.5f){
+			if (fDist < DEFAULT_PAGE_SIZE*2.0f){
 				m_vecImageData.img[i]->LoadFullImage();
 			}
 		}
@@ -248,4 +275,39 @@ POINT3D CZDataManager::GetColor(float fvalue)
 		idx = 9;
 
 	return m_AccColor[idx];
+}
+
+IplImage* CZDataManager::LoadPDFImage(CString strpath, unsigned short nChannel)
+{
+	if (m_pPDF){
+		return m_pPDF->LoadPDF(strpath, nChannel);
+	}
+	return NULL;
+}
+
+
+IplImage* CZDataManager::LoadIplImagePDF(CString strpath, unsigned short ch)
+{
+	USES_CONVERSION;
+	char* sz = T2A(strpath);
+	IplImage *pSrc = NULL;
+
+	CString str = PathFindExtension(strpath);
+	if (ch == 1){
+		if ((str == L".pdf") || (str == L".jpg")){
+			pSrc = SINGLETON_TMat::GetInstance()->LoadPDFImage(strpath, ch);
+		}
+		else{
+			pSrc = cvLoadImage(sz, CV_LOAD_IMAGE_GRAYSCALE);
+		}
+	}
+	else{
+		if ((str == L".pdf") || (str == L".jpg")){
+			pSrc = SINGLETON_TMat::GetInstance()->LoadPDFImage(strpath, ch);
+		}
+		else{
+			pSrc = cvLoadImage(sz);
+		}
+	}
+	return pSrc;
 }

@@ -105,12 +105,12 @@ void CZPageObject::SetSize(unsigned short _w, unsigned short _h, float _size)
 
 	if (_size > 0){
 		if (fARatio <= 1.0f){
-			w = _size*fARatio*0.4f;
-			h = _size*0.4f;
+			w = _size*fARatio*0.45f;
+			h = _size*0.45f;
 		}
 		else{
-			w = _size*0.4f;
-			h = (_size / fARatio)*0.4f;
+			w = _size*0.45f;
+			h = (_size / fARatio)*0.45f;
 		}
 	}
 	else{
@@ -302,16 +302,7 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 		AnimatePos(m_bCandidate);
 	}		
 
-	// Background//
-	//	glDisable(GL_TEXTURE_2D);
-	//glColor4f(m_vBgColor.x, m_vBgColor.y, m_vBgColor.z, 0.0f);
-	//glBegin(GL_QUADS);
-	//glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
-	//glVertex3f(m_vertexBg[1].x, m_vertexBg[1].y, m_vertexBg[1].z);
-	//glVertex3f(m_vertexBg[2].x, m_vertexBg[2].y, m_vertexBg[2].z);
-	//glVertex3f(m_vertexBg[3].x, m_vertexBg[3].y, m_vertexBg[3].z);
-	//glEnd();
-	//==================//
+	
 
 
 	glEnable(GL_TEXTURE_2D);
@@ -321,10 +312,25 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 	else{
 		glBindTexture(GL_TEXTURE_2D, texId);
 	}
-	glColor4f(1.0f, 1.0f, 1.0f, fAlpha);
+	
 
 	glPushMatrix();
 		glTranslatef(m_pos.x, m_pos.y, m_pos.z);
+
+
+		// Background//
+		if (m_matched_pos.size() > 0){
+			glColor4f(1.0f, 0.99f, 0.0f, 0.9f);
+			glBegin(GL_QUADS);
+			glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
+			glVertex3f(m_vertexBg[1].x, m_vertexBg[1].y, m_vertexBg[1].z);
+			glVertex3f(m_vertexBg[2].x, m_vertexBg[2].y, m_vertexBg[2].z);
+			glVertex3f(m_vertexBg[3].x, m_vertexBg[3].y, m_vertexBg[3].z);
+			glEnd();
+		}
+
+
+		glColor4f(1.0f, 1.0f, 1.0f, fAlpha);
 		glBegin(GL_QUADS);
 		glTexCoord2f(m_texcoord[0].x, m_texcoord[0].y);
 		glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
@@ -349,20 +355,25 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 		glEnd();
 		
 		
-		if (m_matched_pos.size() > 0){
-		//	glColor4f(1.0f, 0.2f, 0.1f, fAlpha);
-			glColor4f(0.0f, 0.99f, 0.2f, 0.9f);
-			glBegin(GL_LINE_STRIP);
-			glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
-			glVertex3f(m_vertex[1].x, m_vertex[1].y, m_vertex[1].z);
-			glVertex3f(m_vertex[2].x, m_vertex[2].y, m_vertex[2].z);
-			glVertex3f(m_vertex[3].x, m_vertex[3].y, m_vertex[3].z);
-			glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
-			glEnd();
-		}
+		
+		//==================//
+
+
+		//if (m_matched_pos.size() > 0){
+		////	glColor4f(1.0f, 0.2f, 0.1f, fAlpha);
+		//	glColor4f(0.0f, 0.99f, 0.2f, 0.9f);
+		//	glBegin(GL_LINE_STRIP);
+		//	glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
+		//	glVertex3f(m_vertex[1].x, m_vertex[1].y, m_vertex[1].z);
+		//	glVertex3f(m_vertex[2].x, m_vertex[2].y, m_vertex[2].z);
+		//	glVertex3f(m_vertex[3].x, m_vertex[3].y, m_vertex[3].z);
+		//	glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
+		//	glEnd();
+		//}
 		glLineWidth(1);
 	
 		// Show Result ==============================//
+		
 		if (m_matched_pos.size() > 0){
 			// Draw detected position //
 			glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
@@ -441,27 +452,34 @@ GLuint CZPageObject::LoadFullImage()
 
 	USES_CONVERSION;
 	char* sz = T2A(strPath);
+	IplImage *pimg = NULL;
+	// glupload Image - Thumnail image=======================================================//
+	glGenTextures(1, &texId);
+	glBindTexture(GL_TEXTURE_2D, texId);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-	IplImage *pimg = cvLoadImage(sz);
-	if (pimg){
-		//	cvShowImage(sz, pimg);
-		cvCvtColor(pimg, pimg, CV_BGR2RGB);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
 
-		// glupload Image - Thumnail image=======================================================//
-		glGenTextures(1, &texId);
-		glBindTexture(GL_TEXTURE_2D, texId);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
-		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		//glTexImage2D(GL_TEXTURE_2D, 0, 3, m_texture->sizeX,m_texture->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE,m_texture->data);
-		gluBuild2DMipmaps(GL_TEXTURE_2D, 3, pimg->width, pimg->height, GL_RGB, GL_UNSIGNED_BYTE, pimg->imageData);
-		//======================================================================================//
-		
-	}	
-
+	// In case of PDF file//
+	CString str = PathFindExtension(strPath);
+	if ((str == L".pdf") || (str == L".jpg")){	
+		pimg = SINGLETON_TMat::GetInstance()->LoadPDFImage(strPath, 4);
+		if (pimg){
+			SetSize(pimg->width, pimg->height, DEFAULT_PAGE_SIZE);
+			gluBuild2DMipmaps(GL_TEXTURE_2D, 3, pimg->width, pimg->height, GL_RGBA, GL_UNSIGNED_BYTE, pimg->imageData);
+		}
+	}
+	else{
+		pimg = cvLoadImage(sz);
+		if (pimg){			
+			cvCvtColor(pimg, pimg, CV_BGR2RGB);			
+			gluBuild2DMipmaps(GL_TEXTURE_2D, 3, pimg->width, pimg->height, GL_RGB, GL_UNSIGNED_BYTE, pimg->imageData);
+		}
+	}
+	
 	m_fImgCols = pimg->width;
 	m_fImgRows = pimg->height;
 
@@ -473,19 +491,33 @@ bool CZPageObject::LoadThumbImage(unsigned short resolution)
 {
 	if (thTexId != 0){
 		return false;
-	}				
+	}
+
+	// In case of PDF file//
+	CString str = PathFindExtension(strPath);
+	if ((str == L".pdf") || (str == L".jpg")){
+		thTexId = SINGLETON_TMat::GetInstance()->GetPdfTexId();
+		return true;
+	}
+	//=======================//
+
+
+					
 
 	USES_CONVERSION;	char* sz = T2A(strPath);
 
-//	IplImage *pimg = cvLoadImage(sz);
-	cv::Mat src = cv::imread(sz);
-	if (src.empty()){
+	//IplImage *src = cvLoadImage(sz);
+	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImagePDF(strPath, 3);
+	//cv::Mat src = cv::imread(sz);
+	if (!src){
 		return false;
 	}
 
-	SetSize(src.cols, src.rows, DEFAULT_PAGE_SIZE);
+	SetSize(src->width, src->height, DEFAULT_PAGE_SIZE);
 
-	cv::resize(src, src, cv::Size(resolution, resolution), 0, 0, CV_INTER_LINEAR);		// Memory Leak!!!!!!
+	IplImage*timg = cvCreateImage(cvSize(resolution, resolution), src->depth, src->nChannels);
+	cvResize(src, timg);
+//	cv::resize(src, src, cv::Size(resolution, resolution), 0, 0, CV_INTER_LINEAR);		// Memory Leak!!!!!!
 
 	// glupload Image - Thumnail image=======================================================//
 	GLuint tid = 0;
@@ -498,12 +530,14 @@ bool CZPageObject::LoadThumbImage(unsigned short resolution)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
 	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	//glTexImage2D(GL_TEXTURE_2D, 0, 3, m_texture->sizeX,m_texture->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE,m_texture->data);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, resolution, resolution, GL_RGB, GL_UNSIGNED_BYTE, src.data);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, resolution, resolution, GL_RGB, GL_UNSIGNED_BYTE, timg->imageData);
 	//======================================================================================//
 
 	SetThTex(tid);
 
-	src.release();
+//	src.release();
+	cvReleaseImage(&src);
+	cvReleaseImage(&timg);
 	return true;
 
 }
