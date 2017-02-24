@@ -92,7 +92,7 @@ CZDataManager::~CZDataManager()
 void CZDataManager::InitData()
 {
 	if (m_pPDF == NULL){
-		m_pPDF = new CZPDFConverter;
+		m_pPDF = new CZPDFConverter;		
 	}
 }
 

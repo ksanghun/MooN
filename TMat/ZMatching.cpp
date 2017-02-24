@@ -93,6 +93,8 @@ bool CZMatching::DoSearch(unsigned int& sCnt)
 					mInfo.pos.y = y + m_pCut->height*0.5f;
 					mInfo.pos.z = 0;
 					mInfo.accuracy = fD;
+					mInfo.rect.set(x, x + m_pCut->width, y, y + m_pCut->height);
+
 				//	mInfo.color = SINGLETON_TMat::GetInstance()->GetColor((fD)*1.1f);
 					m_resColor.a = ((fD - m_Threshold)*m_colorAccScale) + 0.2f;
 					mInfo.color = m_resColor;

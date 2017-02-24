@@ -325,7 +325,6 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 
 	glPushMatrix();
 		glTranslatef(m_pos.x, m_pos.y, m_pos.z);
-
 		glBegin(GL_QUADS);
 		glTexCoord2f(m_texcoord[0].x, m_texcoord[0].y);
 		glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
@@ -348,10 +347,11 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 		glVertex3f(m_vertexBg[3].x, m_vertexBg[3].y, m_vertexBg[3].z);
 		glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
 		glEnd();
-		glLineWidth(1);
+		
 		
 		if (m_matched_pos.size() > 0){
-			glColor4f(1.0f, 0.2f, 0.1f, fAlpha);
+		//	glColor4f(1.0f, 0.2f, 0.1f, fAlpha);
+			glColor4f(0.0f, 0.99f, 0.2f, 0.9f);
 			glBegin(GL_LINE_STRIP);
 			glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
 			glVertex3f(m_vertex[1].x, m_vertex[1].y, m_vertex[1].z);
@@ -360,6 +360,7 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 			glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
 			glEnd();
 		}
+		glLineWidth(1);
 	
 		// Show Result ==============================//
 		if (m_matched_pos.size() > 0){
@@ -367,20 +368,34 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 			glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
 			glPushMatrix();
 				glScalef(m_fXScale, m_fYScale, 1.0f);
-				glTranslatef(-nImgWidth*0.5f, -nImgHeight*0.5f, 0.0f);				
-				glBegin(GL_POINTS);
-				for (int i = 0; i < m_matched_pos.size(); i++){
-					glColor4f(m_matched_pos[i].color.r, m_matched_pos[i].color.g, m_matched_pos[i].color.b, m_matched_pos[i].color.a);
-					glVertex3f(m_matched_pos[i].pos.x, nImgHeight - m_matched_pos[i].pos.y, 0.0f);
+				glTranslatef(-nImgWidth*0.5f, -nImgHeight*0.5f, 0.0f);	
+				
+				if (m_bCandidate){		
+				//	glLineWidth(4);
+					for (int i = 0; i < m_matched_pos.size(); i++){
+						glBegin(GL_QUADS);
+						glColor4f(m_matched_pos[i].color.r, m_matched_pos[i].color.g, m_matched_pos[i].color.b, m_matched_pos[i].color.a);
+						glVertex3f(m_matched_pos[i].rect.x1, nImgHeight - m_matched_pos[i].rect.y1, 0.0f);
+						glVertex3f(m_matched_pos[i].rect.x1, nImgHeight - m_matched_pos[i].rect.y2, 0.0f);
+						glVertex3f(m_matched_pos[i].rect.x2, nImgHeight - m_matched_pos[i].rect.y2, 0.0f);
+						glVertex3f(m_matched_pos[i].rect.x2, nImgHeight - m_matched_pos[i].rect.y1, 0.0f);
+					//	glVertex3f(m_matched_pos[i].rect.x1, nImgHeight - m_matched_pos[i].rect.y1, 0.0f);
+						glEnd();
+					}
+				//	glLineWidth(1);					
 				}
-				glEnd();
+				else{
+					glBegin(GL_POINTS);
+					for (int i = 0; i < m_matched_pos.size(); i++){
+						glColor4f(m_matched_pos[i].color.r, m_matched_pos[i].color.g, m_matched_pos[i].color.b, m_matched_pos[i].color.a);
+						glVertex3f(m_matched_pos[i].pos.x, nImgHeight - m_matched_pos[i].pos.y, 0.0f);
+					}
+					glEnd();
+				}
 			glPopMatrix();
 		}
 	glPopMatrix();
-
-
-//	glColor4f(0.3f, 0.7f, 0.9f, 0.7f);
-	
+//	glColor4f(0.3f, 0.7f, 0.9f, 0.7f);	
 
 }
 

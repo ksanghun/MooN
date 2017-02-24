@@ -440,6 +440,7 @@ typedef struct _MATCHInfo
 	POINT3D pos;
 	COLORf color;
 	float accuracy;
+	RECT2D rect;
 }_MATCHInfo;
 
 
