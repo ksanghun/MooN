@@ -243,9 +243,9 @@ void CTMatView::InitCamera()
 
 short CTMatView::ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl)
 {
-	//if (m_pViewImage){
-	//	m_pViewImage->InitCamera();
-	//}
+	if (m_pViewImage){
+		m_pViewImage->InitCamera();
+	}
 	float offset = 0.0f;
 	return SetSelectedItem(hItem, pCtrl, offset);
 }
@@ -402,6 +402,11 @@ void CTMatView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	else if (nChar == 88){	// excute search
 		DoCurNSearch();
 	}
+	else if (nChar = 17){	// ctrl key
+		if (m_pViewImage){
+			m_pViewImage->SetAnimation(false);
+		}
+	}
 
 	CView::OnKeyDown(nChar, nRepCnt, nFlags);
 }
@@ -414,6 +419,11 @@ void CTMatView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 		if (m_pViewImage){
 			m_pViewImage->EnableCutSearchMode(false);
 			m_pViewImage->SendMessage(WM_SETCURSOR);
+		}
+	}
+	else if (nChar = 17){	// ctrl key
+		if (m_pViewImage){
+			m_pViewImage->SetAnimation(true);
 		}
 	}
 	CView::OnKeyUp(nChar, nRepCnt, nFlags);

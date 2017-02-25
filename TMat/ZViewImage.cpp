@@ -50,10 +50,15 @@ void CZViewImage::InitGLview(int _nWidth, int _nHeight)
 
 void CZViewImage::InitCamera()
 {
-	mtSetPoint3D(&m_lookAt, 0, 0, 0);
-	
-	m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL*2);
-	m_cameraPri.SetModelViewMatrix(m_lookAt, 0, 0);
+	KillTimer(_MOVECAMANI);
+	m_nAniCnt = 0;
+	m_AniMoveVec = m_PO - m_lookAt;
+	m_fAniMoveSca = m_cameraPri.GetLevelHeight() - MAX_CAM_HIGHTLEVEL*2;
+
+	SetTimer(_MOVECAMANI, 20, NULL);
+	//mtSetPoint3D(&m_lookAt, 0, 0, 0);	
+	//m_cameraPri.SetInitLevelHeight(MAX_CAM_HIGHTLEVEL*15);
+	//m_cameraPri.SetModelViewMatrix(m_lookAt, 0, 0);
 }
 
 void CZViewImage::MouseWheel(short zDelta)
@@ -61,11 +66,11 @@ void CZViewImage::MouseWheel(short zDelta)
 	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
 
 	float fLevelHeight = m_cameraPri.GetLevelHeight();
-	float zoomValue = fLevelHeight*0.1f;
+	float zoomValue = fLevelHeight*0.1f + MIN_CAM_HIGHTLEVEL;
 	if (zDelta > 0){ zoomValue = -zoomValue;}
 	fLevelHeight += zoomValue;	
 
-	if (fLevelHeight > MAX_CAM_HIGHTLEVEL*2){ fLevelHeight = MAX_CAM_HIGHTLEVEL*2; }
+//	if (fLevelHeight > MAX_CAM_HIGHTLEVEL*15){ fLevelHeight = MAX_CAM_HIGHTLEVEL*15; }
 	if (fLevelHeight < MIN_CAM_HIGHTLEVEL){ fLevelHeight = MIN_CAM_HIGHTLEVEL; }
 
 	m_cameraPri.SetInitLevelHeight(fLevelHeight);
@@ -175,11 +180,11 @@ void CZViewImage::DrawCNSRect(float r, float g, float b, float a)
 	glDisable(GL_DEPTH_TEST);
 	glColor4f(r, g, b, a);
 	glBegin(GL_LINE_STRIP);
-	glVertex3f(m_CNSRectStart.x, m_CNSRectStart.y, 0);
-	glVertex3f(m_CNSRectStart.x, m_CNSRectEnd.y, 0);
-	glVertex3f(m_CNSRectEnd.x, m_CNSRectEnd.y, 0);
-	glVertex3f(m_CNSRectEnd.x, m_CNSRectStart.y, 0);
-	glVertex3f(m_CNSRectStart.x, m_CNSRectStart.y, 0);
+	glVertex3f(m_CNSRectStart.x, m_CNSRectStart.y, m_CNSRectStart.z);
+	glVertex3f(m_CNSRectStart.x, m_CNSRectEnd.y, m_CNSRectEnd.z);
+	glVertex3f(m_CNSRectEnd.x, m_CNSRectEnd.y, m_CNSRectEnd.z);
+	glVertex3f(m_CNSRectEnd.x, m_CNSRectStart.y, m_CNSRectStart.z);
+	glVertex3f(m_CNSRectStart.x, m_CNSRectStart.y, m_CNSRectStart.z);
 	glEnd();
 	glEnable(GL_DEPTH_TEST);
 	glLineWidth(1);
@@ -205,6 +210,11 @@ void CZViewImage::OnTimer(UINT_PTR nIDEvent)
 	// TODO: Add your message handler code here and/or call default
 	if (nIDEvent == _RENDER){
 		Render();
+
+		// for debuggin//
+		CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();
+		pM->AddOutputString(m_cameraPri.GetCamInfo(), true);
+		
 	}
 	else if (nIDEvent == _ADDIMG){
 		GenerateThumbnail();
@@ -420,7 +430,7 @@ void CZViewImage::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 	if (m_pSelectPageForCNS){
-
+		m_pSelectPageForCNS->SetCandidate(true);
 		KillTimer(_MOVECAMANI);
 		m_nAniCnt = 0;
 		m_AniMoveVec = m_pSelectPageForCNS->GetPos() - m_lookAt;

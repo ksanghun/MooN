@@ -4,7 +4,7 @@
 //#define SPACE_SIZE 7000
 
 #define Z_TRANS 70000
-
+//#define Z_TRANS 0
 
 CZPageObject::CZPageObject()
 {
@@ -454,28 +454,33 @@ GLuint CZPageObject::LoadFullImage()
 	char* sz = T2A(strPath);
 	IplImage *pimg = NULL;
 	// glupload Image - Thumnail image=======================================================//
-	glGenTextures(1, &texId);
-	glBindTexture(GL_TEXTURE_2D, texId);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
-
-
 	// In case of PDF file//
 	CString str = PathFindExtension(strPath);
 	if ((str == L".pdf") || (str == L".jpg")){	
 		pimg = SINGLETON_TMat::GetInstance()->LoadPDFImage(strPath, 4);
 		if (pimg){
 			SetSize(pimg->width, pimg->height, DEFAULT_PAGE_SIZE);
+			glGenTextures(1, &texId);
+			glBindTexture(GL_TEXTURE_2D, texId);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
 			gluBuild2DMipmaps(GL_TEXTURE_2D, 3, pimg->width, pimg->height, GL_RGBA, GL_UNSIGNED_BYTE, pimg->imageData);
 		}
 	}
 	else{
 		pimg = cvLoadImage(sz);
 		if (pimg){			
-			cvCvtColor(pimg, pimg, CV_BGR2RGB);			
+			cvCvtColor(pimg, pimg, CV_BGR2RGB);		
+			glGenTextures(1, &texId);
+			glBindTexture(GL_TEXTURE_2D, texId);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
 			gluBuild2DMipmaps(GL_TEXTURE_2D, 3, pimg->width, pimg->height, GL_RGB, GL_UNSIGNED_BYTE, pimg->imageData);
 		}
 	}

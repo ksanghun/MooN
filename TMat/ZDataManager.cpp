@@ -244,10 +244,12 @@ void CZDataManager::ReturnSlot(int idx)
 CZPageObject* CZDataManager::GetPageByOrderID(int idx)
 {
 	if (idx < m_vecImageData.img.size()){
-		if (m_vecImageData.img[idx]->IsCandidate())
+	//	if (m_vecImageData.img[idx]->IsCandidate())
+		
+		
 			return m_vecImageData.img[idx];
-		else
-			return NULL;
+	//	else
+	//		return NULL;
 	}
 	return NULL;
 }
@@ -285,7 +287,7 @@ IplImage* CZDataManager::LoadPDFImage(CString strpath, unsigned short nChannel)
 	return NULL;
 }
 
-
+  
 IplImage* CZDataManager::LoadIplImagePDF(CString strpath, unsigned short ch)
 {
 	USES_CONVERSION;

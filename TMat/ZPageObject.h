@@ -15,7 +15,7 @@
 #define DEFAULT_Y_OFFSET 2500;
 
 #define MAX_CAM_HIGHTLEVEL 5000
-#define MIN_CAM_HIGHTLEVEL 10
+#define MIN_CAM_HIGHTLEVEL 2
 #define MAX_CAM_FOV 45.0f
 
 
@@ -63,6 +63,7 @@ public:
 	std::vector<_MATCHInfo>* GetMatchResult() { return &m_matched_pos; };
 	int GetResultSize() { return m_matched_pos.size(); }
 	bool IsCandidate() { return m_bCandidate; }
+	void SetCandidate(bool isCan) { m_bCandidate = isCan; m_pos.z = 0.0f; }
 
 	void SetSelection(bool IsSel);
 	void AnimatePos(bool IsZvalue);

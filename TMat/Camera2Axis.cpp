@@ -315,12 +315,12 @@ void CCamera2Axis::SetLevelHeight(float fHeight_D)
 void CCamera2Axis::SetInitLevelHeight(float fHeight_D)
 {
 	m_levelHeight = fHeight_D;
-	if(m_levelHeight<2)
-		m_levelHeight = 2;
+	//if(m_levelHeight<2)
+	//	m_levelHeight = 2;
 
-	if((fHeight_D>0))
-		SetModelViewMatrix(m_vLookat, 1.0,0);
-	else
+	//if((fHeight_D>0))
+	//	SetModelViewMatrix(m_vLookat, 1.0,0);
+	//else
 		SetModelViewMatrix(m_vLookat, 0,0);
 
 	SetProjectionMatrix(m_Cntfovy, 0, 0, m_nWidthDisp, m_nHeightDisp);	
@@ -383,8 +383,8 @@ void CCamera2Axis::SetModelViewMatrixNoLimit(POINT3D ptPos, GLfloat fAngle_DX, G
 	mtSetPoint3D(&m_BaseExtPnt[3], -m_levelHeight*2+m_vLookat.x, -m_levelHeight*2+m_vLookat.y, 0);
 
 	UpdateExtent();
-	m_StrCamInfo.Format(L"Camera: Logitude: %3.2f degree, Latitude :%3.2f degree, Altitude: %3.2f m", m_vEye.x/360000.0f, m_vEye.y/360000.0f, m_vEye.z*0.3334f );
-	m_StrCamInfo.Format(L"Look At: %3.2f, %3.2f, %3.2f", m_vLookat.x/360000.0f, m_vLookat.y/360000.0f, m_vLookat.z/360000.0f);
+///	m_StrCamInfo.Format(L"Camera: Logitude: %3.2f degree, Latitude :%3.2f degree, Altitude: %3.2f m", m_vEye.x, m_vEye.y, m_vEye.z );
+	m_StrCamInfo.Format(L"Look At: %3.2f, %3.2f, %3.2f", m_vLookat.x, m_vLookat.y, m_vLookat.z);
 
 }
 
@@ -506,10 +506,11 @@ void CCamera2Axis::SetModelViewMatrix(POINT3D ptPos, GLfloat fAngle_DX, GLfloat 
 	mtSetPoint3D(&m_BaseExtPnt[3], -m_levelHeight*2+m_vLookat.x, -m_levelHeight*2+m_vLookat.y, 0);
 
 	UpdateExtent();
-	m_StrCamInfo.Format(L"Camera: Longi:%3.2f deg, Lati:%3.2f deg, Altitude:%3.2f m\n", m_vEye.x/360000.0f, m_vEye.y/360000.0f, m_vEye.z*0.3334f );
-	CString tmpStr;
-	tmpStr.Format(L"Look At: %3.2f, %3.2f, %3.2f, Level-Height:%3.2f", m_vLookat.x/360000.0f, m_vLookat.y/360000.0f, m_vLookat.z/360000.0f, m_levelHeight);
-	m_StrCamInfo+=tmpStr;
+	//m_StrCamInfo.Format(L"Camera: Longi:%3.2f deg, Lati:%3.2f deg, Altitude:%3.2f m\n", m_vEye.x/360000.0f, m_vEye.y/360000.0f, m_vEye.z*0.3334f );
+	//CString tmpStr;
+	//tmpStr.Format(L"Look At: %3.2f, %3.2f, %3.2f, Level-Height:%3.2f", m_vLookat.x/360000.0f, m_vLookat.y/360000.0f, m_vLookat.z/360000.0f, m_levelHeight);
+	//m_StrCamInfo+=tmpStr;
+	m_StrCamInfo.Format(L"Look At: %3.2f, %3.2f, %3.2f", m_vLookat.x, m_vLookat.y, m_vLookat.z);
 }
 
 

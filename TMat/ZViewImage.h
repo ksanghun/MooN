@@ -26,10 +26,13 @@ public:
 	int SelectObject3D(int x, int y, int rect_width, int rect_height, int selmode);
 	void EnableCutSearchMode(bool IsEnable);
 
+
+	// key event //
 	void MovePrePage();
 	void MoveNextPage();
 	void MoveNextDown();
 	void MoveNextUp();
+	void SetAnimation(bool _isAni) { m_isAnimation = _isAni; }
 
 	CZPageObject* GetSelectedPageForCNS() { return m_pSelectPageForCNS; }
 	RECT2D GetSelectedAreaForCNS();
