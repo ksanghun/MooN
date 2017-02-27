@@ -79,6 +79,7 @@ public:
 	afx_msg void OnAnalyzeUploadresult();
 	afx_msg void OnAnalyzeDownloadresult();
 	afx_msg void OnHelpAbout();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
 
 

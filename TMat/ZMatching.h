@@ -12,7 +12,7 @@ public:
 	void SetCutImage(IplImage* pCut);
 	bool DoSearch(unsigned int& sCnt);
 	void SetThreshold(float _th);
-	void SetResColor(POINT3D _color) { m_resColor.r = _color.x; m_resColor.g = _color.y; m_resColor.b = _color.z;  m_resColor.a = 1.0f; }
+	void SetResColor(POINT3D _color);// { m_resColor.r = _color.x; m_resColor.g = _color.y; m_resColor.b = _color.z;  m_resColor.a = 1.0f; }
 
 private:
 	IplImage *m_pCut;

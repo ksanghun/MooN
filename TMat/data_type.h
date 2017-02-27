@@ -124,7 +124,7 @@ struct RECT2D
 	float width, height;
 
 	RECT2D(float X1, float X2, float Y1, float Y2) { x1 = X1; x2 = X2; y1 = Y1; y2 = Y2; };
-	RECT2D() { x1 = x2 = y1 = y2 = 0.0f; };
+	RECT2D() { x1 = x2 = y1 = y2 = width = height = 0.0f; };
 	inline void set(float X1, float X2, float Y1, float Y2) { 
 		x1 = X1; x2 = X2; y1 = Y1; y2 = Y2; 
 		width = x2 - x1;

@@ -18,7 +18,7 @@ public:
 	
 
 private:
-	fz_context *m_ctx;
+	 
 
 	
 };

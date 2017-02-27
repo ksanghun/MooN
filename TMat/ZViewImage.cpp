@@ -27,6 +27,8 @@ CZViewImage::CZViewImage()
 
 CZViewImage::~CZViewImage()
 {
+	//if (m_pSelectPageForCNS != NULL)
+	//	delete m_pSelectPageForCNS;
 }
 
 
@@ -48,11 +50,16 @@ void CZViewImage::InitGLview(int _nWidth, int _nHeight)
 	glInitNames();
 }
 
-void CZViewImage::InitCamera()
+void CZViewImage::InitCamera(bool movexy)
 {
 	KillTimer(_MOVECAMANI);
 	m_nAniCnt = 0;
-	m_AniMoveVec = m_PO - m_lookAt;
+	if (movexy){
+		m_AniMoveVec = m_PO - m_lookAt;
+	}
+	else{
+		m_AniMoveVec = m_PO;
+	}
 	m_fAniMoveSca = m_cameraPri.GetLevelHeight() - MAX_CAM_HIGHTLEVEL*2;
 
 	SetTimer(_MOVECAMANI, 20, NULL);
@@ -212,8 +219,8 @@ void CZViewImage::OnTimer(UINT_PTR nIDEvent)
 		Render();
 
 		// for debuggin//
-		CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();
-		pM->AddOutputString(m_cameraPri.GetCamInfo(), true);
+		//CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();
+		//pM->AddOutputString(m_cameraPri.GetCamInfo(), true);
 		
 	}
 	else if (nIDEvent == _ADDIMG){
@@ -378,6 +385,14 @@ void CZViewImage::DrawImageByOrderForPicking()
 	}
 }
 
+bool CZViewImage::IsReadyForSearch()
+{
+	bool isok = true;
+
+
+	return isok;
+}
+
 int CZViewImage::SelectObject3D(int x, int y, int rect_width, int rect_height, int selmode)
 {
 	if (m_pSelectPageForCNS){
@@ -495,6 +510,11 @@ void CZViewImage::MoveNextPage()
 	}
 }
 
+void CZViewImage::ResetAllPages()
+{
+	SINGLETON_TMat::GetInstance()->DeSelectPages();
+}
+
 
 void CZViewImage::MoveNextUp()
 {
@@ -532,7 +552,11 @@ RECT2D CZViewImage::GetSelectedAreaForCNS()
 {
 	if (m_pSelectPageForCNS){
 		RECT2D selRect = m_pSelectPageForCNS->ConvertVec3DtoImgateCoord(m_CNSRectStart, m_CNSRectEnd);
+
+		if ((selRect.width < 0) || (selRect.width>512) || (selRect.height < 0) || (selRect.height>512))
+			selRect = RECT2D();
+
 		return selRect;
 	}
-	return RECT2D(0, 0, 0, 0);
+	return RECT2D();
 }

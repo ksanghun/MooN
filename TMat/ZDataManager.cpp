@@ -97,6 +97,7 @@ void CZDataManager::InitData()
 }
 
 
+
 void CZDataManager::LoadImageTexture(CString strpath, GLuint &_texid)
 {
 	USES_CONVERSION;
@@ -263,8 +264,24 @@ void CZDataManager::UpdatePageStatus(POINT3D camPos)
 			float fDist = mtDistance(camPos, m_vecImageData.img[i]->GetPos());
 			if (fDist < DEFAULT_PAGE_SIZE*2.0f){
 				m_vecImageData.img[i]->LoadFullImage();
+				m_vecImageData.img[i]->SetIsNear(true);
 			}
+			else{
+				m_vecImageData.img[i]->SetIsNear(false);
+			}
+
+
+
 		}
+	}
+}
+
+void CZDataManager::ResetResult()
+{
+	for (int i = 0; i < m_vecImageData.img.size(); i++){
+		
+			m_vecImageData.img[i]->ClearMatchResult();
+
 	}
 }
 
@@ -312,4 +329,38 @@ IplImage* CZDataManager::LoadIplImagePDF(CString strpath, unsigned short ch)
 		}
 	}
 	return pSrc;
+}
+
+
+short CZDataManager::DeSelectPages()
+{
+
+	short res = -1;
+	std::map<unsigned long, PAGEGROUP>::iterator iter_gr = m_mapGrupImg.begin();
+
+	for (; iter_gr != m_mapGrupImg.end(); iter_gr++){
+		//	int nSlot = iter_gr->second.nSlot;
+
+		if (iter_gr->second.nSlot != -1){		// Selection
+
+			ReturnSlot(iter_gr->second.nSlot);
+			iter_gr->second.nSlot = -1;
+			float xoffset = DEFAULT_X_OFFSET;
+			int i = 0;
+			for (i = 0; i < iter_gr->second.imgVec.size(); i++){
+				if (i % MAX_DESP_COLS == 0){
+					xoffset = DEFAULT_X_OFFSET;
+					m_yOffset += DEFAULT_PAGE_SIZE;
+				}
+				xoffset += iter_gr->second.imgVec[i]->SetSelectionPosition(-1, xoffset, m_yOffset, true);
+			}
+			if (i % MAX_DESP_COLS == 0){
+				xoffset = DEFAULT_X_OFFSET;
+				m_yOffset += DEFAULT_PAGE_SIZE;
+			}
+
+		}
+	}
+
+	return res;
 }

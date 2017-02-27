@@ -22,11 +22,14 @@ public:
 	void SetTreeDragItem(CImageList* pImage, HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
 	short ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
 	short SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset);
-	void InitCamera();
+	void InitCamera(bool bmovexy);
 
 	void DoCurNSearch();
 	void SetThresholdValue(float _th);
 	void SetResultColor(int R, int G, int B);
+
+	CZViewImage* GetViewImage() { return m_pViewImage; }
+
 // Operations
 public:
 
@@ -74,6 +77,7 @@ public:
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
 
 #ifndef _DEBUG  // debug version in TMatView.cpp

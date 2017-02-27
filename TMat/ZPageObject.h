@@ -69,6 +69,7 @@ public:
 	void AnimatePos(bool IsZvalue);
 
 	RECT2D ConvertVec3DtoImgateCoord(POINT3D v1, POINT3D v2);
+	void SetIsNear(bool isnear) { m_bIsNear = isnear; }
 
 private:
 	CString strPath;
@@ -111,6 +112,7 @@ private:
 	short m_nAniCnt;
 
 	bool m_bCandidate;
+	bool m_bIsNear;
 
 	RECT2D m_RectImg;
 };

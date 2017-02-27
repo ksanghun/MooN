@@ -37,6 +37,7 @@ public:
 	void Th_GenerateThumnail();
 	short SelectPages(unsigned long cCode);
 	void UpdatePageStatus(POINT3D camPos);
+	void ResetResult();
 
 	_vecPageObj::iterator GetVecImageBegin() { return m_vecImageData.img.begin(); }
 	_vecPageObj::iterator GetVecImageEnd() { return m_vecImageData.img.end(); }
@@ -54,6 +55,10 @@ public:
 	void SetPdfTexId(GLuint _texid) { m_pdfTexid = _texid; }
 	GLuint GetPdfTexId() { return m_pdfTexid; }
 	IplImage* LoadIplImagePDF(CString strpath, unsigned short ch);
+	short DeSelectPages();
+
+	void SetResColor(COLORf _color) { m_resColor = _color; }
+	COLORf GetResColor() { return m_resColor; }
 private:
 	CZPDFConverter* m_pPDF;
 	THREADINFO m_vecImageData;
@@ -69,6 +74,7 @@ private:
 
 	POINT3D m_AccColor[10];
 	GLuint m_pdfTexid;
+	COLORf m_resColor;
 };
 
 typedef CZSingtonTMat<CZDataManager> SINGLETON_TMat;

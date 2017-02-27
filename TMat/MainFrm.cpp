@@ -6,6 +6,7 @@
 #include "TMat.h"
 #include "TMatView.h"
 #include "MainFrm.h"
+#include "ZViewImage.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,6 +52,7 @@ CMainFrame::CMainFrame()
 
 CMainFrame::~CMainFrame()
 {
+	int a = 0;
 }
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -528,7 +530,7 @@ void CMainFrame::OnView3dview()
 void CMainFrame::OnViewInitialize()
 {
 	// TODO: Add your command handler code here
-	pView->InitCamera();
+	pView->InitCamera(true);
 }
 
 
@@ -560,6 +562,7 @@ void CMainFrame::OnProjectKeywordsearch()
 void CMainFrame::OnProjectClearresult()
 {
 	// TODO: Add your command handler code here
+	SINGLETON_TMat::GetInstance()->ResetResult();
 }
 
 
@@ -590,4 +593,80 @@ void CMainFrame::OnAnalyzeDownloadresult()
 void CMainFrame::OnHelpAbout()
 {
 	// TODO: Add your command handler code here
+}
+
+
+BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
+{
+	
+	// TODO: Add your specialized code here and/or call the base class
+
+	CZViewImage* pViewImage = pView->GetViewImage();
+
+	if (pMsg->message == WM_KEYDOWN){
+		int nChar = (int)pMsg->wParam;
+		if (nChar == 90){  // Ctrl key
+			if (pViewImage){
+				pViewImage->EnableCutSearchMode(true);
+				pViewImage->SendMessage(WM_SETCURSOR);
+			}
+		}
+
+		else if (nChar == 39){
+			if (pViewImage){
+				pViewImage->MoveNextPage();
+			}
+		}
+		else if (nChar == 37){
+			if (pViewImage){
+				pViewImage->MovePrePage();
+			}
+		}
+
+		else if (nChar == 38){
+			if (pViewImage){
+				pViewImage->MoveNextUp();
+			}
+		}
+
+		else if (nChar == 40){
+			if (pViewImage){
+				pViewImage->MoveNextDown();
+			}
+		}
+		
+		else if (nChar == 88){	// excute search
+			pView->DoCurNSearch();
+		}
+		else if (nChar == 17){	// ctrl key
+			if (pViewImage){
+				pViewImage->SetAnimation(false);
+			}
+		}
+
+		else if (nChar == 67){
+			if (pViewImage){
+				pViewImage->ResetAllPages();
+			}
+		}
+	}
+
+
+	if (pMsg->message == WM_KEYUP){
+		int nChar = (int)pMsg->wParam;
+		if (nChar == 90){  // z key
+			if (pViewImage){
+				pViewImage->EnableCutSearchMode(false);
+				pViewImage->SendMessage(WM_SETCURSOR);
+			}
+		}
+		else if (nChar == 17){	// ctrl key
+			if (pViewImage){
+				pViewImage->SetAnimation(true);
+			}
+			float offset = 0.0f;
+		}
+	}
+
+	return CFrameWndEx::PreTranslateMessage(pMsg);
 }

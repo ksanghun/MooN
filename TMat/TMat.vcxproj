@@ -93,7 +93,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>lib;lib/mupdf</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
       <AdditionalDependencies>comctl32.lib;vfw32.lib;IlmImf.lib;ippicvmt.lib;libjasper.lib;libjpeg.lib;libpng.lib;libtiff.lib;libwebp.lib;opencv_calib3d300.lib;opencv_core300.lib;opencv_features2d300.lib;opencv_hal300.lib;opencv_highgui300.lib;opencv_imgcodecs300.lib;opencv_imgproc300.lib;zlib.lib;libglfw.lib;libfonts.lib;libmupdf.lib;libthirdparty.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>

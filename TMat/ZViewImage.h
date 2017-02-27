@@ -21,7 +21,7 @@ public:
 	void DrawCNSRect(float r, float g, float b, float a);
 	
 	void IDragMap(int x, int y, short sFlag);
-	void InitCamera();
+	void InitCamera(bool movexy=true);
 	void DrawImageByOrderForPicking();
 	int SelectObject3D(int x, int y, int rect_width, int rect_height, int selmode);
 	void EnableCutSearchMode(bool IsEnable);
@@ -33,10 +33,12 @@ public:
 	void MoveNextDown();
 	void MoveNextUp();
 	void SetAnimation(bool _isAni) { m_isAnimation = _isAni; }
+	void ResetAllPages();
 
 	CZPageObject* GetSelectedPageForCNS() { return m_pSelectPageForCNS; }
 	RECT2D GetSelectedAreaForCNS();
 	
+	bool IsReadyForSearch();
 
 private:
 
@@ -46,7 +48,7 @@ private:
 	unsigned short m_rectWidth, m_rectHeight;
 	VA_DRAG_OPER m_dragOper;
 	LOGFONT		m_LogFont;
-	BITMAPINFO* m_pBmpInfo;
+//	BITMAPINFO* m_pBmpInfo;
 	unsigned int m_addImgCnt;
 
 	bool m_isAnimation;

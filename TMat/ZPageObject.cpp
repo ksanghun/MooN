@@ -32,6 +32,8 @@ CZPageObject::CZPageObject()
 	m_bIsSelected = false;
 	m_bAniPos = false;
 
+	m_bIsNear = false;
+
 }
 
 
@@ -44,7 +46,9 @@ CZPageObject::~CZPageObject()
 		glDeleteTextures(1, &thTexId);
 	}
 
-	m_matched_pos.clear();
+	if (m_matched_pos.size() > 0){
+		m_matched_pos.clear();
+	}
 }
 
 //===========================//
@@ -302,7 +306,6 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 		AnimatePos(m_bCandidate);
 	}		
 
-	
 
 
 	glEnable(GL_TEXTURE_2D);
@@ -320,7 +323,7 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 
 		// Background//
 		if (m_matched_pos.size() > 0){
-			glColor4f(1.0f, 0.99f, 0.0f, 0.9f);
+			glColor4f(1.0f, 0.1f, 0.0f, 0.9f);
 			glBegin(GL_QUADS);
 			glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
 			glVertex3f(m_vertexBg[1].x, m_vertexBg[1].y, m_vertexBg[1].z);
@@ -373,7 +376,7 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 		glLineWidth(1);
 	
 		// Show Result ==============================//
-		
+		glPointSize(8);
 		if (m_matched_pos.size() > 0){
 			// Draw detected position //
 			glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
@@ -381,7 +384,7 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 				glScalef(m_fXScale, m_fYScale, 1.0f);
 				glTranslatef(-nImgWidth*0.5f, -nImgHeight*0.5f, 0.0f);	
 				
-				if (m_bCandidate){		
+				if (m_bIsNear){		
 				//	glLineWidth(4);
 					for (int i = 0; i < m_matched_pos.size(); i++){
 						glBegin(GL_QUADS);
@@ -405,6 +408,8 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 				}
 			glPopMatrix();
 		}
+
+		glPointSize(1);
 	glPopMatrix();
 //	glColor4f(0.3f, 0.7f, 0.9f, 0.7f);	
 
@@ -457,6 +462,7 @@ GLuint CZPageObject::LoadFullImage()
 	// In case of PDF file//
 	CString str = PathFindExtension(strPath);
 	if ((str == L".pdf") || (str == L".jpg")){	
+
 		pimg = SINGLETON_TMat::GetInstance()->LoadPDFImage(strPath, 4);
 		if (pimg){
 			SetSize(pimg->width, pimg->height, DEFAULT_PAGE_SIZE);

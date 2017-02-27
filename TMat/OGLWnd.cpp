@@ -21,6 +21,8 @@ COGLWnd::COGLWnd()
 
 COGLWnd::~COGLWnd()
 {
+	//if (m_CDCPtr != NULL)
+	//	delete m_CDCPtr;
 }
 
 

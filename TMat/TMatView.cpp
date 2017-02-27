@@ -234,10 +234,10 @@ void CTMatView::SetTreeDragItem(CImageList* pImage, HTREEITEM hItem, CDragDropTr
 
 }
 
-void CTMatView::InitCamera()
+void CTMatView::InitCamera(bool bmovexy)
 {
 	if (m_pViewImage){
-		m_pViewImage->InitCamera();
+		m_pViewImage->InitCamera(bmovexy);
 	}
 }
 
@@ -369,44 +369,8 @@ BOOL CTMatView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 void CTMatView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	// TODO: Add your message handler code here and/or call default
-    if(nChar == 90){  // Ctrl key
-		if (m_pViewImage){
-			m_pViewImage->EnableCutSearchMode(true);
-			m_pViewImage->SendMessage(WM_SETCURSOR);
-		}
-	}
 
-	else if (nChar == 39){
-		if (m_pViewImage){
-			m_pViewImage->MoveNextPage();
-		}
-	}
-	else if (nChar == 37){
-		if (m_pViewImage){
-			m_pViewImage->MovePrePage();
-		}
-	}
 
-	else if (nChar == 38){
-		if (m_pViewImage){
-			m_pViewImage->MoveNextUp();
-		}
-	}
-
-	else if (nChar == 40){
-		if (m_pViewImage){
-			m_pViewImage->MoveNextDown();
-		}
-	}
-
-	else if (nChar == 88){	// excute search
-		DoCurNSearch();
-	}
-	else if (nChar = 17){	// ctrl key
-		if (m_pViewImage){
-			m_pViewImage->SetAnimation(false);
-		}
-	}
 
 	CView::OnKeyDown(nChar, nRepCnt, nFlags);
 }
@@ -415,23 +379,17 @@ void CTMatView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 void CTMatView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	// TODO: Add your message handler code here and/or call default
-	if (nChar == 90){  // Ctrl key
-		if (m_pViewImage){
-			m_pViewImage->EnableCutSearchMode(false);
-			m_pViewImage->SendMessage(WM_SETCURSOR);
-		}
-	}
-	else if (nChar = 17){	// ctrl key
-		if (m_pViewImage){
-			m_pViewImage->SetAnimation(true);
-		}
-	}
+	
 	CView::OnKeyUp(nChar, nRepCnt, nFlags);
 }
 
 void CTMatView::DoCurNSearch()
 {
 	if ((m_pViewImage)&&(m_pMatchingProcessor)){
+
+		pView->InitCamera(false);
+		Sleep(150);
+
 		m_pMatchingProcessor->PrepareCutNSearch(m_pViewImage->GetSelectedPageForCNS(), m_pViewImage->GetSelectedAreaForCNS());
 
 		m_searchCnt = 0;
@@ -487,4 +445,15 @@ void CTMatView::SetResultColor(int R, int G, int B)
 		mtSetPoint3D(&color, (float)R / 255.0f, (float)G / 255.0f, (float)B / 255.0f);
 		m_pMatchingProcessor->SetResColor(color);
 	}
+}
+
+BOOL CTMatView::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	
+
+
+
+
+	return CView::PreTranslateMessage(pMsg);
 }
