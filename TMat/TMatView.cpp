@@ -51,7 +51,6 @@ CTMatView::CTMatView()
 
 	m_pViewImage = NULL;
 	m_pViewResult = NULL;
-	m_pMatchingProcessor = NULL;
 	m_searchCnt = 0;
 	// Init Data Manager //
 	SINGLETON_TMat::GetInstance()->InitData();
@@ -66,9 +65,7 @@ CTMatView::~CTMatView()
 	if (m_pViewResult != NULL)	{
 		delete m_pViewResult;
 	}
-	if (m_pMatchingProcessor != NULL){
-		delete m_pMatchingProcessor;
-	}
+
 }
 
 BOOL CTMatView::PreCreateWindow(CREATESTRUCT& cs)
@@ -190,7 +187,6 @@ int CTMatView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_ctrlTab.AddTab(m_pViewResult, L"Result View", (UINT)1);
 
 
-	m_pMatchingProcessor = new CZMatching;
 
 	return 0;
 }
@@ -241,6 +237,36 @@ void CTMatView::InitCamera(bool bmovexy)
 	}
 }
 
+void CTMatView::ProcExtractTextBoundary()
+{
+	CZPageObject* pPage = m_pViewImage->GetSelectedPageForCNS();
+	if (pPage){
+		IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 3);
+		cv::Mat img = cv::cvarrToMat(src);
+		
+
+		std::vector<cv::Rect> textbox;
+		m_Extractor.detectLetters(img, textbox);
+
+
+		//Test Display
+		for (int i = 0; i < textbox.size(); i++){
+			cv::rectangle(img, textbox[i], cv::Scalar(0, 255, 0), 3, 8, 0);
+		}
+//		cv::imwrite("imgOut1.jpg", img);
+
+		cv::imshow("extraction", img);
+
+
+		cvReleaseImage(&src);
+		img.release();		
+	}
+
+	else{
+		AfxMessageBox(L"Page is not selected");
+	}
+
+}
 short CTMatView::ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl)
 {
 	if (m_pViewImage){
@@ -385,12 +411,12 @@ void CTMatView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void CTMatView::DoCurNSearch()
 {
-	if ((m_pViewImage)&&(m_pMatchingProcessor)){
+	if ((m_pViewImage)){
 
 		pView->InitCamera(false);
 		Sleep(150);
 
-		m_pMatchingProcessor->PrepareCutNSearch(m_pViewImage->GetSelectedPageForCNS(), m_pViewImage->GetSelectedAreaForCNS());
+		m_pMatchingProcessor.PrepareCutNSearch(m_pViewImage->GetSelectedPageForCNS(), m_pViewImage->GetSelectedAreaForCNS());
 
 		m_searchCnt = 0;
 		SetTimer(_TIMER_SEARCH_PAGE, 10, NULL);
@@ -407,7 +433,7 @@ void CTMatView::OnTimer(UINT_PTR nIDEvent)
 		CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();
 
 		KillTimer(_TIMER_SEARCH_PAGE);
-		if (m_pMatchingProcessor->DoSearch(m_searchCnt) == false){
+		if (m_pMatchingProcessor.DoSearch(m_searchCnt) == false){
 			
 
 			float complete = (float)m_searchCnt / (float)SINGLETON_TMat::GetInstance()->GetImgVec().size();
@@ -434,17 +460,17 @@ void CTMatView::OnTimer(UINT_PTR nIDEvent)
 
 void CTMatView::SetThresholdValue(float _th)
 {
-	if (m_pMatchingProcessor){
-		m_pMatchingProcessor->SetThreshold(_th);
-	}
+
+		m_pMatchingProcessor.SetThreshold(_th);
+
 }
 void CTMatView::SetResultColor(int R, int G, int B)
 {
-	if (m_pMatchingProcessor){
+
 		POINT3D color;
 		mtSetPoint3D(&color, (float)R / 255.0f, (float)G / 255.0f, (float)B / 255.0f);
-		m_pMatchingProcessor->SetResColor(color);
-	}
+		m_pMatchingProcessor.SetResColor(color);
+
 }
 
 BOOL CTMatView::PreTranslateMessage(MSG* pMsg)
@@ -457,3 +483,5 @@ BOOL CTMatView::PreTranslateMessage(MSG* pMsg)
 
 	return CView::PreTranslateMessage(pMsg);
 }
+
+

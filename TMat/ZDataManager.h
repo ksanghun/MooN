@@ -4,6 +4,7 @@
 #include "ZPageObject.h"
 
 
+
 #define ANI_FRAME_CNT 10
 
 typedef std::vector<CZPageObject*> _vecPageObj;
@@ -54,7 +55,7 @@ public:
 	POINT3D GetColor(float fvalue);
 	void SetPdfTexId(GLuint _texid) { m_pdfTexid = _texid; }
 	GLuint GetPdfTexId() { return m_pdfTexid; }
-	IplImage* LoadIplImagePDF(CString strpath, unsigned short ch);
+	IplImage* LoadIplImage(CString strpath, unsigned short ch);
 	short DeSelectPages();
 
 	void SetResColor(COLORf _color) { m_resColor = _color; }

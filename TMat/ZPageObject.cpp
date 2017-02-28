@@ -518,7 +518,7 @@ bool CZPageObject::LoadThumbImage(unsigned short resolution)
 	USES_CONVERSION;	char* sz = T2A(strPath);
 
 	//IplImage *src = cvLoadImage(sz);
-	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImagePDF(strPath, 3);
+	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(strPath, 3);
 	//cv::Mat src = cv::imread(sz);
 	if (!src){
 		return false;

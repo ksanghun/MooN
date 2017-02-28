@@ -3,7 +3,7 @@
 #include "DragDropTreeCtrl.h"
 #include <thread>
 
-
+#include "Extractor.h"
 
 
 UINT Threadproc(LPVOID param);
@@ -305,7 +305,7 @@ IplImage* CZDataManager::LoadPDFImage(CString strpath, unsigned short nChannel)
 }
 
   
-IplImage* CZDataManager::LoadIplImagePDF(CString strpath, unsigned short ch)
+IplImage* CZDataManager::LoadIplImage(CString strpath, unsigned short ch)
 {
 	USES_CONVERSION;
 	char* sz = T2A(strpath);
@@ -361,6 +361,7 @@ short CZDataManager::DeSelectPages()
 
 		}
 	}
+
 
 	return res;
 }

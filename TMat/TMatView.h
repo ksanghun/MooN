@@ -7,6 +7,7 @@
 #include "ZViewImage.h"
 #include "ZViewResult.h"
 #include "ZMatching.h"
+#include "Extractor.h"
 
 class CDragDropTreeCtrl;
 class CTMatView : public CView
@@ -21,6 +22,7 @@ public:
 
 	void SetTreeDragItem(CImageList* pImage, HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
 	short ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
+	void ProcExtractTextBoundary();
 	short SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset);
 	void InitCamera(bool bmovexy);
 
@@ -37,7 +39,9 @@ private:
 	CMFCTabCtrl m_ctrlTab;
 	CZViewImage* m_pViewImage;
 	CZViewResult* m_pViewResult;
-	CZMatching* m_pMatchingProcessor;
+
+	CZMatching m_pMatchingProcessor;
+	CExtractor m_Extractor;
 
 	unsigned int m_searchCnt;
 

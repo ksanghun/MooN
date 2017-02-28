@@ -575,6 +575,7 @@ void CMainFrame::OnProjectConfiguration()
 void CMainFrame::OnAnalyzeExtracttext()
 {
 	// TODO: Add your command handler code here
+	pView->ProcExtractTextBoundary();
 }
 
 

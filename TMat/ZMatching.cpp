@@ -46,7 +46,7 @@ void CZMatching::PrepareCutNSearch(CZPageObject* pSelPage, RECT2D selRect)
 	CString strpath = pSelPage->GetPath();
 	USES_CONVERSION;
 	char* sz = T2A(strpath);
-	IplImage *pSrc = SINGLETON_TMat::GetInstance()->LoadIplImagePDF(strpath, 1);
+	IplImage *pSrc = SINGLETON_TMat::GetInstance()->LoadIplImage(strpath, 1);
 
 	if (pSrc != NULL){
 		m_pCut = cvCreateImage(cvSize(selRect.width, selRect.height), pSrc->depth, pSrc->nChannels);
@@ -76,7 +76,7 @@ bool CZMatching::DoSearch(unsigned int& sCnt)
 
 			USES_CONVERSION;
 			char* sz = T2A(pImgVec[sCnt]->GetPath());
-			IplImage *gray = SINGLETON_TMat::GetInstance()->LoadIplImagePDF(pImgVec[sCnt]->GetPath(), 1);
+			IplImage *gray = SINGLETON_TMat::GetInstance()->LoadIplImage(pImgVec[sCnt]->GetPath(), 1);
 			IplImage *result_img = cvCreateImage(cvSize(gray->width - m_pCut->width + 1, gray->height - m_pCut->height + 1), IPL_DEPTH_32F, 1);
 			cvMatchTemplate(gray, m_pCut, result_img, CV_TM_CCOEFF_NORMED);
 

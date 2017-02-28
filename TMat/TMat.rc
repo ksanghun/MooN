@@ -366,7 +366,7 @@ STRINGTABLE
 BEGIN
     ID_VIEW_LOGVIEW         "Change View an existing document\nLogView"
     ID_PROJECT_CLEARRESULT  "Open an existing document\nClear Result"
-    ID_ANALYZE_EXTRACTTEXT  "Open an existing document\nExtract Text(Word)"
+    ID_ANALYZE_EXTRACTTEXT  "Exract Text Boundaries on the selected page\nExtract Text(Word)"
     ID_PROJECT_CONFIGURATION "Open an existing document\nConfiguration"
     ID_FILE_OPENFILE        "Open an existing document\nOpen"
     ID_HELP_ABOUT           "Display program information, version number and copyright\nAbout"
@@ -554,7 +554,7 @@ BEGIN
     MENUITEM "TOOLS",                       ID_TOOLS
     POPUP "ANALYZE"
     BEGIN
-        MENUITEM "Extract Text",                ID_ANALYZE_EXTRACTTEXT
+        MENUITEM "Extract Text Boundary",                ID_ANALYZE_EXTRACTTEXT
         MENUITEM SEPARATOR
         MENUITEM "Upload Result",               ID_ANALYZE_UPLOADRESULT
         MENUITEM "Download Result",             ID_ANALYZE_DOWNLOADRESULT

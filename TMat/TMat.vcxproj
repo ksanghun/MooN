@@ -117,6 +117,7 @@
     <ClInclude Include="DlgConfig.h" />
     <ClInclude Include="DragDropTreeCtrl.h" />
     <ClInclude Include="DragEventListener.h" />
+    <ClInclude Include="Extractor.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="math_tool.h" />
@@ -144,6 +145,7 @@
     <ClCompile Include="Camera2Axis.cpp" />
     <ClCompile Include="DlgConfig.cpp" />
     <ClCompile Include="DragDropTreeCtrl.cpp" />
+    <ClCompile Include="Extractor.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="math_tool.cpp" />
