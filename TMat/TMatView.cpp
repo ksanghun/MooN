@@ -207,6 +207,9 @@ void CTMatView::OnInitialUpdate()
 	CView::OnInitialUpdate();
 
 	// TODO: Add your specialized code here and/or call the base class
+
+	m_Extractor.TestFunc();
+
 	ModifyStyleEx(WS_EX_CLIENTEDGE, 0, SWP_FRAMECHANGED);
 }
 
@@ -241,13 +244,13 @@ void CTMatView::ProcExtractTextBoundary()
 {
 	CZPageObject* pPage = m_pViewImage->GetSelectedPageForCNS();
 	if (pPage){
-		IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 3);
+		IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 1);
 		cv::Mat img = cv::cvarrToMat(src);
 		
-
 		std::vector<cv::Rect> textbox;
-		m_Extractor.detectLetters(img, textbox);
-
+	//	m_Extractor.detectLetters(img, textbox);
+	//	cv::resize(img, img, cv::Size(2 * img.cols, 2 * img.rows), 0, 0, CV_INTER_CUBIC);
+		m_Extractor.getContours(img);
 
 		//Test Display
 		for (int i = 0; i < textbox.size(); i++){
