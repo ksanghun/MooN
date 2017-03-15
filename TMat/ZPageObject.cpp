@@ -293,6 +293,83 @@ void CZPageObject::DrawBMPText()
 	glPopMatrix();
 }
 
+void CZPageObject::DrawWordBoundaryForPick()
+{
+	glDisable(GL_DEPTH_TEST);
+	glPushMatrix();
+	glTranslatef(m_pos.x, m_pos.y, m_pos.z);
+
+	glLineWidth(3);
+	if (m_wordBoundary.size() > 0){
+		// Draw detected position //
+		glPushMatrix();
+		glScalef(m_fXScale, m_fYScale, 1.0f);
+		glTranslatef(-nImgWidth*0.5f, -nImgHeight*0.5f, 0.0f);
+
+		if (m_bIsNear){
+			for (int i = 0; i < m_wordBoundary.size(); i++){
+				//	glBegin(GL_LINE_STRIP);
+				glPushName(m_wordBoundary[i].wid);
+				glBegin(GL_QUADS);
+				glVertex3f(m_wordBoundary[i].x1, nImgHeight - m_wordBoundary[i].y1, 0.0f);
+				glVertex3f(m_wordBoundary[i].x1, nImgHeight - m_wordBoundary[i].y2, 0.0f);
+				glVertex3f(m_wordBoundary[i].x2, nImgHeight - m_wordBoundary[i].y2, 0.0f);
+				glVertex3f(m_wordBoundary[i].x2, nImgHeight - m_wordBoundary[i].y1, 0.0f);
+				glEnd();
+				glPopName();
+			}
+		}
+		glPopMatrix();
+	}
+	glPopMatrix();
+
+	glLineWidth(1);
+
+	glEnable(GL_DEPTH_TEST);
+
+}
+void CZPageObject::DrawWordBoundary(int selid)
+{
+	glDisable(GL_DEPTH_TEST);
+	glPushMatrix();
+	glTranslatef(m_pos.x, m_pos.y, m_pos.z);
+
+	glLineWidth(3);
+	if (m_wordBoundary.size() > 0){
+		// Draw detected position //
+		glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
+		glPushMatrix();
+		glScalef(m_fXScale, m_fYScale, 1.0f);
+		glTranslatef(-nImgWidth*0.5f, -nImgHeight*0.5f, 0.0f);
+
+		if (m_bIsNear){
+			for (int i = 0; i < m_wordBoundary.size(); i++){
+
+				glColor4f(0.0f, 1.0f, 0.0f, 0.3f);
+				if (m_wordBoundary[i].wid== selid)
+					glColor4f(1.0f, 0.0f, 0.0f, 0.5f);
+
+			//	glBegin(GL_LINE_STRIP);
+				glBegin(GL_QUADS);				
+				glVertex3f(m_wordBoundary[i].x1, nImgHeight - m_wordBoundary[i].y1, 0.0f);
+				glVertex3f(m_wordBoundary[i].x1, nImgHeight - m_wordBoundary[i].y2, 0.0f);
+				glVertex3f(m_wordBoundary[i].x2, nImgHeight - m_wordBoundary[i].y2, 0.0f);
+				glVertex3f(m_wordBoundary[i].x2, nImgHeight - m_wordBoundary[i].y1, 0.0f);
+				
+				
+			//	glVertex3f(m_wordBoundary[i].x1, nImgHeight - m_wordBoundary[i].y1, 0.0f);
+				glEnd();
+			}			
+		}
+		glPopMatrix();
+	}
+	glPopMatrix();
+
+	glLineWidth(1);
+
+	glEnable(GL_DEPTH_TEST);
+
+}
 
 void CZPageObject::DrawThumbNail(float fAlpha)
 {
@@ -495,6 +572,12 @@ GLuint CZPageObject::LoadFullImage()
 	m_fImgRows = pimg->height;
 
 	cvReleaseImage(&pimg);
+
+
+	// Load word Boundary //
+	SINGLETON_TMat::GetInstance()->GetWordBoundaryByPageCode(nCode, m_wordBoundary);
+
+
 	return texId;
 }
 

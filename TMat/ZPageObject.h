@@ -40,6 +40,8 @@ public:
 	void DrawForPicking();
 	void DrawImage(float fAlpha);
 	void DrawBMPText();
+	void DrawWordBoundary(int selid);
+	void DrawWordBoundaryForPick();	
 
 	bool AddMatchedPoint(_MATCHInfo info, int search_size);
 
@@ -115,5 +117,7 @@ private:
 	bool m_bIsNear;
 
 	RECT2D m_RectImg;
+
+	std::vector<WORD_POS> m_wordBoundary;
 };
 

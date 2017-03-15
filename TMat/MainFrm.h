@@ -27,6 +27,7 @@ public:
 	virtual BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, CWnd* pParentWnd = NULL, CCreateContext* pContext = NULL);
 
 	void AddOutputString(CString str, bool IsReplace);
+	CString GetLogPath() { return m_strLogPath; }
 private:
 	void InitConfituration();
 	void GetImgFilePath(CString strPath);

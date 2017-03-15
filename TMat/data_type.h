@@ -443,5 +443,10 @@ typedef struct _MATCHInfo
 	RECT2D rect;
 }_MATCHInfo;
 
+struct WORD_POS{
+	unsigned short x1, x2, y1, y2;
+	unsigned long pagecode;
+	unsigned long wid;
+};
 
 #pragma pack()

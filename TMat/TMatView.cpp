@@ -242,23 +242,81 @@ void CTMatView::InitCamera(bool bmovexy)
 
 void CTMatView::ProcExtractTextBoundary()
 {
+
+	CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();
+	USES_CONVERSION;	
+
 	CZPageObject* pPage = m_pViewImage->GetSelectedPageForCNS();
 	if (pPage){
 		IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 1);
 		cv::Mat img = cv::cvarrToMat(src);
-		
+
 		std::vector<cv::Rect> textbox;
-	//	m_Extractor.detectLetters(img, textbox);
-	//	cv::resize(img, img, cv::Size(2 * img.cols, 2 * img.rows), 0, 0, CV_INTER_CUBIC);
-		m_Extractor.getContours(img);
 
-		//Test Display
+		pM->AddOutputString(L"Start to extract words", false);
+
+		//m_Extractor.extractWithOCR(img, textbox);
+
+		
+
+		/*
+		//CString strFile;
+		int addcnt = 0;
 		for (int i = 0; i < textbox.size(); i++){
-			cv::rectangle(img, textbox[i], cv::Scalar(0, 255, 0), 3, 8, 0);
-		}
-//		cv::imwrite("imgOut1.jpg", img);
 
+			cv::rectangle(img, textbox[i], cv::Scalar(0, 255, 0), 1, 8, 0);
+
+			cv::Mat crop = img(textbox[i]);
+
+			if (SINGLETON_TMat::GetInstance()->InsertIntoLogDB(crop, textbox[i].x, textbox[i].x + textbox[i].width,
+				textbox[i].y, textbox[i].y + textbox[i].height, pPage->GetCode())==false){
+				addcnt++;
+			}
+
+			//strFile.Format(L"C:/FGBD_project/Books/log/%d_%d.bmp", pPage->GetCode(), i);
+			//char* sz = T2A(strFile);
+			//cv::imwrite(sz, crop);	
+			//	imshow("before deskew img ", crop);
+		}
+		cv::imshow("extractionWithOCR", img);
+		CString strInfo;
+		strInfo.Format(L"%d of %d are added", addcnt, textbox.size());
+		pM->AddOutputString(L"Extraction is finished", false);
+		pM->AddOutputString(strInfo, false);
+		*/
+
+
+
+		
+
+	//	m_Extractor.ProcDeskewing(img);
+		
+//		std::vector<cv::Rect> textbox;
+		cv::Mat cropimg;
+	//	m_Extractor.extractContours(img, textbox);
+	//	cv::resize(img, img, cv::Size(2 * img.cols, 2 * img.rows), 0, 0, CV_INTER_CUBIC);
+		m_Extractor.getContours(img, textbox, cropimg);
+
+	//	//Test Display
+		src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 0);
+		img = cv::cvarrToMat(src);
+
+		CString strFile;
+		for (int i = 0; i < textbox.size(); i++){
+			cv::rectangle(img, textbox[i], cv::Scalar(0, 0, 255), 1, cv::LINE_8, 0);
+
+			//cv::Mat crop = img(textbox[i]);
+
+			//strFile.Format(L"C:/FGBD_project/Books/log/%d_%d.bmp", pPage->GetCode(), i);
+			//char* sz = T2A(strFile);
+			//cv::imwrite(sz, crop);
+		//	imshow("before deskew img ", crop);
+
+		}
+////		cv::imwrite("imgOut1.jpg", img);
+//
 		cv::imshow("extraction", img);
+
 
 
 		cvReleaseImage(&src);

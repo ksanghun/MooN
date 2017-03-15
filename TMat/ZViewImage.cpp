@@ -22,6 +22,8 @@ CZViewImage::CZViewImage()
 	mtSetPoint3D(&m_CNSRectEnd, 0.0f, 0.0f, MAX_CAM_HIGHTLEVEL*3);
 	m_CNSRectStart = m_CNSRectEnd;
 
+	m_IsDBSearch = false;
+	m_selWordId = -1;
 }
 
 
@@ -132,7 +134,17 @@ void CZViewImage::Render()
 	}
 	glPointSize(1);
 	
+
+	// Draw Word Boundary ==============================//
+	_vecPageObj::iterator iter = SINGLETON_TMat::GetInstance()->GetVecImageBegin();
+	for (; iter != SINGLETON_TMat::GetInstance()->GetVecImageEnd(); iter++){
+		(*iter)->DrawWordBoundary(m_selWordId);
+	}
+	
+
 	DrawCNSRect(0.0f, 0.99f, 0.1f, 1.0f);
+
+
 
 	Render2D();
 	SwapBuffers(m_CDCPtr->GetSafeHdc());
@@ -400,6 +412,9 @@ int CZViewImage::SelectObject3D(int x, int y, int rect_width, int rect_height, i
 		m_pSelectPageForCNS = NULL;
 	}
 
+	if (m_IsDBSearch)
+		m_selWordId = -1;
+
 	GLuint selectBuff[1024];
 	memset(&selectBuff, 0, sizeof(GLuint) * 1024);
 
@@ -419,14 +434,27 @@ int CZViewImage::SelectObject3D(int x, int y, int rect_width, int rect_height, i
 
 	//m_cameraPri.SetProjectionMatrix(45.0f, 0.0f, 0.0f, cx, cy);
 	glMatrixMode(GL_MODELVIEW);
-	DrawImageByOrderForPicking();
+	if (m_IsDBSearch){
+		_vecPageObj::iterator iter = SINGLETON_TMat::GetInstance()->GetVecImageBegin();
+		for (; iter != SINGLETON_TMat::GetInstance()->GetVecImageEnd(); iter++){
+			(*iter)->DrawWordBoundaryForPick();
+		}
+	}
+	else{
+		DrawImageByOrderForPicking();
+	}
 
 	hits = glRenderMode(GL_RENDER);
 	if (hits>0)
 	{
-		m_pSelectPageForCNS = SINGLETON_TMat::GetInstance()->GetPageByOrderID(selectBuff[3]);
-		if(m_pSelectPageForCNS)
-			m_pSelectPageForCNS->SetSelection(true);
+		if (m_IsDBSearch){
+			m_selWordId = selectBuff[3];
+		}
+		else{
+			m_pSelectPageForCNS = SINGLETON_TMat::GetInstance()->GetPageByOrderID(selectBuff[3]);
+			if (m_pSelectPageForCNS)
+				m_pSelectPageForCNS->SetSelection(true);
+		}
 	}
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();

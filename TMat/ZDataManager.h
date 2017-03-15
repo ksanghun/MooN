@@ -16,6 +16,12 @@ struct PAGEGROUP{
 
 
 
+struct WORD_RECORD{
+	std::vector<WORD_POS> posList;
+};
+
+
+
 
 struct THREADINFO
 {
@@ -60,7 +66,15 @@ public:
 
 	void SetResColor(COLORf _color) { m_resColor = _color; }
 	COLORf GetResColor() { return m_resColor; }
+
+	bool InsertIntoLogDB(cv::Mat cutImg, int x1, int x2, int y1, int y2, unsigned int pageCode);
+	void SetLogPath(CString str); 
+	void GetWordBoundaryByPageCode(unsigned long pcode, std::vector<WORD_POS>& vecBoundary);
+	void GetWordBoundaryByWordId(unsigned long wid, std::vector<WORD_POS>& vecBoundary);
 private:
+
+	float SearchInLogFile(IplImage& pCut, IplImage& dst);
+
 	CZPDFConverter* m_pPDF;
 	THREADINFO m_vecImageData;
 	bool m_bSlot[MAX_SLOT_SIZE];
@@ -76,6 +90,19 @@ private:
 	POINT3D m_AccColor[10];
 	GLuint m_pdfTexid;
 	COLORf m_resColor;
+
+
+	CString m_strLogPath;
+	std::vector<unsigned long> m_vecPageList;
+	unsigned long m_wordId;
+
+	std::map<unsigned long, WORD_RECORD> m_mapLogWord;
+	std::map<unsigned long, WORD_RECORD> m_mapLogPage;
+
+
+	bool m_IsLogUpdate;
+
+
 };
 
 typedef CZSingtonTMat<CZDataManager> SINGLETON_TMat;

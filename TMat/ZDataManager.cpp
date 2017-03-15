@@ -6,6 +6,7 @@
 #include "Extractor.h"
 
 
+
 UINT Threadproc(LPVOID param);
 
 UINT Threadproc(LPVOID param)
@@ -53,6 +54,10 @@ CZDataManager::CZDataManager()
 	mtSetPoint3D(&m_AccColor[2], 0.6f, 1.0f, 0.0f);
 	mtSetPoint3D(&m_AccColor[1], 0.4f, 1.0f, 0.0f);
 	mtSetPoint3D(&m_AccColor[0], 0.2f, 1.0f, 0.0f);
+
+
+
+	m_IsLogUpdate = false;
 }
 
 float CZDataManager::GetAniAcceration(int idx)
@@ -61,6 +66,12 @@ float CZDataManager::GetAniAcceration(int idx)
 		return m_fAniAcceration[idx];
 	else
 		return 0.0f;
+
+
+
+
+
+
 }
 
 
@@ -87,6 +98,37 @@ CZDataManager::~CZDataManager()
 	m_vecImageData.img.clear();
 	m_mapImageData.clear();
 	m_mapGrupImg.clear();
+
+
+
+	// Write Log Data //
+	m_IsLogUpdate = false;
+	if (m_IsLogUpdate){
+		FILE* fp;
+		CString strFile;
+		strFile.Format(L"%s/log.info", m_strLogPath);
+		fopen_s(&fp, (CStringA)strFile, "wb");
+		if (fp){
+			fwrite(&m_wordId, sizeof(int), 1, fp);
+		}
+		fclose(fp);
+
+		// Write Word index info //
+		strFile.Format(L"%s/log.db", m_strLogPath);
+		fopen_s(&fp, (CStringA)strFile, "wb");
+		if (fp){
+			std::map<unsigned long, WORD_RECORD>::iterator iter = m_mapLogWord.begin();
+			for (; iter != m_mapLogWord.end(); iter++){
+				for (int i = 0; i < iter->second.posList.size(); i++){
+					WORD_POS wItem = iter->second.posList[i];
+					fwrite(&wItem, sizeof(WORD_POS), 1, fp);
+				}
+			}
+		}
+		fclose(fp);
+	}
+
+
 }
 
 void CZDataManager::InitData()
@@ -94,8 +136,40 @@ void CZDataManager::InitData()
 	if (m_pPDF == NULL){
 		m_pPDF = new CZPDFConverter;		
 	}
+
+	
 }
 
+void CZDataManager::SetLogPath(CString str) 
+{ 
+	m_strLogPath = str; 
+	// Load Log File //
+
+
+
+		CString strFile;
+		strFile.Format(L"%s/log.info", m_strLogPath);
+		FILE* fp;
+		fopen_s(&fp, (CStringA)strFile, "rb");
+		if (fp){
+			fread(&m_wordId, sizeof(int), 1, fp);
+			fclose(fp);
+		}
+
+		strFile.Format(L"%s/log.db", m_strLogPath);
+		fopen_s(&fp, (CStringA)strFile, "rb");
+		if (fp){
+			while (!feof(fp)){
+				WORD_POS wItem;
+				fread(&wItem, sizeof(WORD_POS), 1, fp);
+				m_mapLogWord[wItem.wid].posList.push_back(wItem);
+				m_mapLogPage[wItem.pagecode].posList.push_back(wItem);
+
+			}
+			fclose(fp);
+		}
+
+}
 
 
 void CZDataManager::LoadImageTexture(CString strpath, GLuint &_texid)
@@ -358,10 +432,134 @@ short CZDataManager::DeSelectPages()
 				xoffset = DEFAULT_X_OFFSET;
 				m_yOffset += DEFAULT_PAGE_SIZE;
 			}
-
 		}
+	}
+	return res;
+}
+
+
+bool CZDataManager::InsertIntoLogDB(cv::Mat cutImg, int x1, int x2, int y1, int y2, unsigned int pageCode)
+{
+	m_IsLogUpdate = true;
+
+	IplImage src = cutImg;
+
+
+	bool bmatched = false;
+	unsigned long matchid = 0;
+	WORD_POS wItem;
+	wItem.x1 = x1;
+	wItem.x2 = x2;
+	wItem.y1 = y1;
+	wItem.y2 = y2;
+	wItem.pagecode = pageCode;
+
+	USES_CONVERSION;
+	CString strName;
+	for (int i = 0; i < m_wordId; i++){
+		// match with previous cut images //
+		strName.Format(L"%s/%d.bmp", m_strLogPath, i);
+		char* sz = T2A(strName);
+		//=================================================================================================================
+		IplImage *dst = cvLoadImage(sz, CV_LOAD_IMAGE_GRAYSCALE);
+
+		float fAcc = SearchInLogFile(src, *dst);
+		if (fAcc> 0.7f){
+			matchid = i;
+			bmatched = true;
+		}		
+
+		cvReleaseImage(&dst);
+	}
+
+	if (bmatched){
+		wItem.wid = matchid;
+		m_mapLogWord[matchid].posList.push_back(wItem);
+	}
+	else{
+		// save cut image under the name of "wordID"
+		strName.Format(L"%s/%d.bmp", m_strLogPath, m_wordId);
+		char* sz = T2A(strName);
+		cv::imwrite(sz, cutImg);
+		wItem.wid = m_wordId;
+		m_mapLogWord[m_wordId].posList.push_back(wItem);
+		m_wordId++;
 	}
 
 
-	return res;
+	return bmatched;
+}
+
+float CZDataManager::SearchInLogFile(IplImage& pCut, IplImage& dst)
+{
+	float fAccur = 0.0f;
+	bool IsOk = true;
+	if (pCut.width > dst.width*1.2)	IsOk = false;
+	if (pCut.height > dst.height*1.5) IsOk = false;
+
+	if (pCut.width < dst.width*0.8)	IsOk = false;
+	if (pCut.height < dst.height*0.5) IsOk = false;
+
+
+	if (IsOk){
+		//cvShowImage("Resize", gray);
+
+		short newWidth = dst.width * 2;
+		short newHeight = dst.height * 2;
+		IplImage* src = cvCreateImage(cvSize(newWidth, newHeight), dst.depth, dst.nChannels);
+		cvSet(src, cvScalar(255, 255, 255));
+
+		CvRect rect;
+		rect.x = newWidth / 2 - dst.width / 2;
+		rect.y = newHeight / 2 - dst.height / 2;
+		rect.width = dst.width;
+		rect.height = dst.height;
+
+		cvSetImageROI(src, rect);
+		cvResize(&dst, src);
+		cvResetImageROI(src);
+
+		IplImage *result_img = 0;
+		result_img = cvCreateImage(cvSize(src->width - pCut.width + 1, src->height - pCut.height + 1), IPL_DEPTH_32F, 1);
+		cvMatchTemplate(src, &pCut, result_img, CV_TM_CCOEFF_NORMED);
+
+			
+		float sTh = 0.0f;
+		float* d = (float*)result_img->imageData;
+		for (int y = 0; y < result_img->height; y++){
+			for (int x = 0; x < result_img->width; x++){
+				float fD = *(d + y*result_img->width + x);
+				if (fD > sTh)	{
+					sTh = fD;
+					fAccur = fD;
+				}
+			}
+		}
+
+		cvReleaseImage(&src);
+		cvReleaseImage(&result_img);
+	}
+
+	return fAccur;
+
+}
+
+void CZDataManager::GetWordBoundaryByPageCode(unsigned long pcode, std::vector<WORD_POS>& vecBoundary)
+{
+	std::map<unsigned long, WORD_RECORD>::iterator iter = m_mapLogPage.find(pcode);
+	if (iter != m_mapLogPage.end()){
+		for (int i = 0; i < iter->second.posList.size(); i++){
+			vecBoundary.push_back(iter->second.posList[i]);
+		}
+	}
+}
+
+void CZDataManager::GetWordBoundaryByWordId(unsigned long wid, std::vector<WORD_POS>& vecBoundary)
+{
+	std::map<unsigned long, WORD_RECORD>::iterator iter = m_mapLogWord.find(wid);
+	if (iter != m_mapLogPage.end()){
+		for (int i = 0; i < iter->second.posList.size(); i++){
+			vecBoundary.push_back(iter->second.posList[i]);
+		}
+	}
 }

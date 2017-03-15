@@ -33,6 +33,7 @@ public:
 	void MoveNextDown();
 	void MoveNextUp();
 	void SetAnimation(bool _isAni) { m_isAnimation = _isAni; }
+	void SetDBSearch(bool _isDB) { m_IsDBSearch = _isDB; }
 	void ResetAllPages();
 
 	CZPageObject* GetSelectedPageForCNS() { return m_pSelectPageForCNS; }
@@ -68,7 +69,8 @@ private:
 	// For Cut & Search  //
 	POINT3D m_PN, m_PO, m_CNSRectStart, m_CNSRectEnd;
 
-
+	bool m_IsDBSearch;
+	int m_selWordId;
 
 public:
 	DECLARE_MESSAGE_MAP()

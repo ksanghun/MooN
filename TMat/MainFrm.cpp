@@ -383,6 +383,7 @@ void CMainFrame::InitConfituration()
 	if (PathFileExists(strLog) == 0){
 		CreateDirectory(strLog, NULL);
 	}
+	SINGLETON_TMat::GetInstance()->SetLogPath(strLog);
 	////======================================//
 
 
@@ -424,6 +425,9 @@ void CMainFrame::InitConfituration()
 
 	m_wndFileView.FillFileView(m_strSrcPath);
 	GetImgFilePath(m_strSrcPath);
+
+	
+
 }
 
 void CMainFrame::GetImgFilePath(CString strPath)
@@ -650,6 +654,11 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 				pViewImage->ResetAllPages();
 			}
 		}
+		else if (nChar == 68){
+			if (pViewImage){
+				pViewImage->SetDBSearch(true);
+			}
+		}
 	}
 
 
@@ -666,6 +675,11 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 				pViewImage->SetAnimation(true);
 			}
 			float offset = 0.0f;
+		}
+		else if (nChar == 68){
+			if (pViewImage){
+				pViewImage->SetDBSearch(false);
+			}
 		}
 	}
 

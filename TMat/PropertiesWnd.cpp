@@ -20,6 +20,7 @@ static char THIS_FILE[]=__FILE__;
 
 #define _PROP_THRESHOLD  1000
 #define _PROP_RES_COLOR  1001
+#define _PROP_SEARCH_DB  1002
 
 CPropertiesWnd::CPropertiesWnd()
 {
@@ -191,6 +192,10 @@ void CPropertiesWnd::InitPropList()
 	pColorProp->SetData(_PROP_RES_COLOR);
 	groupSearch->AddSubItem(pColorProp);
 	
+	CMFCPropertyGridProperty *pDBUse = new CMFCPropertyGridProperty(_T("DB"), (_variant_t)false, _T("Search a word from Database"));
+	pDBUse->SetData(_PROP_SEARCH_DB);
+	groupSearch->AddSubItem(pDBUse);
+
 	m_wndPropList.AddProperty(groupSearch);
 
 
