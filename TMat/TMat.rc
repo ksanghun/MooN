@@ -96,11 +96,6 @@ BEGIN
     BUTTON      ID_VIEW_INITIALIZE
     SEPARATOR
     BUTTON      ID_FILE_CONFIGURATION
-    SEPARATOR
-    BUTTON      ID_ANALYZE_UPLOADRESULT
-    BUTTON      ID_ANALYZE_DOWNLOADRESULT
-    SEPARATOR
-    BUTTON      ID_HELP_ABOUT
 END
 
 IDR_SORT TOOLBAR 16, 15
@@ -527,16 +522,12 @@ IDR_MAINMENU MENU
 BEGIN
     POPUP "FILE"
     BEGIN
-        MENUITEM "Open File...",                ID_FILE_OPENFILE
         MENUITEM SEPARATOR
         MENUITEM "Exit",                        ID_APP_EXIT
     END
     POPUP "VIEW"
     BEGIN
-        MENUITEM "Log View",                    ID_VIEW_LOGVIEW
-        MENUITEM SEPARATOR
-        MENUITEM "2D",                          ID_VIEW_2DVIEW
-        MENUITEM "3D",                          ID_VIEW_3DVIEW
+        MENUITEM "Log View",                    ID_VIEW_LOGVIEW_
         MENUITEM SEPARATOR
         MENUITEM "Initialize View",             ID_VIEW_INITIALIZE
     END
@@ -545,23 +536,25 @@ BEGIN
         MENUITEM "Add Image",                   ID_PROJECT_ADDIMAGE
         MENUITEM "Remove Image",                ID_PROJECT_REMOVEIMAGE
         MENUITEM SEPARATOR
-        MENUITEM "Search",                      ID_PROJECT_SEARCH
-        MENUITEM "Keyword Search",              ID_PROJECT_KEYWORDSEARCH
-        MENUITEM "Clear Result",                ID_PROJECT_CLEARRESULT
-        MENUITEM SEPARATOR
         MENUITEM "Configuration",               ID_PROJECT_CONFIGURATION
     END
-    MENUITEM "TOOLS",                       ID_TOOLS
+    POPUP "TOOLS"
+    BEGIN
+        MENUITEM "Cut  &Search",                ID_PROJECT_SEARCH
+        MENUITEM "Keyword Search",              ID_PROJECT_KEYWORDSEARCH_
+        MENUITEM SEPARATOR
+        MENUITEM "Clear Result",                ID_PROJECT_CLEARRESULT
+    END
     POPUP "ANALYZE"
     BEGIN
-        MENUITEM "Extract Text Boundary",                ID_ANALYZE_EXTRACTTEXT
+        MENUITEM "Extract Text Boundary",       ID_ANALYZE_EXTRACTTEXT
         MENUITEM SEPARATOR
-        MENUITEM "Upload Result",               ID_ANALYZE_UPLOADRESULT
-        MENUITEM "Download Result",             ID_ANALYZE_DOWNLOADRESULT
+        MENUITEM "Upload DB",                   ID_ANALYZE_UPLOADRESULT_
+        MENUITEM "Download DB",                 ID_ANALYZE_DOWNLOADRESULT_
     END
     POPUP "HELP"
     BEGIN
-        MENUITEM "About",                       ID_HELP_ABOUT
+        MENUITEM "About",                       ID_APP_ABOUT
     END
 END
 

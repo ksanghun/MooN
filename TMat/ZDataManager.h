@@ -39,6 +39,7 @@ public:
 
 	void InitData();	
 	void PushImageDataSet(unsigned long _code, unsigned long _pcode, CZPageObject* pimg);
+	void PopImageDataSet(unsigned long _code);
 
 	void TestThread();
 	void Th_GenerateThumnail();

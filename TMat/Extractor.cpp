@@ -208,7 +208,7 @@ void CExtractor::getContours(cv::Mat img, std::vector<cv::Rect>& boundRect, cv::
 {
 //	cv::Mat img = cv::imread(filename, 0);
 
-	cv::imshow("original", img);
+//	cv::imshow("original", img);
 
 	//Apply blur to smooth edges and use adapative thresholding
 	cv::Size size(3, 3);
@@ -339,6 +339,7 @@ void CExtractor::getContours(cv::Mat img, std::vector<cv::Rect>& boundRect, cv::
 
 void CExtractor::extractWithOCR(cv::Mat image, std::vector<cv::Rect>& boundRect)
 {
+	/*
 //	const char CurDir[MAX_PATH];
 //	GetCurrentDirectory(MAX_PATH, CurDir);
 	
@@ -397,6 +398,7 @@ void CExtractor::extractWithOCR(cv::Mat image, std::vector<cv::Rect>& boundRect)
 
 
 //	imshow("Display window", image); // Show our image inside it.
+*/
 }
 
 

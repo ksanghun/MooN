@@ -575,10 +575,17 @@ GLuint CZPageObject::LoadFullImage()
 
 
 	// Load word Boundary //
-	SINGLETON_TMat::GetInstance()->GetWordBoundaryByPageCode(nCode, m_wordBoundary);
-
+	//SINGLETON_TMat::GetInstance()->GetWordBoundaryByPageCode(nCode, m_wordBoundary);
+	UpdateTextBoundary();
 
 	return texId;
+}
+
+
+bool CZPageObject::UpdateTextBoundary()
+{
+	SINGLETON_TMat::GetInstance()->GetWordBoundaryByPageCode(nCode, m_wordBoundary);
+	return true;
 }
 
 bool CZPageObject::LoadThumbImage(unsigned short resolution)

@@ -214,7 +214,7 @@ void CTMatView::OnInitialUpdate()
 }
 
 
-void CTMatView::SetTreeDragItem(CImageList* pImage, HTREEITEM hItem, CDragDropTreeCtrl* pCtrl)
+void CTMatView::SetTreeDragItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl)
 {
 //	SINGLETON_TMat::GetInstance()->TestThread();
 	CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();	
@@ -299,14 +299,22 @@ void CTMatView::ProcExtractTextBoundary()
 
 	//	//Test Display
 		src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 0);
-		img = cv::cvarrToMat(src);
-
+		cv::Mat img2 = cv::cvarrToMat(src);
+		
 		CString strFile;
+		int addcnt = 0;
 		for (int i = 0; i < textbox.size(); i++){
-			cv::rectangle(img, textbox[i], cv::Scalar(0, 0, 255), 1, cv::LINE_8, 0);
 
+			cv::rectangle(img2, textbox[i], cv::Scalar(0, 0, 255), 1, 8, 0);
+			//cv::Mat crop = img2(textbox[i]);
+			//if (SINGLETON_TMat::GetInstance()->InsertIntoLogDB(crop, textbox[i].x, textbox[i].x + textbox[i].width,
+			//	textbox[i].y, textbox[i].y + textbox[i].height, pPage->GetCode()) == false){
+			//	addcnt++;
+			//}
+
+
+			//cv::rectangle(img, textbox[i], cv::Scalar(0, 0, 255), 1, cv::LINE_8, 0);
 			//cv::Mat crop = img(textbox[i]);
-
 			//strFile.Format(L"C:/FGBD_project/Books/log/%d_%d.bmp", pPage->GetCode(), i);
 			//char* sz = T2A(strFile);
 			//cv::imwrite(sz, crop);
@@ -315,12 +323,17 @@ void CTMatView::ProcExtractTextBoundary()
 		}
 ////		cv::imwrite("imgOut1.jpg", img);
 //
-		cv::imshow("extraction", img);
+		cv::imshow("Extraction", img2);
 
+		//CString strInfo;
+		//strInfo.Format(L"%d of %d are added", addcnt, textbox.size());
+		//pM->AddOutputString(L"Extraction is finished", false);
+		//pM->AddOutputString(strInfo, false);
 
 
 		cvReleaseImage(&src);
 		img.release();		
+//		pPage->UpdateTextBoundary();
 	}
 
 	else{
@@ -383,6 +396,25 @@ short CTMatView::SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, floa
 	return res;
 }
 
+
+void CTMatView::RemoveImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl)
+{
+	USES_CONVERSION;	char* sz = 0;
+	CString strPath, strPName, strName;
+	unsigned long pCode = 0;
+	HTREEITEM hChildItem = pCtrl->GetChildItem(_item);
+
+	if (hChildItem){
+		pCtrl->SetItemImage(_item, 0, 0);
+
+		strPName = pCtrl->GetItemFullPath(_item);
+		sz = T2A(strPName);		
+		pCode = getHashCode(sz);
+
+		SINGLETON_TMat::GetInstance()->PopImageDataSet(pCode);
+	}
+
+}
 void CTMatView::AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt)
 {
 	USES_CONVERSION;	char* sz = 0;
@@ -400,8 +432,10 @@ void CTMatView::AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt
 		strPName = pCtrl->GetItemFullPath(pItem);
 		strPath = pCtrl->GetItemFullPath(_item);
 
-		sz = T2A(strPName);		pCode = getHashCode(sz);
-		sz = T2A(strPath);		cCode = getHashCode(sz);
+		sz = T2A(strPName);		
+		pCode = getHashCode(sz);
+		sz = T2A(strPath);		
+		cCode = getHashCode(sz);
 
 		// Add Image Data //
 		pimg->SetName(strPath, strPName, strName, pCode, cCode);
@@ -411,7 +445,8 @@ void CTMatView::AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt
 	}
 	else{		// Has Child : Folder //
 		strPName = pCtrl->GetItemFullPath(_item);
-		sz = T2A(strPName);		pCode = getHashCode(sz);
+		sz = T2A(strPName);		
+		pCode = getHashCode(sz);
 		// Change Item Status //
 		pCtrl->SetItemImage(_item, 1, 1);
 		while (hChildItem){
@@ -425,10 +460,11 @@ void CTMatView::AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt
 				strName = pCtrl->GetItemText(hChildItem);
 				strPath = pCtrl->GetItemFullPath(hChildItem);
 				//==================================//
-				char* sz = T2A(strPath);				cCode = getHashCode(sz);
+				char* sz = T2A(strPath);				
+				cCode = getHashCode(sz);
 				// Add Image Data //
 				pimg->SetName(strPath, strPName, strName, pCode, cCode);
-				std::map<unsigned long, CZPageObject*>::iterator iter;
+			//	std::map<unsigned long, CZPageObject*>::iterator iter;
 				SINGLETON_TMat::GetInstance()->PushImageDataSet(cCode, pCode, pimg);
 				cnt++;
 			}

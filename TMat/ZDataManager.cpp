@@ -82,7 +82,7 @@ CZDataManager::~CZDataManager()
 	}
 
 	_vecPageObj::iterator iter = GetVecImageBegin();
-	for (; iter != SINGLETON_TMat::GetInstance()->GetVecImageEnd(); iter++){
+	for (; iter != GetVecImageEnd(); iter++){
 		
 		GLuint tex = (*iter)->GetThTex();
 		GLuint texfull = (*iter)->GetTexId();
@@ -102,7 +102,6 @@ CZDataManager::~CZDataManager()
 
 
 	// Write Log Data //
-	m_IsLogUpdate = false;
 	if (m_IsLogUpdate){
 		FILE* fp;
 		CString strFile;
@@ -197,6 +196,56 @@ void CZDataManager::LoadImageTexture(CString strpath, GLuint &_texid)
 
 	}
 	cvReleaseImage(&pimg);
+}
+
+
+void CZDataManager::PopImageDataSet(unsigned long _code)
+{
+	_vecPageObj::iterator iter = GetVecImageBegin();
+	std::map<unsigned long, CZPageObject*>::iterator mapiter;
+	std::map<unsigned long, PAGEGROUP>::iterator iter_gr;
+
+	for (; iter != GetVecImageEnd();){
+		if ((*iter)->GetPCode() == _code){
+			GLuint tex = (*iter)->GetThTex();
+			GLuint texfull = (*iter)->GetTexId();
+			if (tex > 0){
+				glDeleteTextures(1, &tex);
+			}
+			if (texfull > 0){
+				glDeleteTextures(1, &texfull);
+			}			
+
+			// pop image from map
+			mapiter = m_mapImageData.find((*iter)->GetCode());
+			if (mapiter != m_mapImageData.end()){
+				m_mapImageData.erase(mapiter);			
+
+				iter_gr = m_mapGrupImg.find(_code);
+				if (iter_gr != m_mapGrupImg.end()){		// New Group
+				//	ReturnSlot(iter_gr->second.nSlot);
+
+					if (iter_gr->second.nSlot != -1){	
+						SelectPages(_code);
+					}
+
+					iter_gr->second.nSlot = -1;
+					iter_gr->second.imgVec.clear();
+					m_mapGrupImg.erase(iter_gr);
+				}
+			}	
+
+			delete (*iter);			
+			iter = GetImgVec().erase(iter);	
+		}
+		else{
+			++iter;
+		}
+	}
+
+
+//	std::remove(v.begin(), v.end(), 10);
+
 }
 
 void CZDataManager::PushImageDataSet(unsigned long _code, unsigned long _pcode, CZPageObject* pimg)
@@ -386,22 +435,36 @@ IplImage* CZDataManager::LoadIplImage(CString strpath, unsigned short ch)
 	IplImage *pSrc = NULL;
 
 	CString str = PathFindExtension(strpath);
-	if (ch == 1){
-		if ((str == L".pdf") || (str == L".jpg")){
+
+	if ((str == L".pdf") || (str == L".jpg") || (str == L".JPG") || (str == L".jpeg")){
 			pSrc = SINGLETON_TMat::GetInstance()->LoadPDFImage(strpath, ch);
-		}
-		else{
-			pSrc = cvLoadImage(sz, CV_LOAD_IMAGE_GRAYSCALE);
-		}
 	}
 	else{
-		if ((str == L".pdf") || (str == L".jpg")){
-			pSrc = SINGLETON_TMat::GetInstance()->LoadPDFImage(strpath, ch);
+		if (ch == 1){
+			pSrc = cvLoadImage(sz, CV_LOAD_IMAGE_GRAYSCALE);
 		}
 		else{
 			pSrc = cvLoadImage(sz);
 		}
 	}
+
+
+	//if (ch == 1){
+	//	if ((str == L".pdf") || (str == L".jpg")){
+	//		pSrc = SINGLETON_TMat::GetInstance()->LoadPDFImage(strpath, ch);
+	//	}
+	//	else{
+	//		pSrc = cvLoadImage(sz, CV_LOAD_IMAGE_GRAYSCALE);
+	//	}
+	//}
+	//else{
+	//	if ((str == L".pdf") || (str == L".jpg")){
+	//		pSrc = SINGLETON_TMat::GetInstance()->LoadPDFImage(strpath, ch);
+	//	}
+	//	else{
+	//		pSrc = cvLoadImage(sz);
+	//	}
+	//}
 	return pSrc;
 }
 
@@ -467,8 +530,7 @@ bool CZDataManager::InsertIntoLogDB(cv::Mat cutImg, int x1, int x2, int y1, int 
 		if (fAcc> 0.7f){
 			matchid = i;
 			bmatched = true;
-		}		
-
+		}
 		cvReleaseImage(&dst);
 	}
 
@@ -485,8 +547,6 @@ bool CZDataManager::InsertIntoLogDB(cv::Mat cutImg, int x1, int x2, int y1, int 
 		m_mapLogWord[m_wordId].posList.push_back(wItem);
 		m_wordId++;
 	}
-
-
 	return bmatched;
 }
 

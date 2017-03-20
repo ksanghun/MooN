@@ -23,6 +23,7 @@ public:
 	void AdjustLayout();
 	void OnChangeVisualStyle();
 	void FillFileView(CString strFolder);
+	CDragDropTreeCtrl* GetTreeCtrl() { return &m_wndFileView; }
 // Attributes
 protected:
 

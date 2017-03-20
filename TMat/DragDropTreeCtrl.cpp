@@ -96,7 +96,7 @@ void CDragDropTreeCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	if ((m_bDragging && m_pImageList != NULL) && (point.x > m_nWidth)){
 		for (unsigned int i = 0; i < m_vSelItem.size(); i++){
-			pView->SetTreeDragItem(m_pImageList, m_vSelItem[i], this);			
+			pView->SetTreeDragItem(m_vSelItem[i], this);			
 		}
 	}
 

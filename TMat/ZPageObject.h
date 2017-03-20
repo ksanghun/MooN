@@ -54,6 +54,7 @@ public:
 	unsigned short GetImgWidth() { return nImgWidth; };
 	unsigned short GetImgHeight() { return nImgHeight; };
 	unsigned long GetCode() { return nCode; }
+	unsigned long GetPCode() { return parentCode; }
 
 	bool IsDuplicate(POINT3D pos, int search_size);
 
@@ -73,6 +74,7 @@ public:
 	RECT2D ConvertVec3DtoImgateCoord(POINT3D v1, POINT3D v2);
 	void SetIsNear(bool isnear) { m_bIsNear = isnear; }
 
+	bool UpdateTextBoundary();
 private:
 	CString strPath;
 	CString strPName;

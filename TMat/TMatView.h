@@ -20,10 +20,12 @@ protected: // create from serialization only
 public:
 //	CTMatDoc* GetDocument() const;
 
-	void SetTreeDragItem(CImageList* pImage, HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
+	void SetTreeDragItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
 	short ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
 	void ProcExtractTextBoundary();
 	short SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset);
+	void RemoveImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl);
+
 	void InitCamera(bool bmovexy);
 
 	void DoCurNSearch();
@@ -47,6 +49,7 @@ private:
 
 
 	void AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt);
+	
 // Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view

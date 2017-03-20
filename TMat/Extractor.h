@@ -2,8 +2,8 @@
 #include "opencv2/opencv.hpp"
 
 // tessract library //
-#include <baseapi.h>
-#include <allheaders.h>
+//#include <baseapi.h>
+//#include <allheaders.h>
 
 class CExtractor
 {

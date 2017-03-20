@@ -516,6 +516,7 @@ void CMainFrame::OnFileOpenfile()
 void CMainFrame::OnViewLogview()
 {
 	// TODO: Add your command handler code here
+	AfxMessageBox(L"Log View is not available now");
 }
 
 
@@ -541,12 +542,21 @@ void CMainFrame::OnViewInitialize()
 void CMainFrame::OnProjectAddimage()
 {
 	// TODO: Add your command handler code here
+	CDragDropTreeCtrl* pCtrl = m_wndFileView.GetTreeCtrl();
+	for (unsigned int i = 0; i < pCtrl->GetSelItemList()->size(); i++){
+		pView->SetTreeDragItem((*pCtrl->GetSelItemList())[i], pCtrl);
+	}
 }
 
 
 void CMainFrame::OnProjectRemoveimage()
 {
 	// TODO: Add your command handler code here
+	CDragDropTreeCtrl* pCtrl = m_wndFileView.GetTreeCtrl();
+	for (unsigned int i = 0; i < pCtrl->GetSelItemList()->size(); i++){
+		HTREEITEM selItem = (*pCtrl->GetSelItemList())[i];
+		pView->RemoveImageData(selItem, pCtrl);
+	}
 }
 
 
@@ -560,6 +570,7 @@ void CMainFrame::OnProjectSearch()
 void CMainFrame::OnProjectKeywordsearch()
 {
 	// TODO: Add your command handler code here
+	AfxMessageBox(L"Keyword Search is not available now");
 }
 
 
@@ -573,6 +584,37 @@ void CMainFrame::OnProjectClearresult()
 void CMainFrame::OnProjectConfiguration()
 {
 	// TODO: Add your command handler code here
+	CDlgConfig dlg(NULL, m_strSrcPath, m_strLogPath);
+
+
+	CString sPath;
+	GetModuleFileName(nullptr, sPath.GetBuffer(_MAX_PATH + 1), _MAX_PATH);
+	sPath.ReleaseBuffer();
+	CString path = sPath.Left(sPath.ReverseFind(_T('\\')));
+	CString strFle = path + "\\userdata\\conf.bin";
+
+	if (dlg.DoModal() == IDOK)
+	{
+		m_strSrcPath = dlg.GetSrcPath();
+
+		const int pathSize = 256;
+		char srcPath[pathSize];
+		// Save Config //
+		FILE* fp = 0;
+		fopen_s(&fp, (CStringA)strFle, "wb");
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		if (fp){
+			sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
+			fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
+			fwrite(srcPath, pathSize, 1, fp);
+			fclose(fp);
+		}
+
+		m_wndFileView.FillFileView(m_strSrcPath);
+		GetImgFilePath(m_strSrcPath);
+		//	InitConfituration();
+	}
 }
 
 
@@ -676,7 +718,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 			}
 			float offset = 0.0f;
 		}
-		else if (nChar == 68){
+		else if (nChar == 68){	// "d"
 			if (pViewImage){
 				pViewImage->SetDBSearch(false);
 			}

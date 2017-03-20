@@ -51,7 +51,7 @@ private:
 	// Construction
 public:
 	CDragDropTreeCtrl();
-
+	SEL_ITEM_LIST* GetSelItemList() { return &m_vSelItem; }
 	// Attributes
 public:
 
