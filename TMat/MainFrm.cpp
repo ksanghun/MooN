@@ -60,6 +60,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CFrameWndEx::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
+	if (Authorization() == false){
+		AfxMessageBox(L"authorization failed");
+		exit(0);
+	}
+
+
 	BOOL bNameValid;
 
 	//if (!m_wndMenuBar.Create(this))
@@ -360,6 +366,51 @@ void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
 	CFrameWndEx::OnSettingChange(uFlags, lpszSection);
 	m_wndOutput.UpdateFonts();
+}
+
+bool CMainFrame::Authorization()
+{
+	// Known MAC Address ====================//
+	CString authorized = L"00:0D:3A:A2:E7:C2";	// VM in Azure
+	//========================================
+
+
+
+	PIP_ADAPTER_INFO AdapterInfo;
+	DWORD dwBufLen = sizeof(AdapterInfo);
+//	char *mac_addr = (char*)malloc(17);
+	CString strMacAddr = L"";
+
+	AdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof(IP_ADAPTER_INFO));
+	if (AdapterInfo == NULL){
+		return false;
+	}
+
+	if (GetAdaptersInfo(AdapterInfo, &dwBufLen) == ERROR_BUFFER_OVERFLOW) {
+		AdapterInfo = (IP_ADAPTER_INFO *)malloc(dwBufLen);
+		if (AdapterInfo == NULL) {
+			return false;
+		}
+	}
+
+	if (GetAdaptersInfo(AdapterInfo, &dwBufLen) == NO_ERROR) {
+		PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;// Contains pointer to current adapter info
+		do {
+			strMacAddr.Format(L"%02X:%02X:%02X:%02X:%02X:%02X",
+				pAdapterInfo->Address[0], pAdapterInfo->Address[1],
+				pAdapterInfo->Address[2], pAdapterInfo->Address[3],
+				pAdapterInfo->Address[4], pAdapterInfo->Address[5]);
+			pAdapterInfo = pAdapterInfo->Next;
+		} while (pAdapterInfo);
+	}
+	free(AdapterInfo);
+
+
+	if (strMacAddr == authorized){
+		return true;
+	}
+
+	return false;
 }
 
 void CMainFrame::InitConfituration()

@@ -8,6 +8,9 @@
 #include "PropertiesWnd.h"
 #include "DlgConfig.h"
 
+#include <Iphlpapi.h>
+#pragma comment(lib, "iphlpapi.lib")
+
 class CMainFrame : public CFrameWndEx
 {
 	
@@ -63,6 +66,7 @@ protected:
 
 	BOOL CreateDockingWindows();
 	void SetDockingWindowIcons(BOOL bHiColorIcons);
+	bool Authorization();
 public:
 	afx_msg void OnFileConfiguration();
 	afx_msg void OnFileOpenfile();
