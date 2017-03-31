@@ -415,9 +415,9 @@ bool CMainFrame::checkMacAddr()
 
 bool CMainFrame::checkCurrTime()
 {
-	WORD year = 2017;
-	WORD month = 3;
-	WORD day = 1;
+	//WORD year = 2017;
+	//WORD month = 3;
+	//WORD day = 1;
 
 
 	WORD eYear = 2017;
@@ -428,12 +428,18 @@ bool CMainFrame::checkCurrTime()
 	GetSystemTime(&st);
 
 
-	if ((st.wYear >= year) && (st.wYear <= eYear)){
-		if ((st.wMonth >= month) && (st.wMonth <= eMonth)){
-			if ((st.wDay >= day) && (st.wDay <= eDay)){
+	if ((st.wYear <= eYear)){
+
+		if (st.wMonth == eMonth){
+			if ((st.wDay <= eDay)){
 				return true;
 			}
 		}
+		else{
+			if (st.wMonth < eMonth){
+				return true;
+			}
+		}		
 	}
 
 	return false;
@@ -442,10 +448,10 @@ bool CMainFrame::checkCurrTime()
 
 bool CMainFrame::Authorization()
 {
-	if (checkMacAddr() == false){
-		AfxMessageBox(L"Authorization failed");
-		return false;
-	}
+	//if (checkMacAddr() == false){
+	//	AfxMessageBox(L"Authorization failed");
+	//	return false;
+	//}
 
 	if (checkCurrTime() == false){
 		AfxMessageBox(L"Authentication has expired");
