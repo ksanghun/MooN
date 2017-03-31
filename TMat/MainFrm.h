@@ -67,6 +67,8 @@ protected:
 	BOOL CreateDockingWindows();
 	void SetDockingWindowIcons(BOOL bHiColorIcons);
 	bool Authorization();
+	bool checkCurrTime();
+	bool checkMacAddr();
 public:
 	afx_msg void OnFileConfiguration();
 	afx_msg void OnFileOpenfile();

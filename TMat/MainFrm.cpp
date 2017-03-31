@@ -60,8 +60,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CFrameWndEx::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	if (Authorization() == false){
-		AfxMessageBox(L"authorization failed");
+	if (Authorization() == false){		
 		exit(0);
 	}
 
@@ -368,17 +367,17 @@ void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 	m_wndOutput.UpdateFonts();
 }
 
-bool CMainFrame::Authorization()
+
+bool CMainFrame::checkMacAddr()
 {
 	// Known MAC Address ====================//
 	CString authorized = L"00:0D:3A:A2:E7:C2";	// VM in Azure
 	//========================================
 
 
-
 	PIP_ADAPTER_INFO AdapterInfo;
 	DWORD dwBufLen = sizeof(AdapterInfo);
-//	char *mac_addr = (char*)malloc(17);
+	//	char *mac_addr = (char*)malloc(17);
 	CString strMacAddr = L"";
 
 	AdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof(IP_ADAPTER_INFO));
@@ -411,6 +410,48 @@ bool CMainFrame::Authorization()
 	}
 
 	return false;
+
+}
+
+bool CMainFrame::checkCurrTime()
+{
+	WORD year = 2017;
+	WORD month = 3;
+	WORD day = 1;
+
+
+	WORD eYear = 2017;
+	WORD eMonth = 4;
+	WORD eDay = 30;
+
+	SYSTEMTIME st;
+	GetSystemTime(&st);
+
+
+	if ((st.wYear >= year) && (st.wYear <= eYear)){
+		if ((st.wMonth >= month) && (st.wMonth <= eMonth)){
+			if ((st.wDay >= day) && (st.wDay <= eDay)){
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+
+bool CMainFrame::Authorization()
+{
+	if (checkMacAddr() == false){
+		AfxMessageBox(L"Authorization failed");
+		return false;
+	}
+
+	if (checkCurrTime() == false){
+		AfxMessageBox(L"Authentication has expired");
+		return false;
+	}
+	return true;
 }
 
 void CMainFrame::InitConfituration()
