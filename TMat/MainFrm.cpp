@@ -377,9 +377,23 @@ bool CMainFrame::checkMacAddr()
 	// Known MAC Address ====================//
 	// CString authorized = L"00:0D:3A:A2:E7:C2";	// VM in Azure
 	//========================================
-	const int numMacAddr = 10;
+	const int numMacAddr = 15;
 	CString arrAutho[numMacAddr];
 	arrAutho[0] = L"00:0D:3A:A2:E7:C2";
+	arrAutho[1] = L"00:0D:3A:72:7B:89";
+	arrAutho[2] = L"00:0D:3A:72:7B:89";
+	arrAutho[3] = L"00:0D:3A:72:7B:89";
+	arrAutho[4] = L"00:0D:3A:72:7B:89";
+	arrAutho[5] = L"00:0D:3A:72:7B:89";
+	arrAutho[6] = L"00:0D:3A:72:7B:89";
+	arrAutho[7] = L"00:0D:3A:72:7B:89";
+	arrAutho[8] = L"00:0D:3A:72:7B:89";
+	arrAutho[9] = L"00:0D:3A:72:7B:89";
+	arrAutho[10] = L"00:0D:3A:72:7B:89";
+	arrAutho[11] = L"00:0D:3A:72:7B:89";
+	arrAutho[12] = L"00:0D:3A:72:7B:89";
+	arrAutho[13] = L"00:0D:3A:72:7B:89";
+	arrAutho[14] = L"00:0D:3A:72:7B:89";
 
 
 	PIP_ADAPTER_INFO AdapterInfo;
