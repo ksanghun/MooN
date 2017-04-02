@@ -596,10 +596,10 @@ bool CZPageObject::LoadThumbImage(unsigned short resolution)
 
 	// In case of PDF file//
 	CString str = PathFindExtension(strPath);
-	if ((str == L".pdf") || (str == L".jpg") || (str == L".JPG") || (str == L".jpeg")){
-		thTexId = SINGLETON_TMat::GetInstance()->GetPdfTexId();
-		return true;
-	}
+	//if ((str == L".pdf") || (str == L".jpg") || (str == L".JPG") || (str == L".jpeg")){
+	//	thTexId = SINGLETON_TMat::GetInstance()->GetPdfTexId();
+	//	return true;
+	//}
 	//=======================//
 
 
@@ -631,10 +631,18 @@ bool CZPageObject::LoadThumbImage(unsigned short resolution)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
 	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	//glTexImage2D(GL_TEXTURE_2D, 0, 3, m_texture->sizeX,m_texture->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE,m_texture->data);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, resolution, resolution, GL_RGB, GL_UNSIGNED_BYTE, timg->imageData);
+	
+	if ((str == L".pdf") || (str == L".jpg") || (str == L".JPG") || (str == L".jpeg")){
+		gluBuild2DMipmaps(GL_TEXTURE_2D, 3, resolution, resolution, GL_RGBA, GL_UNSIGNED_BYTE, timg->imageData);
+	}
+	else{
+		gluBuild2DMipmaps(GL_TEXTURE_2D, 3, resolution, resolution, GL_RGB, GL_UNSIGNED_BYTE, timg->imageData);
+	}
+
 	//======================================================================================//
 
 	SetThTex(tid);
+
 
 //	src.release();
 	cvReleaseImage(&src);
