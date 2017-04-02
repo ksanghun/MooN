@@ -538,7 +538,7 @@ GLuint CZPageObject::LoadFullImage()
 	// glupload Image - Thumnail image=======================================================//
 	// In case of PDF file//
 	CString str = PathFindExtension(strPath);
-	if ((str == L".pdf") || (str == L".jpg")){	
+	if ((str == L".pdf") || (str == L".jpg") || (str == L".JPG") || (str == L".jpeg")){
 
 		pimg = SINGLETON_TMat::GetInstance()->LoadPDFImage(strPath, 4);
 		if (pimg){
@@ -596,7 +596,7 @@ bool CZPageObject::LoadThumbImage(unsigned short resolution)
 
 	// In case of PDF file//
 	CString str = PathFindExtension(strPath);
-	if ((str == L".pdf") || (str == L".jpg")){
+	if ((str == L".pdf") || (str == L".jpg") || (str == L".JPG") || (str == L".jpeg")){
 		thTexId = SINGLETON_TMat::GetInstance()->GetPdfTexId();
 		return true;
 	}

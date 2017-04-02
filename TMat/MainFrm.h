@@ -87,6 +87,9 @@ public:
 	afx_msg void OnAnalyzeDownloadresult();
 	afx_msg void OnHelpAbout();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnViewFileviewMoon();
+	afx_msg void OnViewPropertyviewMoon();
+	afx_msg void OnViewOutputviewMoon();
 };
 
 

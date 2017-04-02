@@ -104,6 +104,7 @@ BOOL CTMatApp::InitInstance()
 	CSingleDocTemplate* pDocTemplate;
 	pDocTemplate = new CSingleDocTemplate(
 		IDR_MAINMENU,
+	//	IDR_MAINFRAME,
 		RUNTIME_CLASS(CTMatDoc),
 		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
 		RUNTIME_CLASS(CTMatView));

@@ -109,13 +109,19 @@
 #define ID_PROJECT_KEYWORDSEARCH_       32799
 #define ID_ANALYZE_UPLOADRESULT_        32800
 #define ID_ANALYZE_DOWNLOADRESULT_      32801
+#define ID_VIEW_FILEVIEW32802           32802
+#define ID_VIEW_FILEVIEW_MOON           32803
+#define ID_VIEW_PROPERTYVIEW            32804
+#define ID_VIEW_PROPERTYVIEW_MOON       32805
+#define ID_VIEW_OUTPUTVIEW              32806
+#define ID_VIEW_OUTPUTVIEW_MOON         32807
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        317
-#define _APS_NEXT_COMMAND_VALUE         32802
+#define _APS_NEXT_COMMAND_VALUE         32808
 #define _APS_NEXT_CONTROL_VALUE         1003
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

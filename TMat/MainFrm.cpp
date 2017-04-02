@@ -41,6 +41,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_ANALYZE_UPLOADRESULT, &CMainFrame::OnAnalyzeUploadresult)
 	ON_COMMAND(ID_ANALYZE_DOWNLOADRESULT, &CMainFrame::OnAnalyzeDownloadresult)
 	ON_COMMAND(ID_HELP_ABOUT, &CMainFrame::OnHelpAbout)
+	ON_COMMAND(ID_VIEW_FILEVIEW_MOON, &CMainFrame::OnViewFileviewMoon)
+	ON_COMMAND(ID_VIEW_PROPERTYVIEW_MOON, &CMainFrame::OnViewPropertyviewMoon)
+	ON_COMMAND(ID_VIEW_OUTPUTVIEW_MOON, &CMainFrame::OnViewOutputviewMoon)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -158,6 +161,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndProperties.EnableDocking(CBRS_ALIGN_ANY);
 	DockPane(&m_wndProperties);
 
+	
 
 	// set the visual manager used to draw all user interface elements
 	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerOffice2007));
@@ -371,8 +375,11 @@ void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 bool CMainFrame::checkMacAddr()
 {
 	// Known MAC Address ====================//
-	CString authorized = L"00:0D:3A:A2:E7:C2";	// VM in Azure
+	// CString authorized = L"00:0D:3A:A2:E7:C2";	// VM in Azure
 	//========================================
+	const int numMacAddr = 10;
+	CString arrAutho[numMacAddr];
+	arrAutho[0] = L"00:0D:3A:A2:E7:C2";
 
 
 	PIP_ADAPTER_INFO AdapterInfo;
@@ -405,8 +412,10 @@ bool CMainFrame::checkMacAddr()
 	free(AdapterInfo);
 
 
-	if (strMacAddr == authorized){
-		return true;
+	for (int i = 0; i < numMacAddr; i++){
+		if (strMacAddr == arrAutho[i]){
+			return true;
+		}
 	}
 
 	return false;
@@ -633,7 +642,7 @@ void CMainFrame::OnView3dview()
 void CMainFrame::OnViewInitialize()
 {
 	// TODO: Add your command handler code here
-	pView->InitCamera(true);
+	pView->InitCamera(true);	
 }
 
 
@@ -824,4 +833,25 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 	}
 
 	return CFrameWndEx::PreTranslateMessage(pMsg);
+}
+
+
+void CMainFrame::OnViewFileviewMoon()
+{
+	// TODO: Add your command handler code here
+	m_wndFileView.ShowPane(TRUE, FALSE, TRUE);
+}
+
+
+void CMainFrame::OnViewPropertyviewMoon()
+{
+	// TODO: Add your command handler code here
+	m_wndProperties.ShowPane(TRUE, FALSE, TRUE);
+}
+
+
+void CMainFrame::OnViewOutputviewMoon()
+{
+	// TODO: Add your command handler code here
+	m_wndOutput.ShowPane(TRUE, FALSE, TRUE);
 }
