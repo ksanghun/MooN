@@ -444,7 +444,7 @@ bool CMainFrame::checkCurrTime()
 
 
 	WORD eYear = 2017;
-	WORD eMonth = 4;
+	WORD eMonth = 5;
 	WORD eDay = 30;
 
 	SYSTEMTIME st;
