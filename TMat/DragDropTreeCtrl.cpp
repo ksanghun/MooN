@@ -95,6 +95,14 @@ void CDragDropTreeCtrl::OnTimer(UINT nIDEvent)
 void CDragDropTreeCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	if ((m_bDragging && m_pImageList != NULL) && (point.x > m_nWidth)){
+
+		CWnd* pwndCtrl = GetFocus();
+		int ctrl_ID = pwndCtrl->GetDlgCtrlID();
+		if (pwndCtrl->IsKindOf(RUNTIME_CLASS(CWnd))){
+			int a = 0;
+		}
+
+
 		for (unsigned int i = 0; i < m_vSelItem.size(); i++){
 			pView->SetTreeDragItem(m_vSelItem[i], this);			
 		}

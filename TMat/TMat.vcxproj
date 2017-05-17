@@ -133,12 +133,14 @@
     <ClInclude Include="TMatView.h" />
     <ClInclude Include="ViewTree.h" />
     <ClInclude Include="ZDataManager.h" />
+    <ClInclude Include="ZListCtrlLog.h" />
     <ClInclude Include="ZMatching.h" />
     <ClInclude Include="ZPageObject.h" />
     <ClInclude Include="ZPDFConverter.h" />
     <ClInclude Include="ZSingtonTMat.h" />
     <ClInclude Include="ZUIManager.h" />
     <ClInclude Include="ZViewImage.h" />
+    <ClInclude Include="ZViewLog.h" />
     <ClInclude Include="ZViewResult.h" />
   </ItemGroup>
   <ItemGroup>
@@ -162,11 +164,13 @@
     <ClCompile Include="TMatView.cpp" />
     <ClCompile Include="ViewTree.cpp" />
     <ClCompile Include="ZDataManager.cpp" />
+    <ClCompile Include="ZListCtrlLog.cpp" />
     <ClCompile Include="ZMatching.cpp" />
     <ClCompile Include="ZPageObject.cpp" />
     <ClCompile Include="ZPDFConverter.cpp" />
     <ClCompile Include="ZUIManager.cpp" />
     <ClCompile Include="ZViewImage.cpp" />
+    <ClCompile Include="ZViewLog.cpp" />
     <ClCompile Include="ZViewResult.cpp" />
   </ItemGroup>
   <ItemGroup>

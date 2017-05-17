@@ -102,6 +102,12 @@
     <ClInclude Include="Extractor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ZViewLog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ZListCtrlLog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TMat.cpp">
@@ -171,6 +177,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Extractor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ZViewLog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ZListCtrlLog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

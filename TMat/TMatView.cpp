@@ -40,6 +40,7 @@ BEGIN_MESSAGE_MAP(CTMatView, CView)
 	ON_WM_KEYDOWN()
 	ON_WM_KEYUP()
 	ON_WM_TIMER()
+	ON_WM_DROPFILES()
 END_MESSAGE_MAP()
 
 // CTMatView construction/destruction
@@ -51,6 +52,7 @@ CTMatView::CTMatView()
 
 	m_pViewImage = NULL;
 	m_pViewResult = NULL;
+	m_pViewLog = NULL;
 	m_searchCnt = 0;
 	// Init Data Manager //
 	SINGLETON_TMat::GetInstance()->InitData();
@@ -64,6 +66,9 @@ CTMatView::~CTMatView()
 	}
 	if (m_pViewResult != NULL)	{
 		delete m_pViewResult;
+	}
+	if (m_pViewLog != NULL){
+		delete m_pViewLog;
 	}
 
 }
@@ -176,15 +181,23 @@ int CTMatView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		m_pViewImage->InitGLview(0, 0);
 	}
 
+	if (m_pViewLog == NULL){
+		m_pViewLog = new CZViewLog;
+		//	m_pImageView->Create(NULL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE, cRect, this, 0x01);
+		m_pViewLog->Create(NULL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE, cRect, &m_ctrlTab, 0x02);
+		m_pViewLog->InitView();
+	}
+
 	if (m_pViewResult == NULL){
 		m_pViewResult = new CZViewResult;
 		//	m_pImageView->Create(NULL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE, cRect, this, 0x01);
-		m_pViewResult->Create(NULL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE, cRect, &m_ctrlTab, 0x02);
+		m_pViewResult->Create(NULL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE, cRect, &m_ctrlTab, 0x03);
 		m_pViewResult->InitGLview(0, 0);
 	}
 
 	m_ctrlTab.AddTab(m_pViewImage, L"Image View", (UINT)0);
-	m_ctrlTab.AddTab(m_pViewResult, L"Result View", (UINT)1);
+	m_ctrlTab.AddTab(m_pViewLog, L"Log View", (UINT)1);
+	m_ctrlTab.AddTab(m_pViewResult, L"Result View", (UINT)2);
 
 
 
@@ -207,8 +220,8 @@ void CTMatView::OnInitialUpdate()
 	CView::OnInitialUpdate();
 
 	// TODO: Add your specialized code here and/or call the base class
+	DragAcceptFiles(true);
 
-	m_Extractor.TestFunc();
 
 	ModifyStyleEx(WS_EX_CLIENTEDGE, 0, SWP_FRAMECHANGED);
 }
@@ -582,3 +595,11 @@ BOOL CTMatView::PreTranslateMessage(MSG* pMsg)
 }
 
 
+
+
+void CTMatView::OnDropFiles(HDROP hDropInfo)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	CView::OnDropFiles(hDropInfo);
+}

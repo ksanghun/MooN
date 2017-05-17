@@ -72,8 +72,10 @@
 #define IDS_EDIT_MENU                   306
 #define IDD_DLG_CONFIG                  310
 #define IDR_TOOLBAR1                    311
+#define IDD_ZVIEWLOG                    312
 #define IDR_MENU1                       313
 #define IDR_MAINMENU                    313
+#define IDD_ZFORMLOG                    314
 #define IDC_CURSOR_SEARCH               315
 #define IDC_EDIT_SRCPATH                1000
 #define IDC_EDIT_LOGPATH                1001
@@ -123,6 +125,6 @@
 #define _APS_NEXT_RESOURCE_VALUE        317
 #define _APS_NEXT_COMMAND_VALUE         32808
 #define _APS_NEXT_CONTROL_VALUE         1003
-#define _APS_NEXT_SYMED_VALUE           310
+#define _APS_NEXT_SYMED_VALUE           315
 #endif
 #endif
