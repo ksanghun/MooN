@@ -94,8 +94,10 @@ void CZListCtrlLog::OnNMClick(NMHDR *pNMHDR, LRESULT *pResult)
 	nItem = temp->iItem;
 	//get the column number
 	nSubItem = temp->iSubItem;
-	if (nSubItem == 0 || nSubItem == -1 || nItem == -1)
+	if (nSubItem == 0 || nSubItem == -1 || nItem == -1){
+		m_Edit.ShowWindow(SW_HIDE);
 		return;
+	}
 	//Retrieve the text of the selected subItem from the list
 	CString str = GetItemText(nItem, nSubItem);
 

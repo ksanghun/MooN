@@ -21,14 +21,15 @@ CZViewLog::~CZViewLog()
 
 
 BEGIN_MESSAGE_MAP(CZViewLog, CWnd)
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
 
 // CZViewLog message handlers
-void CZViewLog::InitView()
+void CZViewLog::InitView(int width, int height)
 {
-	m_List.Create(	WS_CHILD | WS_VISIBLE | WS_BORDER | LVS_REPORT | LVS_EDITLABELS,CRect(0, 0, 800, 500), this, NULL);	
+	m_List.Create(	WS_CHILD | WS_VISIBLE | WS_BORDER | LVS_REPORT | LVS_EDITLABELS,CRect(0, 0, width, height), this, NULL);	
 	m_List.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
 	m_List.InitListCtrl();
@@ -195,3 +196,19 @@ void CZViewLog::SetCell(HWND hWnd1, CString value, int nRow, int nCol)
 
 
 
+
+
+void CZViewLog::OnSize(UINT nType, int cx, int cy)
+{
+	CWnd::OnSize(nType, cx, cy);
+
+	// TODO: Add your message handler code here
+}
+
+void CZViewLog::ResizeView(int width, int height)
+{
+	if (m_List){
+		m_List.MoveWindow(0, 0, width, height);
+	}
+
+}

@@ -185,7 +185,7 @@ int CTMatView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		m_pViewLog = new CZViewLog;
 		//	m_pImageView->Create(NULL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE, cRect, this, 0x01);
 		m_pViewLog->Create(NULL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE, cRect, &m_ctrlTab, 0x02);
-		m_pViewLog->InitView();
+		m_pViewLog->InitView(0,0);
 	}
 
 	if (m_pViewResult == NULL){
@@ -212,6 +212,10 @@ void CTMatView::OnSize(UINT nType, int cx, int cy)
 	// TODO: Add your message handler code here
 	m_ctrlTab.SetWindowPos(NULL, -1, -1, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
 	m_ctrlTab.SetLocation(CMFCTabCtrl::LOCATION_TOP);
+
+	if (m_pViewLog){
+		m_pViewLog->ResizeView(cx, cy);
+	}
 }
 
 
@@ -603,3 +607,5 @@ void CTMatView::OnDropFiles(HDROP hDropInfo)
 
 	CView::OnDropFiles(hDropInfo);
 }
+
+

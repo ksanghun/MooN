@@ -11,7 +11,8 @@ public:
 	CZViewLog();
 	virtual ~CZViewLog();
 
-	void InitView();
+	void InitView(int width, int height);
+	void ResizeView(int width, int height);
 
 private:
 	CZListCtrlLog	m_List;
@@ -24,6 +25,8 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
+public:
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 };
 
 
