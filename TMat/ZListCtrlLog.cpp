@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "TMat.h"
 #include "ZListCtrlLog.h"
-
+#include "resource.h"
 
 // CZListCtrlLog
 
@@ -12,7 +12,7 @@ IMPLEMENT_DYNAMIC(CZListCtrlLog, CListCtrl)
 
 CZListCtrlLog::CZListCtrlLog()
 {
-
+	m_nCulNum = m_nRecordNum = 0;
 }
 
 CZListCtrlLog::~CZListCtrlLog()
@@ -24,8 +24,8 @@ BEGIN_MESSAGE_MAP(CZListCtrlLog, CListCtrl)
 	ON_NOTIFY_REFLECT(NM_CLICK, &CZListCtrlLog::OnNMClick)
 	ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, &CZListCtrlLog::OnNMCustomdraw)
 	ON_MESSAGE(MSG_POST_SUBCLASS_LISTVIEW, OnPostSubclassListview)
-	ON_WM_LBUTTONDOWN()
-	ON_NOTIFY_REFLECT(NM_DBLCLK, &CZListCtrlLog::OnNMDblclk)
+	ON_WM_RBUTTONDOWN()
+	ON_WM_CONTEXTMENU()
 END_MESSAGE_MAP()
 
 void CZListCtrlLog::PreSubclassWindow()
@@ -88,7 +88,7 @@ void CZListCtrlLog::OnNMClick(NMHDR *pNMHDR, LRESULT *pResult)
 	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
 	// TODO: Add your control notification handler code here
 
-	
+
 
 	*pResult = 0;
 }
@@ -338,4 +338,13 @@ void CZListCtrlLog::OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult)
 	m_Edit.SetWindowTextW(str);
 
 	*pResult = 0;
+}
+
+void CZListCtrlLog::AddUserColumn(CString strLable, unsigned short colWidth)
+{
+
+}
+void CZListCtrlLog::AddRecode(CString* strItem, unsigned short itemNum)
+{
+
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ZListCtrlLog.h"
+#include "DlgAddCol.h"
 // CZViewLog
 
 class CZViewLog : public CWnd
@@ -13,6 +14,7 @@ public:
 
 	void InitView(int width, int height);
 	void ResizeView(int width, int height);
+	void AddNewColumn();
 
 private:
 	CZListCtrlLog	m_List;

@@ -35,6 +35,8 @@ public:
 
 	CZViewImage* GetViewImage() { return m_pViewImage; }
 
+	void AddNewColumn();
+
 // Operations
 public:
 

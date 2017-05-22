@@ -44,6 +44,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_VIEW_FILEVIEW_MOON, &CMainFrame::OnViewFileviewMoon)
 	ON_COMMAND(ID_VIEW_PROPERTYVIEW_MOON, &CMainFrame::OnViewPropertyviewMoon)
 	ON_COMMAND(ID_VIEW_OUTPUTVIEW_MOON, &CMainFrame::OnViewOutputviewMoon)
+	ON_COMMAND(ID_LIST_ADDCOL, &CMainFrame::OnListAddcol)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -868,4 +869,13 @@ void CMainFrame::OnViewOutputviewMoon()
 {
 	// TODO: Add your command handler code here
 	m_wndOutput.ShowPane(TRUE, FALSE, TRUE);
+}
+
+
+void CMainFrame::OnListAddcol()
+{
+	// TODO: Add your command handler code here
+	if (pView){
+		pView->AddNewColumn();
+	}
 }

@@ -13,6 +13,8 @@ public:
 	virtual ~CZListCtrlLog();
 
 	void InitListCtrl();
+	void AddUserColumn(CString strLable, unsigned short colWidth);
+	void AddRecode(CString* strItem, unsigned short itemNum);
 
 
 // ColumnHeader Class============================//
@@ -46,6 +48,7 @@ protected:
 
 	CEdit m_Edit;
 	int nItem, nSubItem;
+	int m_nCulNum, m_nRecordNum;
 
 	afx_msg LRESULT OnPostSubclassListview(WPARAM wParam, LPARAM lParam);
 

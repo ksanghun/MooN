@@ -77,9 +77,14 @@
 #define IDR_MAINMENU                    313
 #define IDD_ZFORMLOG                    314
 #define IDC_CURSOR_SEARCH               315
+#define IDR_POPUP_MENU                  318
+#define IDD_DIALOG_ADDLIST              319
 #define IDC_EDIT_SRCPATH                1000
 #define IDC_EDIT_LOGPATH                1001
 #define IDC_BUTTON_BROWSER              1002
+#define IDC_EDIT_COLNAME                1003
+#define IDC_EDIT2                       1004
+#define IDC_EDIT_COLW                   1004
 #define ID_FILE_CONFIGURATION           32771
 #define IDR_TOOLBAR_24                  32772
 #define ID_BUTTON32773                  32773
@@ -117,14 +122,17 @@
 #define ID_VIEW_PROPERTYVIEW_MOON       32805
 #define ID_VIEW_OUTPUTVIEW              32806
 #define ID_VIEW_OUTPUTVIEW_MOON         32807
+#define ID_LIST_ADDCOLUMN               32809
+#define ID_LIST_ADDCOLUMN32810          32810
+#define ID_LIST_ADDCOL                  32811
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        317
-#define _APS_NEXT_COMMAND_VALUE         32808
-#define _APS_NEXT_CONTROL_VALUE         1003
+#define _APS_NEXT_RESOURCE_VALUE        320
+#define _APS_NEXT_COMMAND_VALUE         32812
+#define _APS_NEXT_CONTROL_VALUE         1005
 #define _APS_NEXT_SYMED_VALUE           315
 #endif
 #endif
