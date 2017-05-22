@@ -13,6 +13,7 @@ IMPLEMENT_DYNAMIC(CZListCtrlLog, CListCtrl)
 CZListCtrlLog::CZListCtrlLog()
 {
 	m_nCulNum = m_nRecordNum = 0;
+	m_SelectionFlag = FALSE;
 }
 
 CZListCtrlLog::~CZListCtrlLog()
@@ -24,7 +25,9 @@ BEGIN_MESSAGE_MAP(CZListCtrlLog, CListCtrl)
 	ON_NOTIFY_REFLECT(NM_CLICK, &CZListCtrlLog::OnNMClick)
 	ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, &CZListCtrlLog::OnNMCustomdraw)
 	ON_MESSAGE(MSG_POST_SUBCLASS_LISTVIEW, OnPostSubclassListview)
-	ON_WM_RBUTTONDOWN()
+
+	ON_NOTIFY_REFLECT(NM_DBLCLK, &CZListCtrlLog::OnNMDblclk)
+	ON_WM_LBUTTONDOWN()
 	ON_WM_CONTEXTMENU()
 END_MESSAGE_MAP()
 
@@ -87,8 +90,39 @@ void CZListCtrlLog::OnNMClick(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
 	// TODO: Add your control notification handler code here
+	Invalidate();
+	HWND hWnd1 = GetSafeHwnd();
+	LPNMITEMACTIVATE temp = (LPNMITEMACTIVATE)pNMHDR;
+	RECT rect;
+	//get the row number
+	nItem = temp->iItem;
+	//get the column number
+	nSubItem = temp->iSubItem;
+	if (nSubItem == 0 || nSubItem == -1 || nItem == -1){
+		*pResult = 0;
+		m_Edit.ShowWindow(SW_HIDE);
+		return;
+	}
+	//Retrieve the text of the selected subItem from the list
+	CString str = GetItemText(nItem, nSubItem);
 
+	RECT rect1, rect2;
+	// this macro is used to retrieve the Rectanle of the selected SubItem
+	ListView_GetSubItemRect(hWnd1, temp->iItem, temp->iSubItem, LVIR_BOUNDS, &rect);
+	//Get the Rectange of the listControl
+	::GetWindowRect(temp->hdr.hwndFrom, &rect1);
+	//Get the Rectange of the Dialog
+	::GetWindowRect(m_hWnd, &rect2);
 
+	int x = rect1.left - rect2.left;
+	int y = rect1.top - rect2.top;
+
+	if (nItem != -1)
+		m_Edit.SetWindowPos(NULL, rect.left + x + 1, rect.top, rect.right - rect.left - 1, rect.bottom - rect.top - 1, NULL);
+	m_Edit.ShowWindow(SW_SHOW);
+	m_Edit.SetFocus();
+	::Rectangle(::GetDC(temp->hdr.hwndFrom), rect.left, rect.top - 1, rect.right, rect.bottom);
+	m_Edit.SetWindowTextW(str);
 
 	*pResult = 0;
 }
@@ -180,8 +214,8 @@ LRESULT CZListCtrlLog::CCustomDrawHeaderCtrl::OnEraseBkgndOverride(WPARAM wParam
 
 void CZListCtrlLog::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
-
 	// TODO:  Add your code to draw the specified item
+	/*
 	TCHAR  lpBuffer[256];
 
 	LV_ITEM lvi;
@@ -267,84 +301,107 @@ void CZListCtrlLog::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		lvi.cchTextMax = sizeof(lpBuffer);
 		VERIFY(GetItem(&lvi));
 
-//		pDC->SelectObject(GetStockObject(DEFAULT_GUI_FONT));
+		pDC->SelectObject(GetStockObject(DEFAULT_GUI_FONT));
 
 		UINT		uFormat = DT_LEFT;
 
 		::DrawText(lpDrawItemStruct->hDC, lpBuffer, wcslen(lpBuffer), &lpDrawItemStruct->rcItem, uFormat);
 
-//		pDC->SelectStockObject(SYSTEM_FONT);
+		pDC->SelectStockObject(SYSTEM_FONT);
 	}
+	*/
+}
+
+
+
+BOOL CZListCtrlLog::PreCreateWindow(CREATESTRUCT& cs)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	//cs.style |= LVS_REPORT | LVS_OWNERDRAWFIXED | LVS_SINGLESEL | WS_BORDER;
+
+	return CListCtrl::PreCreateWindow(cs);
+}
+
+
+
+
+void CZListCtrlLog::AddUserColumn(CString strLable, unsigned short colWidth)
+{
+	InsertColumn(m_nCulNum, strLable, LVCFMT_LEFT, colWidth, -1);
+	m_nCulNum++;
+}
+void CZListCtrlLog::AddRecode(CString* strItem, unsigned short itemNum)
+{
+	InsertItem(m_nRecordNum, strItem[0]);
+	for (int i = 1; i < itemNum; i++){
+		SetItem(m_nRecordNum, i, LVIF_TEXT, strItem[i], 0, 0, 0, NULL);
+	}
+	m_nRecordNum++;
+}
+
+void CZListCtrlLog::OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: Add your control notification handler code here
+	//Invalidate();
+	//HWND hWnd1 = GetSafeHwnd();
+	//LPNMITEMACTIVATE temp = (LPNMITEMACTIVATE)pNMHDR;
+	//RECT rect;
+	////get the row number
+	//nItem = temp->iItem;
+	////get the column number
+	//nSubItem = temp->iSubItem;
+	//if (nSubItem == 0 || nSubItem == -1 || nItem == -1){
+	//	*pResult = 0;
+	//	m_Edit.ShowWindow(SW_HIDE);
+	//	return;
+	//}
+	////Retrieve the text of the selected subItem from the list
+	//CString str = GetItemText(nItem, nSubItem);
+
+	//RECT rect1, rect2;
+	//// this macro is used to retrieve the Rectanle of the selected SubItem
+	//ListView_GetSubItemRect(hWnd1, temp->iItem, temp->iSubItem, LVIR_BOUNDS, &rect);
+	////Get the Rectange of the listControl
+	//::GetWindowRect(temp->hdr.hwndFrom, &rect1);
+	////Get the Rectange of the Dialog
+	//::GetWindowRect(m_hWnd, &rect2);
+
+	//int x = rect1.left - rect2.left;
+	//int y = rect1.top - rect2.top;
+
+	//if (nItem != -1)
+	//	m_Edit.SetWindowPos(NULL, rect.left + x + 1, rect.top, rect.right - rect.left - 1, rect.bottom - rect.top - 1, NULL);
+	//m_Edit.ShowWindow(SW_SHOW);
+	//m_Edit.SetFocus();
+	//::Rectangle(::GetDC(temp->hdr.hwndFrom), rect.left, rect.top - 1, rect.right, rect.bottom);
+	//m_Edit.SetWindowTextW(str);
+
+	*pResult = 0;
 }
 
 
 void CZListCtrlLog::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
-	m_Point = point;
-	m_SelectionFlag = FALSE;
+	//m_Point = point;
+	//m_SelectionFlag = FALSE;
+	//Invalidate();
 
-	Invalidate();
+	//CString str;
+	//m_Edit.GetWindowText(str);
+	//SetItem(nItem, nSubItem, LVIF_TEXT, str, 0, 0, 0, NULL);
+	m_Edit.ShowWindow(SW_HIDE);
 
 	CListCtrl::OnLButtonDown(nFlags, point);
 }
 
 
-BOOL CZListCtrlLog::PreCreateWindow(CREATESTRUCT& cs)
+void CZListCtrlLog::OnContextMenu(CWnd* pWnd, CPoint point)
 {
-	// TODO: Add your specialized code here and/or call the base class
-	cs.style |= LVS_REPORT | LVS_OWNERDRAWFIXED | LVS_SINGLESEL | WS_BORDER;
-
-	return CListCtrl::PreCreateWindow(cs);
-}
-
-
-void CZListCtrlLog::OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
-	// TODO: Add your control notification handler code here
-	Invalidate();
-	HWND hWnd1 = GetSafeHwnd();
-	LPNMITEMACTIVATE temp = (LPNMITEMACTIVATE)pNMHDR;
-	RECT rect;
-	//get the row number
-	nItem = temp->iItem;
-	//get the column number
-	nSubItem = temp->iSubItem;
-	if (nSubItem == 0 || nSubItem == -1 || nItem == -1){
-		*pResult = 0;
-		m_Edit.ShowWindow(SW_HIDE);
-		return;
-	}
-	//Retrieve the text of the selected subItem from the list
-	CString str = GetItemText(nItem, nSubItem);
-
-	RECT rect1, rect2;
-	// this macro is used to retrieve the Rectanle of the selected SubItem
-	ListView_GetSubItemRect(hWnd1, temp->iItem, temp->iSubItem, LVIR_BOUNDS, &rect);
-	//Get the Rectange of the listControl
-	::GetWindowRect(temp->hdr.hwndFrom, &rect1);
-	//Get the Rectange of the Dialog
-	::GetWindowRect(m_hWnd, &rect2);
-
-	int x = rect1.left - rect2.left;
-	int y = rect1.top - rect2.top;
-
-	if (nItem != -1)
-		m_Edit.SetWindowPos(NULL, rect.left + x + 1, rect.top, rect.right - rect.left - 1, rect.bottom - rect.top - 1, NULL);
-	m_Edit.ShowWindow(SW_SHOW);
-	m_Edit.SetFocus();
-	::Rectangle(::GetDC(temp->hdr.hwndFrom), rect.left, rect.top - 1, rect.right, rect.bottom);
-	m_Edit.SetWindowTextW(str);
-
-	*pResult = 0;
-}
-
-void CZListCtrlLog::AddUserColumn(CString strLable, unsigned short colWidth)
-{
-
-}
-void CZListCtrlLog::AddRecode(CString* strItem, unsigned short itemNum)
-{
-
+	// TODO: Add your message handler code here
+	CMenu menu;
+	menu.LoadMenuW(IDR_POPUP_MENU);
+	CMenu* pMenu = menu.GetSubMenu(0);
+	pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, AfxGetMainWnd());
 }

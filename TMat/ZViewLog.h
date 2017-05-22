@@ -19,10 +19,6 @@ public:
 private:
 	CZListCtrlLog	m_List;
 
-	void InsertItems();
-	void SetCell(HWND hWnd1, CString value, int nRow, int nCol);
-	
-
 protected:
 
 	DECLARE_MESSAGE_MAP()
