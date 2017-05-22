@@ -108,6 +108,9 @@
     <ClInclude Include="ZListCtrlLog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DlgAddCol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TMat.cpp">
@@ -183,6 +186,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ZListCtrlLog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgAddCol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

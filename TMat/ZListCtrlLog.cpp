@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "TMat.h"
 #include "ZListCtrlLog.h"
-
+#include "resource.h"
 
 // CZListCtrlLog
 
@@ -12,7 +12,7 @@ IMPLEMENT_DYNAMIC(CZListCtrlLog, CListCtrl)
 
 CZListCtrlLog::CZListCtrlLog()
 {
-
+	m_nCulNum = m_nRecordNum = 0;
 }
 
 CZListCtrlLog::~CZListCtrlLog()
@@ -24,6 +24,8 @@ BEGIN_MESSAGE_MAP(CZListCtrlLog, CListCtrl)
 	ON_NOTIFY_REFLECT(NM_CLICK, &CZListCtrlLog::OnNMClick)
 	ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, &CZListCtrlLog::OnNMCustomdraw)
 	ON_MESSAGE(MSG_POST_SUBCLASS_LISTVIEW, OnPostSubclassListview)
+	ON_WM_RBUTTONDOWN()
+	ON_WM_CONTEXTMENU()
 END_MESSAGE_MAP()
 
 void CZListCtrlLog::PreSubclassWindow()
@@ -206,3 +208,42 @@ LRESULT CZListCtrlLog::CCustomDrawHeaderCtrl::OnEraseBkgndOverride(WPARAM wParam
 
 	return TRUE;
 }
+
+void CZListCtrlLog::AddUserColumn(CString strLable, unsigned short colWidth)
+{
+	InsertColumn(m_nCulNum, strLable, LVCFMT_LEFT, colWidth, -1);
+	m_nCulNum++;
+}
+
+void CZListCtrlLog::AddRecode(CString* strItem, unsigned short itemNum)
+{
+	InsertItem(m_nRecordNum, strItem[0]);
+	for (int i = 1; i < itemNum; i++){
+		SetItem(m_nRecordNum, i, LVIF_TEXT, strItem[i], 0, 0, 0, NULL);
+	}
+	m_nRecordNum++;
+
+}
+
+void CZListCtrlLog::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+
+
+	CListCtrl::OnRButtonDown(nFlags, point);
+}
+
+
+void CZListCtrlLog::OnContextMenu(CWnd* pWnd, CPoint point)
+{
+	// TODO: Add your message handler code here
+	CMenu menu;
+	menu.LoadMenuW(IDR_POPUP_MENU);
+	CMenu* pMenu = menu.GetSubMenu(0); // 최상위 메뉴에서 0부터 시작해서 4가 표시할 메뉴
+	pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, AfxGetMainWnd());
+
+
+}
+
+
+

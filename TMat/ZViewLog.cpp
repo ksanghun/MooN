@@ -33,27 +33,47 @@ void CZViewLog::InitView(int width, int height)
 	m_List.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
 	m_List.InitListCtrl();
+	m_List.AddUserColumn(L"Search No.", 100);
+	m_List.AddUserColumn(L"Accuracy", 100);
+	m_List.AddUserColumn(L"Pos_x", 100);
+	m_List.AddUserColumn(L"Pos_y", 100);
+	m_List.AddUserColumn(L"Page No.", 100);
+	m_List.AddUserColumn(L"Threshold", 100);
+
+
+	CString strItem[10];
+	strItem[0] = L"1";
+	strItem[1] = L"90.0";
+	strItem[2] = L"100";
+	strItem[3] = L"280";
+	strItem[4] = L"90";
+	strItem[5] = L"0.75";
+
+	m_List.AddRecode(strItem, 6);
+
+
+
 //	InsertItems();
 
 
-	m_List.DeleteAllItems();
+	//m_List.DeleteAllItems();
 
-	m_List.InsertColumn(0, _T("순번"), LVCFMT_LEFT, 40, -1);
+	//m_List.InsertColumn(0, _T("순번"), LVCFMT_LEFT, 40, -1);
 
-	m_List.InsertColumn(1, _T("환자이름"), LVCFMT_LEFT, 70, -1);
+	//m_List.InsertColumn(1, _T("환자이름"), LVCFMT_LEFT, 70, -1);
 
-	m_List.InsertColumn(2, _T("환자번호"), LVCFMT_LEFT, 70, -1);
+	//m_List.InsertColumn(2, _T("환자번호"), LVCFMT_LEFT, 70, -1);
 
-	m_List.InsertColumn(3, _T("환자성별"), LVCFMT_LEFT, 70, -1);
+	//m_List.InsertColumn(3, _T("환자성별"), LVCFMT_LEFT, 70, -1);
 
-	m_List.InsertColumn(4, _T("진료날짜"), LVCFMT_LEFT, 70, -1);
+	//m_List.InsertColumn(4, _T("진료날짜"), LVCFMT_LEFT, 70, -1);
 
-	m_List.InsertColumn(5, _T("사진파일"), LVCFMT_LEFT, 600, -1);
+	//m_List.InsertColumn(5, _T("사진파일"), LVCFMT_LEFT, 600, -1);
 
 	//칼럼 추가 인덱스, 칼람명, 정렬방향, 칼럼길이, 서브아이템 갯수
 
 
-
+	/*
 	int seq = 0;
 
 	CString seq_string;
@@ -114,7 +134,7 @@ void CZViewLog::InitView(int width, int height)
 
 	m_List.SetItem(seq, 5, LVIF_TEXT, dcmFullPath, 0, 0, 0, NULL);
 
-
+	*/
 }
 
 void CZViewLog::InsertItems()
@@ -212,3 +232,18 @@ void CZViewLog::ResizeView(int width, int height)
 	}
 
 }
+
+void CZViewLog::AddNewColumn()
+{
+	CDlgAddCol dlg;
+	if (dlg.DoModal() == IDOK){
+		if (m_List){
+			m_List.AddUserColumn(dlg.m_strColName, dlg.m_intColWidth);
+		}
+	}
+
+
+
+}
+
+

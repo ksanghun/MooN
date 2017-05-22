@@ -114,6 +114,7 @@
   <ItemGroup>
     <ClInclude Include="Camera2Axis.h" />
     <ClInclude Include="data_type.h" />
+    <ClInclude Include="DlgAddCol.h" />
     <ClInclude Include="DlgConfig.h" />
     <ClInclude Include="DragDropTreeCtrl.h" />
     <ClInclude Include="DragEventListener.h" />
@@ -145,6 +146,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera2Axis.cpp" />
+    <ClCompile Include="DlgAddCol.cpp" />
     <ClCompile Include="DlgConfig.cpp" />
     <ClCompile Include="DragDropTreeCtrl.cpp" />
     <ClCompile Include="Extractor.cpp" />

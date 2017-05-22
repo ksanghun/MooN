@@ -13,6 +13,8 @@ public:
 	virtual ~CZListCtrlLog();
 
 	void InitListCtrl();
+	void AddUserColumn(CString strLable, unsigned short colWidth);
+	void AddRecode(CString* strItem, unsigned short itemNum);
 
 
 // ColumnHeader Class============================//
@@ -40,6 +42,7 @@ protected:
 
 	CEdit m_Edit;
 	int nItem, nSubItem;
+	int m_nCulNum, m_nRecordNum;
 
 	afx_msg LRESULT OnPostSubclassListview(WPARAM wParam, LPARAM lParam);
 
@@ -48,6 +51,8 @@ public:
 	afx_msg void OnNMClick(NMHDR *pNMHDR, LRESULT *pResult);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnNMCustomdraw(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 };
 
 

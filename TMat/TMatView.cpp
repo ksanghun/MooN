@@ -609,3 +609,9 @@ void CTMatView::OnDropFiles(HDROP hDropInfo)
 }
 
 
+void CTMatView::AddNewColumn()
+{
+	if (m_pViewLog){
+		m_pViewLog->AddNewColumn();
+	}
+}
