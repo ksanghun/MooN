@@ -33,9 +33,9 @@ void CZViewLog::InitView(int width, int height)
 	m_List.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
 	m_List.InitListCtrl();
-//	InsertItems();
+	InsertItems();
 
-
+	/*
 	m_List.DeleteAllItems();
 
 	m_List.InsertColumn(0, _T("¼ø¹ø"), LVCFMT_LEFT, 40, -1);
@@ -114,6 +114,7 @@ void CZViewLog::InitView(int width, int height)
 
 	m_List.SetItem(seq, 5, LVIF_TEXT, dcmFullPath, 0, 0, 0, NULL);
 
+	*/
 
 }
 

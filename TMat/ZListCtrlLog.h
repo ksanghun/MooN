@@ -33,6 +33,12 @@ public:
 //===========================================//
 
 
+	CRect	m_SelectionRect;
+	BOOL	m_SelectionFlag;
+	CPoint  m_Point;
+	int		m_Rows;
+	int     m_Columns;
+	int		m_PrevItem;
 
 protected:
 
@@ -48,6 +54,10 @@ public:
 	afx_msg void OnNMClick(NMHDR *pNMHDR, LRESULT *pResult);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnNMCustomdraw(NMHDR *pNMHDR, LRESULT *pResult);
+	virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	afx_msg void OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult);
 };
 
 
