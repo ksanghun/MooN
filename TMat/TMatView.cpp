@@ -557,7 +557,7 @@ void CTMatView::OnTimer(UINT_PTR nIDEvent)
 			str += _T(" completed.");
 			pM->AddOutputString(str, true);
 
-			SetTimer(_TIMER_SEARCH_PAGE, 10, NULL);		// Continue //
+			SetTimer(_TIMER_SEARCH_PAGE, 1, NULL);		// Continue //
 		}
 		else{			
 			float complete = (float)m_searchCnt / (float)SINGLETON_TMat::GetInstance()->GetImgVec().size();
@@ -566,9 +566,67 @@ void CTMatView::OnTimer(UINT_PTR nIDEvent)
 			str += _T("%");
 			str += _T(" completed.");
 			pM->AddOutputString(str, true);
+
+			AddLogData();
 		}
 	}
 	CView::OnTimer(nIDEvent);
+}
+
+void CTMatView::AddLogData()
+{
+	if (m_pViewLog){
+		CString strItem[8];
+
+		_vecPageObj pImgVec = SINGLETON_TMat::GetInstance()->GetImgVec();
+		int cnt = 0;
+		for (int i = 0; i < pImgVec.size(); i++){
+			unsigned int matchFile = getHashCode((CStringA)pImgVec[i]->GetPath());
+
+
+			CString strpath = pImgVec[i]->GetPath();
+			USES_CONVERSION;
+			char* sz = T2A(strpath);
+			IplImage *pSrc = SINGLETON_TMat::GetInstance()->LoadIplImage(strpath, 1);
+
+
+			std::vector<_MATCHInfo> matches = pImgVec[i]->GetMatchResult();
+			for (int j = 0; j < matches.size(); j++){
+			
+				unsigned int matchPos = (int)matches[j].rect.x1 * 10000 + (int)matches[j].rect.y1;
+
+				CString strId;
+				strId.Format(L"%u%u", matchFile, matchPos);
+				unsigned int matchId = getHashCode((CStringA)strId);				
+				
+				strItem[0].Format(L"%u", m_pMatchingProcessor.GetCutId());
+				strItem[1].Format(L"%u", m_pMatchingProcessor.GetFileId());
+				strItem[2].Format(L"%u", m_pMatchingProcessor.GetPosId());
+				strItem[3].Format(L"%u", matchId);
+				strItem[4].Format(L"%u", matchFile);
+				strItem[5].Format(L"%u", matchPos);
+				strItem[6].Format(L"%3.2f", m_pMatchingProcessor.GetThreshold());
+				strItem[7].Format(L"%3.2f", matches[j].accuracy);
+
+				m_pViewLog->AddRecord(strItem, 8);
+
+
+				// save cut and matched images //
+				
+
+				if (pSrc != NULL){
+					IplImage* pCut = cvCreateImage(cvSize(matches[j].rect.width, matches[j].rect.height), pSrc->depth, pSrc->nChannels);
+					cvSetImageROI(pSrc, cvRect(matches[j].rect.x1, matches[j].rect.y1, matches[j].rect.width, matches[j].rect.height));		// posx, posy = left - top
+					cvCopy(pSrc, pCut);
+					CString strPath;
+					strPath.Format(L"%s\\%u.bmp", SINGLETON_TMat::GetInstance()->GetLogPath(), matchId);
+					cvSaveImage((CStringA)strPath, pCut);
+					cvReleaseImage(&pCut);
+				}
+			}
+			cvReleaseImage(&pSrc);
+		}		
+	}
 }
 
 
@@ -613,5 +671,12 @@ void CTMatView::AddNewColumn()
 {
 	if (m_pViewLog){
 		m_pViewLog->AddNewColumn();
+	}
+}
+
+void CTMatView::SaveLogFile()
+{
+	if (m_pViewLog){
+		m_pViewLog->SaveLogFile();
 	}
 }

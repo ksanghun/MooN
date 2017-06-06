@@ -125,13 +125,14 @@
 #define ID_LIST_ADDCOLUMN               32809
 #define ID_LIST_ADDCOLUMN32810          32810
 #define ID_LIST_ADDCOL                  32811
+#define ID_LIST_SAVETOCSV               32812
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        320
-#define _APS_NEXT_COMMAND_VALUE         32812
+#define _APS_NEXT_COMMAND_VALUE         32813
 #define _APS_NEXT_CONTROL_VALUE         1005
 #define _APS_NEXT_SYMED_VALUE           315
 #endif

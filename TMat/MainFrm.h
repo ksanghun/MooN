@@ -91,6 +91,7 @@ public:
 	afx_msg void OnViewPropertyviewMoon();
 	afx_msg void OnViewOutputviewMoon();
 	afx_msg void OnListAddcol();
+	afx_msg void OnListSavetocsv();
 };
 
 

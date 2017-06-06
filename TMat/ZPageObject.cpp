@@ -81,7 +81,7 @@ void CZPageObject::RotatePos(float fSpeed)
 bool CZPageObject::AddMatchedPoint(_MATCHInfo info, int search_size)
 {
 	if (search_size > 0){
-		if (IsDuplicate(info.pos, search_size) == false){
+		if (IsDuplicate(info, search_size) == false){
 			m_matched_pos.push_back(info);
 		}
 	}
@@ -512,14 +512,18 @@ void CZPageObject::ClearMatchResult()
 	m_matched_pos.clear();
 }
 
-bool CZPageObject::IsDuplicate(POINT3D pos, int search_size)
+bool CZPageObject::IsDuplicate(_MATCHInfo& info, int search_size)
 {
 	bool IsDup = false;
 	for (int i = 0; i < m_matched_pos.size(); i++){
-		float fDist = mtDistance(pos, m_matched_pos[i].pos);
+		float fDist = mtDistance(info.pos, m_matched_pos[i].pos);
 		if (fDist < search_size){
 			IsDup = true;
-			break;
+
+			if (info.accuracy > m_matched_pos[i].accuracy){  // take more accurate one !!
+				m_matched_pos[i] = info;
+			}
+
 		}
 	}
 	return IsDup;

@@ -53,8 +53,20 @@ void CZMatching::PrepareCutNSearch(CZPageObject* pSelPage, RECT2D selRect)
 		cvSetImageROI(pSrc, cvRect(selRect.x1, selRect.y1, selRect.width, selRect.height));		// posx, posy = left - top
 		cvCopy(pSrc, m_pCut);
 		m_IsReadyToSearch = true;
+
+
+		m_iFileId = getHashCode((CStringA)pSelPage->GetPath());
+		m_iPosId = (int)selRect.x1 * 10000 + (int)selRect.y1;
+		
+
+		CString strId;
+		strId.Format(L"%u%u", m_iFileId, m_iPosId);
+		m_iCutId = getHashCode((CStringA)strId);
+						
 	}
 	cvReleaseImage(&pSrc);
+
+	
 
 }
 

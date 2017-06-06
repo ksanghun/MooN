@@ -36,6 +36,9 @@ public:
 	CZViewImage* GetViewImage() { return m_pViewImage; }
 
 	void AddNewColumn();
+	void SaveLogFile();
+
+	void AddLogData();
 
 // Operations
 public:

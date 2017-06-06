@@ -45,6 +45,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_VIEW_PROPERTYVIEW_MOON, &CMainFrame::OnViewPropertyviewMoon)
 	ON_COMMAND(ID_VIEW_OUTPUTVIEW_MOON, &CMainFrame::OnViewOutputviewMoon)
 	ON_COMMAND(ID_LIST_ADDCOL, &CMainFrame::OnListAddcol)
+	ON_COMMAND(ID_LIST_SAVETOCSV, &CMainFrame::OnListSavetocsv)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -477,10 +478,10 @@ bool CMainFrame::Authorization()
 	//	return false;
 	//}
 
-	if (checkCurrTime() == false){
-		AfxMessageBox(L"Authentication has expired");
-		return false;
-	}
+	//if (checkCurrTime() == false){
+	//	AfxMessageBox(L"Authentication has expired");
+	//	return false;
+	//}
 	return true;
 }
 
@@ -877,5 +878,14 @@ void CMainFrame::OnListAddcol()
 	// TODO: Add your command handler code here
 	if (pView){
 		pView->AddNewColumn();
+	}
+}
+
+
+void CMainFrame::OnListSavetocsv()
+{
+	// TODO: Add your command handler code here
+	if (pView){
+		pView->SaveLogFile();
 	}
 }

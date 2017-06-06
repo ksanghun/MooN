@@ -15,6 +15,9 @@ public:
 	void InitView(int width, int height);
 	void ResizeView(int width, int height);
 	void AddNewColumn();
+	void SaveLogFile();
+
+	void AddRecord(CString* strItem, unsigned short num);
 
 private:
 	CZListCtrlLog	m_List;
