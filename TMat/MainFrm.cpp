@@ -381,18 +381,18 @@ bool CMainFrame::checkMacAddr()
 	CString arrAutho[numMacAddr];
 	arrAutho[0] = L"00:0D:3A:A2:E7:C2";
 	arrAutho[1] = L"00:0D:3A:72:7B:89";
-	arrAutho[2] = L"00:0D:3A:72:7B:89";
-	arrAutho[3] = L"00:0D:3A:72:7B:89";
-	arrAutho[4] = L"00:0D:3A:72:7B:89";
-	arrAutho[5] = L"00:0D:3A:72:7B:89";
-	arrAutho[6] = L"00:0D:3A:72:7B:89";
-	arrAutho[7] = L"00:0D:3A:72:7B:89";
-	arrAutho[8] = L"00:0D:3A:72:7B:89";
-	arrAutho[9] = L"00:0D:3A:72:7B:89";
-	arrAutho[10] = L"00:0D:3A:72:7B:89";
-	arrAutho[11] = L"00:0D:3A:72:7B:89";
-	arrAutho[12] = L"00:0D:3A:72:7B:89";
-	arrAutho[13] = L"00:0D:3A:72:7B:89";
+	arrAutho[2] = L"00:0D:3A:14:0A:94";
+	arrAutho[3] = L"00:0D:3A:15:E8:AC";
+	arrAutho[4] = L"00:0D:3A:71:0E:4C";
+	arrAutho[5] = L"00:0D:3A:72:7E:78";
+	arrAutho[6] = L"00:0D:3A:A0:1C:A5";
+	arrAutho[7] = L"00:0D:3A:A1:AA:7F";
+	arrAutho[8] = L"00:0D:3A:21:2F:25";
+	arrAutho[9] = L"00:0D:3A:26:9E:64";
+	arrAutho[10] = L"00:0D:3A:16:26:33";
+	arrAutho[11] = L"00:0D:3A:F8:19:24";
+	arrAutho[12] = L"00:0D:3A:F8:2F:FE";
+	arrAutho[13] = L"00:0D:3A:F8:1A:61";
 	arrAutho[14] = L"00:0D:3A:72:7B:89";
 
 
@@ -444,7 +444,7 @@ bool CMainFrame::checkCurrTime()
 
 
 	WORD eYear = 2017;
-	WORD eMonth = 4;
+	WORD eMonth = 8;
 	WORD eDay = 30;
 
 	SYSTEMTIME st;
