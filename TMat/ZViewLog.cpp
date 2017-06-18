@@ -58,6 +58,10 @@ void CZViewLog::InitView(int width, int height)
 	//m_List.AddRecode(strItem, 6);
 }
 
+void CZViewLog::ResetLogList()
+{
+	m_List.ResetListCtrl();
+}
 void CZViewLog::AddRecord(CString* strItem, unsigned short num)
 {
 	m_List.AddRecode(strItem, num);

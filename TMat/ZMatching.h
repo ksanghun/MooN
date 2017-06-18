@@ -31,5 +31,10 @@ private:
 
 	unsigned int m_iCutId, m_iFileId, m_iPosId;
 
+	void NomalizeCutImage(IplImage* pSrc, IplImage* pCut, RECT2D cutRect, unsigned short norSize);
+	RECT2D FitCutImageRect(IplImage* pSrc,  RECT2D& cutRect);
+	bool FindHorizonEage(IplImage* pSrc, RECT2D& cutRect, int type, int direction);
+	bool FindVerticalEage(IplImage* pSrc, RECT2D& cutRect, int type, int direction);
+
 };
 

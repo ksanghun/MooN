@@ -5,6 +5,9 @@
 
 
 
+
+
+
 #define ANI_FRAME_CNT 10
 
 typedef std::vector<CZPageObject*> _vecPageObj;

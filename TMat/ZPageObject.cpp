@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ZPageObject.h"
 #include "ZDataManager.h"
+#include "TMatView.h"
 //#define SPACE_SIZE 7000
 
 #define Z_TRANS 70000
@@ -385,13 +386,7 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 
 
 
-	glEnable(GL_TEXTURE_2D);
-	if (texId == 0){
-		glBindTexture(GL_TEXTURE_2D, thTexId);
-	}
-	else{
-		glBindTexture(GL_TEXTURE_2D, texId);
-	}
+	
 	
 
 	glPushMatrix();
@@ -400,13 +395,21 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 
 		// Background//
 		if (m_matched_pos.size() > 0){
-			glColor4f(1.0f, 0.1f, 0.0f, 0.9f);
+			glColor4f(0.0f, 0.99f, 0.0f, 0.5f);
 			glBegin(GL_QUADS);
 			glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
 			glVertex3f(m_vertexBg[1].x, m_vertexBg[1].y, m_vertexBg[1].z);
 			glVertex3f(m_vertexBg[2].x, m_vertexBg[2].y, m_vertexBg[2].z);
 			glVertex3f(m_vertexBg[3].x, m_vertexBg[3].y, m_vertexBg[3].z);
 			glEnd();
+		}
+
+		glEnable(GL_TEXTURE_2D);
+		if (texId == 0){
+			glBindTexture(GL_TEXTURE_2D, thTexId);
+		}
+		else{
+			glBindTexture(GL_TEXTURE_2D, texId);
 		}
 
 
@@ -450,7 +453,7 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 		//	glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
 		//	glEnd();
 		//}
-		glLineWidth(1);
+		
 	
 		// Show Result ==============================//
 		glPointSize(8);
@@ -461,34 +464,62 @@ void CZPageObject::DrawThumbNail(float fAlpha)
 				glScalef(m_fXScale, m_fYScale, 1.0f);
 				glTranslatef(-nImgWidth*0.5f, -nImgHeight*0.5f, 0.0f);	
 				
-				if (m_bIsNear){		
-				//	glLineWidth(4);
+				//if (m_bIsNear){		
+					glLineWidth(3);
 					for (int i = 0; i < m_matched_pos.size(); i++){
+
+						glColor4f(0.0f, 0.0f,0.0f, 0.5f);
 						glBegin(GL_QUADS);
-						glColor4f(m_matched_pos[i].color.r, m_matched_pos[i].color.g, m_matched_pos[i].color.b, m_matched_pos[i].color.a);
+				//		glColor4f(m_matched_pos[i].color.r, m_matched_pos[i].color.g, m_matched_pos[i].color.b, m_matched_pos[i].color.a);
+				//		glColor4f(m_matched_pos[i].color.r, m_matched_pos[i].color.g, m_matched_pos[i].color.b, 0.4f)						
 						glVertex3f(m_matched_pos[i].rect.x1, nImgHeight - m_matched_pos[i].rect.y1, 0.0f);
 						glVertex3f(m_matched_pos[i].rect.x1, nImgHeight - m_matched_pos[i].rect.y2, 0.0f);
 						glVertex3f(m_matched_pos[i].rect.x2, nImgHeight - m_matched_pos[i].rect.y2, 0.0f);
 						glVertex3f(m_matched_pos[i].rect.x2, nImgHeight - m_matched_pos[i].rect.y1, 0.0f);
-					//	glVertex3f(m_matched_pos[i].rect.x1, nImgHeight - m_matched_pos[i].rect.y1, 0.0f);
 						glEnd();
+
+
+						glColor4f(m_matched_pos[i].color.r, m_matched_pos[i].color.g, m_matched_pos[i].color.b, 0.5f);
+						glBegin(GL_LINE_STRIP);
+						//glColor4f(1.0f, 0.0f, 0.0f, 0.7f);
+						glVertex3f(m_matched_pos[i].rect.x1, nImgHeight - m_matched_pos[i].rect.y1, 0.0f);
+						glVertex3f(m_matched_pos[i].rect.x1, nImgHeight - m_matched_pos[i].rect.y2, 0.0f);
+						glVertex3f(m_matched_pos[i].rect.x2, nImgHeight - m_matched_pos[i].rect.y2, 0.0f);
+						glVertex3f(m_matched_pos[i].rect.x2, nImgHeight - m_matched_pos[i].rect.y1, 0.0f);
+						glVertex3f(m_matched_pos[i].rect.x1, nImgHeight - m_matched_pos[i].rect.y1, 0.0f);
+						glEnd();
+
+
+				//		glVertex3f(m_matched_pos[i].pos.x, nImgHeight - m_matched_pos[i].pos.y, 0.0f);
+
+
+						glColor4f(1.0f, 1.0f, 0.0f, 0.99f);
+						POINT3D pos;
+						mtSetPoint3D(&pos, m_matched_pos[i].pos.x, nImgHeight - m_matched_pos[i].pos.y, 0.5f);
+						pView->DrawGLText(m_matched_pos[i].strAccracy, pos);
+						
+
+						
 					}
 				//	glLineWidth(1);					
-				}
-				else{
-					glBegin(GL_POINTS);
-					for (int i = 0; i < m_matched_pos.size(); i++){
-						glColor4f(m_matched_pos[i].color.r, m_matched_pos[i].color.g, m_matched_pos[i].color.b, m_matched_pos[i].color.a);
-						glVertex3f(m_matched_pos[i].pos.x, nImgHeight - m_matched_pos[i].pos.y, 0.0f);
-					}
-					glEnd();
-				}
+				//}
+				//else{
+				//	glBegin(GL_POINTS);
+				//	for (int i = 0; i < m_matched_pos.size(); i++){
+				////		glColor4f(m_matched_pos[i].color.r, m_matched_pos[i].color.g, m_matched_pos[i].color.b, m_matched_pos[i].color.a);
+				//		glColor4f(m_matched_pos[i].color.r, m_matched_pos[i].color.g, m_matched_pos[i].color.b, 0.4f);
+				//		glVertex3f(m_matched_pos[i].pos.x, nImgHeight - m_matched_pos[i].pos.y, 0.0f);
+				//	}
+				//	glEnd();
+				//}
 			glPopMatrix();
 		}
 
 		glPointSize(1);
 	glPopMatrix();
 //	glColor4f(0.3f, 0.7f, 0.9f, 0.7f);	
+
+	glLineWidth(1);
 
 }
 

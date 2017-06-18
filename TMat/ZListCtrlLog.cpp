@@ -84,6 +84,13 @@ void CZListCtrlLog::InitListCtrl()
 }
 
 
+void CZListCtrlLog::ResetListCtrl()
+{
+	DeleteAllItems();
+	m_nRecordNum = 0;
+
+}
+
 
 
 void CZListCtrlLog::OnNMClick(NMHDR *pNMHDR, LRESULT *pResult)

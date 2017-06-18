@@ -321,8 +321,7 @@ void CTMatView::ProcExtractTextBoundary()
 		CString strFile;
 		int addcnt = 0;
 		for (int i = 0; i < textbox.size(); i++){
-
-			cv::rectangle(img2, textbox[i], cv::Scalar(0, 0, 255), 1, 8, 0);
+			cv::rectangle(img2, textbox[i], cv::Scalar(i, 0, 255), 1, 8, 0);
 			//cv::Mat crop = img2(textbox[i]);
 			//if (SINGLETON_TMat::GetInstance()->InsertIntoLogDB(crop, textbox[i].x, textbox[i].x + textbox[i].width,
 			//	textbox[i].y, textbox[i].y + textbox[i].height, pPage->GetCode()) == false){
@@ -573,6 +572,13 @@ void CTMatView::OnTimer(UINT_PTR nIDEvent)
 	CView::OnTimer(nIDEvent);
 }
 
+void CTMatView::ResetLogList()
+{
+	if (m_pViewLog){
+		m_pViewLog->ResetLogList();
+	}
+}
+
 void CTMatView::AddLogData()
 {
 	if (m_pViewLog){
@@ -615,13 +621,13 @@ void CTMatView::AddLogData()
 				
 
 				if (pSrc != NULL){
-					IplImage* pCut = cvCreateImage(cvSize(matches[j].rect.width, matches[j].rect.height), pSrc->depth, pSrc->nChannels);
-					cvSetImageROI(pSrc, cvRect(matches[j].rect.x1, matches[j].rect.y1, matches[j].rect.width, matches[j].rect.height));		// posx, posy = left - top
-					cvCopy(pSrc, pCut);
+					//IplImage* pCut = cvCreateImage(cvSize(matches[j].rect.width, matches[j].rect.height), pSrc->depth, pSrc->nChannels);
+					//cvSetImageROI(pSrc, cvRect(matches[j].rect.x1, matches[j].rect.y1, matches[j].rect.width, matches[j].rect.height));		// posx, posy = left - top
+					//cvCopy(pSrc, pCut);
 					CString strPath;
 					strPath.Format(L"%s\\%u.bmp", SINGLETON_TMat::GetInstance()->GetLogPath(), matchId);
-					cvSaveImage((CStringA)strPath, pCut);
-					cvReleaseImage(&pCut);
+					cvSaveImage((CStringA)strPath, matches[j].pImgCut);
+					//cvReleaseImage(&pCut);
 				}
 			}
 			cvReleaseImage(&pSrc);
@@ -678,5 +684,12 @@ void CTMatView::SaveLogFile()
 {
 	if (m_pViewLog){
 		m_pViewLog->SaveLogFile();
+	}
+}
+
+void CTMatView::DrawGLText(CString str, POINT3D pos)
+{
+	if (m_pViewImage){
+		m_pViewImage->DrawTextFromOutSise(str, pos);
 	}
 }

@@ -701,6 +701,7 @@ void CMainFrame::OnProjectClearresult()
 {
 	// TODO: Add your command handler code here
 	SINGLETON_TMat::GetInstance()->ResetResult();
+	pView->ResetLogList();
 }
 
 

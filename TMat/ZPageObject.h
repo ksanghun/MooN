@@ -19,6 +19,18 @@
 #define MAX_CAM_FOV 45.0f
 
 
+
+typedef struct _MATCHInfo
+{
+	POINT3D pos;
+	COLORf color;
+	float accuracy;
+	RECT2D rect;
+	CString strAccracy;
+	IplImage* pImgCut;
+}_MATCHInfo;
+
+
 class CZPageObject
 {
 public:

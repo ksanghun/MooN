@@ -16,6 +16,7 @@ public:
 	void ResizeView(int width, int height);
 	void AddNewColumn();
 	void SaveLogFile();
+	void ResetLogList();
 
 	void AddRecord(CString* strItem, unsigned short num);
 

@@ -39,7 +39,8 @@ public:
 	void SaveLogFile();
 
 	void AddLogData();
-
+	void ResetLogList();
+	void DrawGLText(CString str, POINT3D pos);
 // Operations
 public:
 
