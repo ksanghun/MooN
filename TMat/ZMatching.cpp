@@ -43,19 +43,8 @@ void CZMatching::NomalizeCutImage(IplImage* pSrc, IplImage* pCut, RECT2D cutRect
 
 }
 
-RECT2D CZMatching::FitCutImageRect(IplImage* pSrc, RECT2D& cutRect)
+void CZMatching::FitCutImageRect(IplImage* pSrc, RECT2D& cutRect)
 {
-	RECT2D fitRect;
-	//IplImage* tmpCut = cvCreateImage(cvSize(cutRect.width, cutRect.height), pSrc->depth, pSrc->nChannels);
-	//cvSetImageROI(pSrc, cvRect(cutRect.x1, cutRect.y1, cutRect.width, cutRect.height));		// posx, posy = left - top
-	//cvCopy(pSrc, tmpCut);
-
-	//pCut = cvCreateImage(cvSize(norSize, norSize), pSrc->depth, pSrc->nChannels);
-	//cvResize(tmpCut, pCut);
-
-	//cvReleaseImage(&tmpCut);
-
-
 	// find left edge //
 	IplImage* pBinImg = cvCreateImage(cvSize(pSrc->width, pSrc->height), IPL_DEPTH_8U, 1);
 	cvThreshold(pSrc, pBinImg, 128, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
@@ -73,7 +62,6 @@ RECT2D CZMatching::FitCutImageRect(IplImage* pSrc, RECT2D& cutRect)
 //	cvShowImage("Bin Image", pBinImg);
 
 	cvReleaseImage(&pBinImg);
-	return fitRect;
 }
 
 bool CZMatching::FindVerticalEage(IplImage* pSrc, RECT2D& cutRect, int type, int direction)
@@ -237,13 +225,14 @@ void CZMatching::PrepareCutNSearch(CZPageObject* pSelPage, RECT2D selRect)
 		m_IsReadyToSearch = true;
 
 
-		m_iFileId = getHashCode((CStringA)pSelPage->GetPath());
-		m_iPosId = (int)selRect.x1 * 10000 + (int)selRect.y1;
+		m_cutInfo.fileid = getHashCode((CStringA)pSelPage->GetPath());
+		m_cutInfo.posid = (int)selRect.x1 * 10000 + (int)selRect.y1;
 		
 
 		CString strId;
-		strId.Format(L"%u%u", m_iFileId, m_iPosId);
-		m_iCutId = getHashCode((CStringA)strId);
+		strId.Format(L"%u%u", m_cutInfo.fileid, m_cutInfo.posid);
+		m_cutInfo.id = getHashCode((CStringA)strId);
+		m_cutInfo.th = m_Threshold;
 
 
 		cvShowImage("Cut Image", m_pCut);
@@ -257,7 +246,7 @@ void CZMatching::PrepareCutNSearch(CZPageObject* pSelPage, RECT2D selRect)
 
 }
 
-bool CZMatching::DoSearch(unsigned int& sCnt)
+bool CZMatching::DoSearch(unsigned int& sCnt, unsigned int sId, CUT_INFO info)
 {
 	if (m_pCut == NULL)
 		return false;
@@ -292,17 +281,19 @@ bool CZMatching::DoSearch(unsigned int& sCnt)
 						mInfo.accuracy = fD;
 						mInfo.strAccracy.Format(L"%d", (int)(fD * 100));
 						mInfo.rect.set(x, x + m_pCut->width, y, y + m_pCut->height);
+						mInfo.searchId = sId;
+						mInfo.cInfo = info;
 
-			
-					//	FitCutImageRect(gray, m_pCut, mInfo.rect);
-
-						mInfo.pImgCut = cvCreateImage(cvSize(mInfo.rect.width, mInfo.rect.height), gray->depth, gray->nChannels);
-						cvSetImageROI(gray, cvRect(mInfo.rect.x1, mInfo.rect.y1, mInfo.rect.width, mInfo.rect.height));		// posx, posy = left - top
-						cvCopy(gray, mInfo.pImgCut);
+						// Fit Area to a character size //
+						//FitCutImageRect(gray, mInfo.rect);
+						//mInfo.pImgCut = cvCreateImage(cvSize(mInfo.rect.width, mInfo.rect.height), gray->depth, gray->nChannels);
+						//cvSetImageROI(gray, cvRect(mInfo.rect.x1, mInfo.rect.y1, mInfo.rect.width, mInfo.rect.height));		// posx, posy = left - top
+						//cvCopy(gray, mInfo.pImgCut);
 
 						//	mInfo.color = SINGLETON_TMat::GetInstance()->GetColor((fD)*1.1f);
 						m_resColor.a = ((fD)*m_colorAccScale)*0.5f;
 						mInfo.color = m_resColor;
+						mInfo.IsAdded = false;
 						pImgVec[sCnt]->AddMatchedPoint(std::move(mInfo), search_size);
 					}
 				}

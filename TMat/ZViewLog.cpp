@@ -33,6 +33,7 @@ void CZViewLog::InitView(int width, int height)
 	m_List.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
 	m_List.InitListCtrl();
+	m_List.AddUserColumn(L"SEARCH ID", 50);
 	m_List.AddUserColumn(L"CUT ID", 100);
 	m_List.AddUserColumn(L"CUT FILE ID", 100);
 	m_List.AddUserColumn(L"CUT POSITION", 100);
@@ -62,9 +63,9 @@ void CZViewLog::ResetLogList()
 {
 	m_List.ResetListCtrl();
 }
-void CZViewLog::AddRecord(CString* strItem, unsigned short num)
+void CZViewLog::AddRecord()
 {
-	m_List.AddRecode(strItem, num);
+	m_List.AddRecode();
 }
 
 void CZViewLog::OnSize(UINT nType, int cx, int cy)

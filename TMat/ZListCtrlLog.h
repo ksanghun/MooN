@@ -14,7 +14,7 @@ public:
 
 	void InitListCtrl();
 	void AddUserColumn(CString strLable, unsigned short colWidth);
-	void AddRecode(CString* strItem, unsigned short itemNum);
+	void AddRecode();
 	void ResetListCtrl();
 
 // ColumnHeader Class============================//

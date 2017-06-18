@@ -443,4 +443,12 @@ struct WORD_POS{
 	unsigned long wid;
 };
 
+struct CUT_INFO{
+	unsigned long id;
+	unsigned long fileid;
+	unsigned long posid;
+	float th;
+};
+
+
 #pragma pack()

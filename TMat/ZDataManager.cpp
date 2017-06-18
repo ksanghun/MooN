@@ -401,11 +401,11 @@ void CZDataManager::UpdatePageStatus(POINT3D camPos)
 
 void CZDataManager::ResetResult()
 {
-	for (int i = 0; i < m_vecImageData.img.size(); i++){
-		
+	for (int i = 0; i < m_vecImageData.img.size(); i++){		
 			m_vecImageData.img[i]->ClearMatchResult();
-
 	}
+
+	ResetMatchingResult();
 }
 
 POINT3D CZDataManager::GetColor(float fvalue)
@@ -622,4 +622,132 @@ void CZDataManager::GetWordBoundaryByWordId(unsigned long wid, std::vector<WORD_
 			vecBoundary.push_back(iter->second.posList[i]);
 		}
 	}
+}
+
+
+void CZDataManager::ResetMatchingResult()
+{
+	std::map<unsigned long, MATCHGROUP>::iterator iter_gr = m_matchResGroup.begin();
+
+	for (; iter_gr != m_matchResGroup.end(); iter_gr++){
+		for (int j = 0; j < iter_gr->second.matche.size(); j++){
+			if (iter_gr->second.matche[j].pImgCut != NULL){
+				cvReleaseImage(&iter_gr->second.matche[j].pImgCut);
+			}
+		}
+		iter_gr->second.matche.clear();
+	}
+
+	m_matchResGroup.clear();
+}
+
+void CZDataManager::SetMatchingResults()
+{
+	ResetMatchingResult();
+
+	MATCHGROUP vecMatchRes;
+
+	bool IsAdded = false;
+	_vecPageObj pImgVec = GetImgVec();
+	int cnt = 0;
+	for (int i = 0; i < pImgVec.size(); i++){
+		unsigned int matchFile = getHashCode((CStringA)pImgVec[i]->GetPath());
+		
+		CString strpath = pImgVec[i]->GetPath();
+		USES_CONVERSION;
+		char* sz = T2A(strpath);
+		IplImage *pSrc = SINGLETON_TMat::GetInstance()->LoadIplImage(strpath, 1);
+
+		std::vector<_MATCHInfo> matches = pImgVec[i]->GetMatchResult();
+		for (int j = 0; j < matches.size(); j++){
+
+			if (matches[j].IsAdded == true)
+				continue;
+
+
+			unsigned int matchPos = (int)matches[j].rect.x1 * 10000 + (int)matches[j].rect.y1;
+
+			CString strId;
+			strId.Format(L"%u%u", matchFile, matchPos);
+			unsigned int matchId = getHashCode((CStringA)strId);
+
+			_MATCHResults matchRes;
+
+			matchRes.searchId = matches[j].searchId;
+			matchRes.cutId = matches[j].cInfo.id;
+			matchRes.fileId = matches[j].cInfo.fileid;
+			matchRes.posId = matches[j].cInfo.posid;
+			matchRes.matchId = matchId;
+			matchRes.matchFile = matchFile;
+			matchRes.matchPos = matchPos;
+			matchRes.accuracy = matches[j].accuracy;
+			matchRes.fTh = matches[j].cInfo.th;
+
+
+			if (pSrc != NULL){
+				matchRes.pImgCut = cvCreateImage(cvSize(matches[j].rect.width, matches[j].rect.height), pSrc->depth, pSrc->nChannels);
+				cvSetImageROI(pSrc, cvRect(matches[j].rect.x1, matches[j].rect.y1, matches[j].rect.width, matches[j].rect.height));		// posx, posy = left - top
+				cvCopy(pSrc, matchRes.pImgCut);
+			}
+
+		//	m_matchResults.push_back(matchRes);
+		//	vecMatchRes.matche.push_back(matchRes);
+
+			//std::map<unsigned long, MATCHGROUP>::iterator iter_gr;
+
+			//iter_gr = m_matchResGroup.find(matchRes.searchId);
+			//if (iter_gr != m_matchResGroup.end()){
+			m_matchResGroup[matchRes.searchId].matche.push_back(matchRes);
+			m_matchResGroup[matchRes.searchId].searchId = matchRes.searchId;
+			//}
+			//else{
+
+			//}
+
+			matches[j].IsAdded = true;
+			IsAdded = true;
+		}
+	}
+
+	if (IsAdded){
+//		vecMatchRes.searchId = searchid;
+////		m_matchResGroup.push_back(vecMatchRes);
+//
+//		std::map<unsigned long, MATCHGROUP>::iterator iter_gr;
+//
+//		iter_gr = m_matchResGroup.find(searchid);
+//		if (iter_gr == m_matchResGroup.end()){
+//			m_matchResGroup[searchid] = vecMatchRes;
+//		}
+	}
+}
+
+void CZDataManager::SortMatchingResults()
+{
+	// bubble sort //
+
+	std::map<unsigned long, MATCHGROUP>::iterator iter_gr = m_matchResGroup.begin();
+
+	for (; iter_gr != m_matchResGroup.end(); iter_gr++){
+		int numItem = iter_gr->second.matche.size();
+		if (numItem > 1){
+			for (int i = 0; i < numItem - 1; i++)
+			{
+				for (int j = 0; j < numItem - i - 1; j++)
+				{
+					if (iter_gr->second.matche[j].accuracy < iter_gr->second.matche[j + 1].accuracy) /* For decreasing order use < */
+					{
+						_MATCHResults swap = iter_gr->second.matche[j];
+						iter_gr->second.matche[j] = iter_gr->second.matche[j + 1];
+						iter_gr->second.matche[j + 1] = swap;
+					}
+				}
+			}
+		}
+	}
+}
+
+void CZDataManager::GenerateMatchingResultsImg()
+{
+
 }

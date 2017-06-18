@@ -18,10 +18,11 @@ public:
 	void SaveLogFile();
 	void ResetLogList();
 
-	void AddRecord(CString* strItem, unsigned short num);
+	void AddRecord();
 
 private:
 	CZListCtrlLog	m_List;
+	
 
 protected:
 
