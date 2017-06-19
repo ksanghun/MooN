@@ -42,6 +42,8 @@ void CZViewLog::InitView(int width, int height)
 	m_List.AddUserColumn(L"MATCH POSITION", 100);
 	m_List.AddUserColumn(L"Threshold", 100);
 	m_List.AddUserColumn(L"Accuracy", 100);
+	m_List.AddUserColumn(L"CODE", 100);
+	m_List.AddUserColumn(L"BASE64", 1000);
 
 
 	//CString strItem[10];

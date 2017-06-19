@@ -81,8 +81,8 @@ END_MESSAGE_MAP()
 // CZListCtrlLog message handlers
 void CZListCtrlLog::InitListCtrl()
 {
-	m_Edit.Create(WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL , CRect(0, 0, 800, 500), this, NULL);
-	m_Edit.ShowWindow(SW_HIDE);
+	//m_Edit.Create(WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL , CRect(0, 0, 800, 500), this, NULL);
+	//m_Edit.ShowWindow(SW_HIDE);
 }
 
 
@@ -99,39 +99,39 @@ void CZListCtrlLog::OnNMClick(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
 	// TODO: Add your control notification handler code here
-	Invalidate();
-	HWND hWnd1 = GetSafeHwnd();
-	LPNMITEMACTIVATE temp = (LPNMITEMACTIVATE)pNMHDR;
-	RECT rect;
-	//get the row number
-	nItem = temp->iItem;
-	//get the column number
-	nSubItem = temp->iSubItem;
-	if (nSubItem == 0 || nSubItem == -1 || nItem == -1){
-		*pResult = 0;
-		m_Edit.ShowWindow(SW_HIDE);
-		return;
-	}
-	//Retrieve the text of the selected subItem from the list
-	CString str = GetItemText(nItem, nSubItem);
+//	Invalidate();
+//	HWND hWnd1 = GetSafeHwnd();
+//	LPNMITEMACTIVATE temp = (LPNMITEMACTIVATE)pNMHDR;
+//	RECT rect;
+//	//get the row number
+//	nItem = temp->iItem;
+//	//get the column number
+//	nSubItem = temp->iSubItem;
+//	if (nSubItem == 0 || nSubItem == -1 || nItem == -1){
+//		*pResult = 0;
+////		m_Edit.ShowWindow(SW_HIDE);
+//		return;
+//	}
+//	//Retrieve the text of the selected subItem from the list
+//	CString str = GetItemText(nItem, nSubItem);
+//
+//	RECT rect1, rect2;
+//	// this macro is used to retrieve the Rectanle of the selected SubItem
+//	ListView_GetSubItemRect(hWnd1, temp->iItem, temp->iSubItem, LVIR_BOUNDS, &rect);
+//	//Get the Rectange of the listControl
+//	::GetWindowRect(temp->hdr.hwndFrom, &rect1);
+//	//Get the Rectange of the Dialog
+//	::GetWindowRect(m_hWnd, &rect2);
+//
+//	int x = rect1.left - rect2.left;
+//	int y = rect1.top - rect2.top;
 
-	RECT rect1, rect2;
-	// this macro is used to retrieve the Rectanle of the selected SubItem
-	ListView_GetSubItemRect(hWnd1, temp->iItem, temp->iSubItem, LVIR_BOUNDS, &rect);
-	//Get the Rectange of the listControl
-	::GetWindowRect(temp->hdr.hwndFrom, &rect1);
-	//Get the Rectange of the Dialog
-	::GetWindowRect(m_hWnd, &rect2);
-
-	int x = rect1.left - rect2.left;
-	int y = rect1.top - rect2.top;
-
-	if (nItem != -1)
-		m_Edit.SetWindowPos(NULL, rect.left + x + 1, rect.top, rect.right - rect.left - 1, rect.bottom - rect.top - 1, NULL);
-	m_Edit.ShowWindow(SW_SHOW);
-	m_Edit.SetFocus();
-	::Rectangle(::GetDC(temp->hdr.hwndFrom), rect.left, rect.top - 1, rect.right, rect.bottom);
-	m_Edit.SetWindowTextW(str);
+	//if (nItem != -1)
+	//	m_Edit.SetWindowPos(NULL, rect.left + x + 1, rect.top, rect.right - rect.left - 1, rect.bottom - rect.top - 1, NULL);
+	//m_Edit.ShowWindow(SW_SHOW);
+	//m_Edit.SetFocus();
+	//::Rectangle(::GetDC(temp->hdr.hwndFrom), rect.left, rect.top - 1, rect.right, rect.bottom);
+	//m_Edit.SetWindowTextW(str);
 
 	*pResult = 0;
 }
@@ -147,9 +147,9 @@ BOOL CZListCtrlLog::PreTranslateMessage(MSG* pMsg)
 			CWnd* pwndCtrl = GetFocus();
 			if (pwndCtrl->IsKindOf(RUNTIME_CLASS(CEdit))){
 				CString str;
-				m_Edit.GetWindowText(str);
-				SetItem(nItem, nSubItem, LVIF_TEXT, str, 0, 0, 0, NULL);
-				m_Edit.ShowWindow(SW_HIDE);
+//				m_Edit.GetWindowText(str);
+				//SetItem(nItem, nSubItem, LVIF_TEXT, str, 0, 0, 0, NULL);
+				//m_Edit.ShowWindow(SW_HIDE);
 			}
 		}
 	}
@@ -446,6 +446,23 @@ void CZListCtrlLog::AddRecode()
 			strItem.Format(L"%3.2f", iter_gr->second.matche[i].accuracy);
 			SetItem(m_nRecordNum, 8, LVIF_TEXT, strItem, 0, 0, 0, NULL);
 
+			SetItem(m_nRecordNum, 9, LVIF_TEXT, L"-", 0, 0, 0, NULL);
+
+			IplImage* pImg = iter_gr->second.matche[i].pImgCut;
+			cv::Mat m = cv::cvarrToMat(pImg);
+
+			std::vector<uchar> data_encode;
+			imencode(".png", m, data_encode);
+
+			CString strBase64 = SINGLETON_TMat::GetInstance()->base64_encode((unsigned char*)&data_encode[0], data_encode.size());
+			SetItem(m_nRecordNum, 10, LVIF_TEXT, strBase64, 0, 0, 0, NULL);
+
+			
+			cvSaveImage("d:/test.png", pImg);
+
+			TRACE(strBase64);
+
+
 			m_nRecordNum++;
 		}
 		
@@ -505,7 +522,7 @@ void CZListCtrlLog::OnLButtonDown(UINT nFlags, CPoint point)
 	//CString str;
 	//m_Edit.GetWindowText(str);
 	//SetItem(nItem, nSubItem, LVIF_TEXT, str, 0, 0, 0, NULL);
-	m_Edit.ShowWindow(SW_HIDE);
+//	m_Edit.ShowWindow(SW_HIDE);
 
 	CListCtrl::OnLButtonDown(nFlags, point);
 }

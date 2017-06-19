@@ -46,7 +46,7 @@ protected:
 
 	virtual void PreSubclassWindow();
 
-	CEdit m_Edit;
+//	CEdit m_Edit;
 	int nItem, nSubItem;
 	int m_nCulNum, m_nRecordNum;
 

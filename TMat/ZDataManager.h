@@ -2,7 +2,7 @@
 #include "ZSingtonTMat.h"
 #include "ZPDFConverter.h"
 #include "ZPageObject.h"
-
+#include <string>
 
 
 
@@ -106,6 +106,13 @@ public:
 	void SetMatchingResults();
 	void SortMatchingResults();
 	void GenerateMatchingResultsImg();
+
+
+
+	//=Base64 Conversion===============================================================//
+	CString base64_encode(unsigned char const*, unsigned int len);
+	std::string base64_decode(std::string const& s);
+	//=================================================================//
 
 private:
 
