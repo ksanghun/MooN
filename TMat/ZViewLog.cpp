@@ -12,11 +12,12 @@ IMPLEMENT_DYNAMIC(CZViewLog, CWnd)
 
 CZViewLog::CZViewLog()
 {
-
+	m_writeBuffer = new char[1024 * 100];
 }
 
 CZViewLog::~CZViewLog()
 {
+	delete[] m_writeBuffer;
 }
 
 
@@ -29,10 +30,16 @@ END_MESSAGE_MAP()
 // CZViewLog message handlers
 void CZViewLog::InitView(int width, int height)
 {
-	m_List.Create(	WS_CHILD | WS_VISIBLE | WS_BORDER | LVS_REPORT | LVS_EDITLABELS,CRect(0, 0, width, height), this, NULL);	
+	m_List.Create(WS_CHILD | WS_VISIBLE | WS_BORDER | LVS_REPORT | LVS_EDITLABELS, CRect(0, 0, width, height), this, NULL);
 	m_List.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
+
+	m_List.EnableScrollBarCtrl(SB_HORZ);
+	m_List.ShowScrollBar(SB_HORZ);
+	m_List.SetScrollRange(SB_HORZ, 0, 2000);
+
 	m_List.InitListCtrl();
+	m_List.AddUserColumn(L"SEARCH ID", 50);
 	m_List.AddUserColumn(L"CUT ID", 100);
 	m_List.AddUserColumn(L"CUT FILE ID", 100);
 	m_List.AddUserColumn(L"CUT POSITION", 100);
@@ -41,6 +48,8 @@ void CZViewLog::InitView(int width, int height)
 	m_List.AddUserColumn(L"MATCH POSITION", 100);
 	m_List.AddUserColumn(L"Threshold", 100);
 	m_List.AddUserColumn(L"Accuracy", 100);
+	m_List.AddUserColumn(L"CODE", 100);
+	m_List.AddUserColumn(L"BASE64", 1000);
 
 
 	//CString strItem[10];
@@ -62,9 +71,9 @@ void CZViewLog::ResetLogList()
 {
 	m_List.ResetListCtrl();
 }
-void CZViewLog::AddRecord(CString* strItem, unsigned short num)
+void CZViewLog::AddRecord()
 {
-	m_List.AddRecode(strItem, num);
+	m_List.AddRecode();
 }
 
 void CZViewLog::OnSize(UINT nType, int cx, int cy)
@@ -77,7 +86,7 @@ void CZViewLog::OnSize(UINT nType, int cx, int cy)
 void CZViewLog::ResizeView(int width, int height)
 {
 	if (m_List){
-		m_List.MoveWindow(0, 0, width, height);
+		m_List.MoveWindow(0, 0, width, height-20);
 	}
 
 }
@@ -101,15 +110,16 @@ void CZViewLog::SaveLogFile()
 		CString m_strPath = dlg.GetPathName();
 
 		FILE* fp = 0;
-		char wBuff[1024];
+	//	char wBuff[102400];
+		memset(m_writeBuffer, 0, sizeof(m_writeBuffer));
 		CString strRecord;
 		fopen_s(&fp, (CStringA)m_strPath, "w");
 		if (fp){
-			strRecord = L"CUT_ID,CUT CUT_FILE_ID,CUT_POSITION,MATCH_ID,MATCH_FILE_ID,MATCH_POSITION,Threshold,Accuracy";
+			strRecord = L"SEARCH_ID, CUT_ID,CUT CUT_FILE_ID,CUT_POSITION,MATCH_ID,MATCH_FILE_ID,MATCH_POSITION,Threshold,Accuracy, CODE, BASE64";
 			int len = strRecord.GetLength() + 1;
-			sprintf_s(wBuff, len, (CStringA)strRecord, fp);
+			sprintf_s(m_writeBuffer, len, (CStringA)strRecord, fp);
 			// Write Column //
-			fwrite(wBuff, len, 1, fp);
+			fwrite(m_writeBuffer, len, 1, fp);
 			fwrite("\r\n", 1, 1, fp);
 
 			for (int i = 0; i < m_List.GetItemCount(); i++){
@@ -120,12 +130,15 @@ void CZViewLog::SaveLogFile()
 				strRecord += m_List.GetItemText(i, 4);	strRecord += L",";
 				strRecord += m_List.GetItemText(i, 5);	strRecord += L",";
 				strRecord += m_List.GetItemText(i, 6);	strRecord += L",";
-				strRecord += m_List.GetItemText(i, 7);	
+				strRecord += m_List.GetItemText(i, 7);	strRecord += L",";
+				strRecord += m_List.GetItemText(i, 8);	strRecord += L",";
+				strRecord += m_List.GetItemText(i, 9);	strRecord += L",";
+				strRecord += m_List.GetItemText(i, 10);
 
 				len = strRecord.GetLength() + 1;
-				sprintf_s(wBuff, len, (CStringA)strRecord, fp);
+				sprintf_s(m_writeBuffer, len, (CStringA)strRecord, fp);
 				// Write Items //
-				fwrite(wBuff, len, 1, fp);
+				fwrite(m_writeBuffer, len, 1, fp);
 				fwrite("\r\n", 1, 1, fp);
 			}
 

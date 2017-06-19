@@ -2,7 +2,7 @@
 #include "ZSingtonTMat.h"
 #include "ZPDFConverter.h"
 #include "ZPageObject.h"
-
+#include <string>
 
 
 
@@ -11,6 +11,7 @@
 #define ANI_FRAME_CNT 10
 
 typedef std::vector<CZPageObject*> _vecPageObj;
+
 
 struct PAGEGROUP{
 	int nSlot;
@@ -29,6 +30,31 @@ struct WORD_RECORD{
 struct THREADINFO
 {
 	_vecPageObj img;
+};
+
+
+typedef struct _MATCHResults
+{
+	IplImage* pImgCut;
+	unsigned short searchId;
+	unsigned long cutId;
+	unsigned long fileId;
+	unsigned long posId;
+	unsigned long matchId;
+	unsigned long matchFile;
+	unsigned long matchPos;
+	float fTh;
+	float accuracy;
+
+	CString strBase64;
+
+}_MATCHResults;
+
+typedef std::vector<_MATCHResults> _vecMATCHResult;
+
+struct MATCHGROUP{
+	int searchId;
+	_vecMATCHResult matche;
 };
 
 
@@ -53,6 +79,7 @@ public:
 	_vecPageObj::iterator GetVecImageBegin() { return m_vecImageData.img.begin(); }
 	_vecPageObj::iterator GetVecImageEnd() { return m_vecImageData.img.end(); }
 	_vecPageObj& GetImgVec() { return m_vecImageData.img; }
+	std::map<unsigned long, MATCHGROUP>& GetMatchResults() { return m_matchResGroup; }
 
 	int  GetEmptySlot();
 	void ReturnSlot(int idx);
@@ -76,9 +103,27 @@ public:
 	CString GetLogPath() { return m_strLogPath; }
 	void GetWordBoundaryByPageCode(unsigned long pcode, std::vector<WORD_POS>& vecBoundary);
 	void GetWordBoundaryByWordId(unsigned long wid, std::vector<WORD_POS>& vecBoundary);
+
+//	void AddMatchingResult(_MATCHInfo* match);
+	void ResetMatchingResult();
+	void SetMatchingResults();
+	void SortMatchingResults();
+	void GenerateMatchingResultsImg();
+
+
+
+	//=Base64 Conversion===============================================================//
+	CString base64_encode(unsigned char const*, unsigned int len);
+	std::string base64_decode(std::string const& s);
+	//=================================================================//
+
 private:
 
 	float SearchInLogFile(IplImage& pCut, IplImage& dst);
+
+//	std::vector<_MATCHResults> m_matchResults;
+//	std::vector<_MATCHResults> m_matchResults;
+	std::map<unsigned long, MATCHGROUP> m_matchResGroup;
 
 	CZPDFConverter* m_pPDF;
 	THREADINFO m_vecImageData;
@@ -87,6 +132,7 @@ private:
 
 	// Image Data Set //
 	std::map<unsigned long, CZPageObject*> m_mapImageData;
+	
 	std::map<unsigned long, PAGEGROUP> m_mapGrupImg;
 //	_vecPageObj m_vecImageData;
 

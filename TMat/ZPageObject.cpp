@@ -47,9 +47,11 @@ CZPageObject::~CZPageObject()
 		glDeleteTextures(1, &thTexId);
 	}
 
-	if (m_matched_pos.size() > 0){
-		m_matched_pos.clear();
-	}
+	ClearMatchResult();
+
+	//if (m_matched_pos.size() > 0){
+	//	m_matched_pos.clear();
+	//}
 }
 
 //===========================//

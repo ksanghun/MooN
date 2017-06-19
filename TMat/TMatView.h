@@ -38,7 +38,6 @@ public:
 	void AddNewColumn();
 	void SaveLogFile();
 
-	void AddLogData();
 	void ResetLogList();
 	void DrawGLText(CString str, POINT3D pos);
 // Operations
@@ -54,6 +53,7 @@ private:
 	CExtractor m_Extractor;
 
 	unsigned int m_searchCnt;
+	unsigned int m_searchId;
 
 
 	void AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt);

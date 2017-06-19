@@ -6,6 +6,16 @@
 #include "Extractor.h"
 
 
+// For convert image file to base64 //
+static const std::string base64_chars =
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+"abcdefghijklmnopqrstuvwxyz"
+"0123456789+/";
+//===================================//
+static inline bool is_base64(unsigned char c) {
+	return (isalnum(c) || (c == '+') || (c == '/'));
+}
+
 
 UINT Threadproc(LPVOID param);
 
@@ -127,7 +137,7 @@ CZDataManager::~CZDataManager()
 		fclose(fp);
 	}
 
-
+	ResetMatchingResult();
 }
 
 void CZDataManager::InitData()
@@ -401,11 +411,11 @@ void CZDataManager::UpdatePageStatus(POINT3D camPos)
 
 void CZDataManager::ResetResult()
 {
-	for (int i = 0; i < m_vecImageData.img.size(); i++){
-		
+	for (int i = 0; i < m_vecImageData.img.size(); i++){		
 			m_vecImageData.img[i]->ClearMatchResult();
-
 	}
+
+	ResetMatchingResult();
 }
 
 POINT3D CZDataManager::GetColor(float fvalue)
@@ -622,4 +632,183 @@ void CZDataManager::GetWordBoundaryByWordId(unsigned long wid, std::vector<WORD_
 			vecBoundary.push_back(iter->second.posList[i]);
 		}
 	}
+}
+
+
+void CZDataManager::ResetMatchingResult()
+{
+	std::map<unsigned long, MATCHGROUP>::iterator iter_gr = m_matchResGroup.begin();
+
+	for (; iter_gr != m_matchResGroup.end(); iter_gr++){
+		for (int j = 0; j < iter_gr->second.matche.size(); j++){
+			if (iter_gr->second.matche[j].pImgCut != NULL){
+				cvReleaseImage(&iter_gr->second.matche[j].pImgCut);
+			}
+		}
+		iter_gr->second.matche.clear();
+	}
+
+	m_matchResGroup.clear();
+}
+
+void CZDataManager::SetMatchingResults()
+{
+//	ResetMatchingResult();
+
+	MATCHGROUP vecMatchRes;
+
+	bool IsAdded = false;
+	_vecPageObj pImgVec = GetImgVec();
+	int cnt = 0;
+	for (int i = 0; i < pImgVec.size(); i++){
+		unsigned int matchFile = getHashCode((CStringA)pImgVec[i]->GetPath());
+		
+		CString strpath = pImgVec[i]->GetPath();
+		USES_CONVERSION;
+		char* sz = T2A(strpath);
+		IplImage *pSrc = SINGLETON_TMat::GetInstance()->LoadIplImage(strpath, 1);
+
+		std::vector<_MATCHInfo>& matches = pImgVec[i]->GetMatchResult();
+		for (int j = 0; j < matches.size(); j++){
+
+			if (matches[j].IsAdded == true)
+				continue;
+
+
+			unsigned int matchPos = (int)matches[j].rect.x1 * 10000 + (int)matches[j].rect.y1;
+
+			CString strId;
+			strId.Format(L"%u%u", matchFile, matchPos);
+			unsigned int matchId = getHashCode((CStringA)strId);
+
+			_MATCHResults matchRes;
+
+			matchRes.searchId = matches[j].searchId;
+			matchRes.cutId = matches[j].cInfo.id;
+			matchRes.fileId = matches[j].cInfo.fileid;
+			matchRes.posId = matches[j].cInfo.posid;
+			matchRes.matchId = matchId;
+			matchRes.matchFile = matchFile;
+			matchRes.matchPos = matchPos;
+			matchRes.accuracy = matches[j].accuracy;
+			matchRes.fTh = matches[j].cInfo.th;
+
+
+			if (pSrc != NULL){
+			//	matchRes.pImgCut = cvCreateImage(cvSize(matches[j].rect.width, matches[j].rect.height), pSrc->depth, pSrc->nChannels);
+				IplImage* pTmp = cvCreateImage(cvSize(matches[j].rect.width, matches[j].rect.height), pSrc->depth, pSrc->nChannels);
+				cvSetImageROI(pSrc, cvRect(matches[j].rect.x1, matches[j].rect.y1, matches[j].rect.width, matches[j].rect.height));		// posx, posy = left - top
+				cvCopy(pSrc, pTmp);
+								
+				matchRes.pImgCut = cvCreateImage(cvSize(64, 64), pTmp->depth, pTmp->nChannels);
+				cvResize(pTmp, matchRes.pImgCut);
+				cvReleaseImage(&pTmp);
+
+
+				//Encode image file to base64 //
+				cv::Mat m = cv::cvarrToMat(matchRes.pImgCut);
+				std::vector<uchar> data_encode;
+				imencode(".png", m, data_encode);
+				matchRes.strBase64 = SINGLETON_TMat::GetInstance()->base64_encode((unsigned char*)&data_encode[0], data_encode.size());
+				data_encode.clear();
+				//===========================================//
+
+				// Save Cut Image //
+				CString strName;
+				strName.Format(L"%s/%u.png", m_strLogPath, matchId);
+				cvSaveImage((CStringA)strName, matchRes.pImgCut);
+			}
+
+			m_matchResGroup[matchRes.searchId].matche.push_back(matchRes);
+			m_matchResGroup[matchRes.searchId].searchId = matchRes.searchId;
+
+			matches[j].IsAdded = true;
+			IsAdded = true;
+		}
+	}
+}
+
+void CZDataManager::SortMatchingResults()
+{
+	// bubble sort //
+
+	std::map<unsigned long, MATCHGROUP>::iterator iter_gr = m_matchResGroup.begin();
+
+	for (; iter_gr != m_matchResGroup.end(); iter_gr++){
+		int numItem = iter_gr->second.matche.size();
+		if (numItem > 1){
+			for (int i = 0; i < numItem - 1; i++)
+			{
+				for (int j = 0; j < numItem - i - 1; j++)
+				{
+					if (iter_gr->second.matche[j].accuracy < iter_gr->second.matche[j + 1].accuracy) /* For decreasing order use < */
+					{
+						_MATCHResults swap = iter_gr->second.matche[j];
+						iter_gr->second.matche[j] = iter_gr->second.matche[j + 1];
+						iter_gr->second.matche[j + 1] = swap;
+					}
+				}
+			}
+		}
+	}
+	
+}
+
+void CZDataManager::GenerateMatchingResultsImg()
+{
+
+	//IplImage* pImg = iter_gr->second.matche[i].pImgCut;
+	//CString strBase64 = SINGLETON_TMat::GetInstance()->base64_encode((unsigned char*)pImg->imageData, pImg->imageSize);
+	//SetItem(m_nRecordNum, 10, LVIF_TEXT, strBase64, 0, 0, 0, NULL);
+
+	//cvSaveImage("d:/test.png", pImg);
+
+}
+
+CString CZDataManager::base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len)
+{
+	std::string ret;
+	int i = 0;
+	int j = 0;
+	unsigned char char_array_3[3];
+	unsigned char char_array_4[4];
+
+	while (in_len--) {
+		char_array_3[i++] = *(bytes_to_encode++);
+		if (i == 3) {
+			char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+			char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+			char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+			char_array_4[3] = char_array_3[2] & 0x3f;
+
+			for (i = 0; (i <4); i++)
+				ret += base64_chars[char_array_4[i]];
+			i = 0;
+		}
+	}
+
+	if (i)
+	{
+		for (j = i; j < 3; j++)
+			char_array_3[j] = '\0';
+
+		char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+		char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+		char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+		char_array_4[3] = char_array_3[2] & 0x3f;
+
+		for (j = 0; (j < i + 1); j++)
+			ret += base64_chars[char_array_4[j]];
+
+		while ((i++ < 3))
+			ret += '=';
+
+	}
+
+	CString strEncode(ret.c_str());
+	return strEncode;
+}
+std::string CZDataManager::base64_decode(std::string const& s)
+{
+	return "";
 }

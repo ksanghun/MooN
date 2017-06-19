@@ -24,11 +24,19 @@ typedef struct _MATCHInfo
 {
 	POINT3D pos;
 	COLORf color;
-	float accuracy;
 	RECT2D rect;
 	CString strAccracy;
-	IplImage* pImgCut;
+
+	unsigned int searchId;
+	float accuracy;
+	bool IsAdded;
+
+	CUT_INFO cInfo;
+
 }_MATCHInfo;
+
+
+
 
 
 class CZPageObject
@@ -87,6 +95,9 @@ public:
 	void SetIsNear(bool isnear) { m_bIsNear = isnear; }
 
 	bool UpdateTextBoundary();
+
+	
+
 private:
 	CString strPath;
 	CString strPName;
@@ -120,7 +131,7 @@ private:
 	float m_fImgCols;
 	float m_fImgRows;
 
-	std::vector<_MATCHInfo> m_matched_pos;
+	
 	float m_fXScale, m_fYScale;
 
 	bool m_bAniPos;
@@ -133,5 +144,6 @@ private:
 	RECT2D m_RectImg;
 
 	std::vector<WORD_POS> m_wordBoundary;
+	std::vector<_MATCHInfo> m_matched_pos;
 };
 

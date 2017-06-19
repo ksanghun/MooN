@@ -14,7 +14,7 @@ public:
 
 	void InitListCtrl();
 	void AddUserColumn(CString strLable, unsigned short colWidth);
-	void AddRecode(CString* strItem, unsigned short itemNum);
+	void AddRecode();
 	void ResetListCtrl();
 
 // ColumnHeader Class============================//
@@ -46,7 +46,7 @@ protected:
 
 	virtual void PreSubclassWindow();
 
-	CEdit m_Edit;
+//	CEdit m_Edit;
 	int nItem, nSubItem;
 	int m_nCulNum, m_nRecordNum;
 
