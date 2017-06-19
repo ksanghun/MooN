@@ -40,6 +40,7 @@ BEGIN_MESSAGE_MAP(CTMatView, CView)
 	ON_WM_KEYDOWN()
 	ON_WM_KEYUP()
 	ON_WM_TIMER()
+	ON_WM_DROPFILES()
 END_MESSAGE_MAP()
 
 // CTMatView construction/destruction
@@ -51,6 +52,7 @@ CTMatView::CTMatView()
 
 	m_pViewImage = NULL;
 	m_pViewResult = NULL;
+	m_pViewLog = NULL;
 	m_searchCnt = 0;
 	// Init Data Manager //
 	SINGLETON_TMat::GetInstance()->InitData();
@@ -64,6 +66,9 @@ CTMatView::~CTMatView()
 	}
 	if (m_pViewResult != NULL)	{
 		delete m_pViewResult;
+	}
+	if (m_pViewLog != NULL){
+		delete m_pViewLog;
 	}
 
 }
@@ -176,15 +181,23 @@ int CTMatView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		m_pViewImage->InitGLview(0, 0);
 	}
 
+	if (m_pViewLog == NULL){
+		m_pViewLog = new CZViewLog;
+		//	m_pImageView->Create(NULL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE, cRect, this, 0x01);
+		m_pViewLog->Create(NULL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE, cRect, &m_ctrlTab, 0x02);
+		m_pViewLog->InitView(0,0);
+	}
+
 	if (m_pViewResult == NULL){
 		m_pViewResult = new CZViewResult;
 		//	m_pImageView->Create(NULL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE, cRect, this, 0x01);
-		m_pViewResult->Create(NULL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE, cRect, &m_ctrlTab, 0x02);
+		m_pViewResult->Create(NULL, NULL, WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VISIBLE, cRect, &m_ctrlTab, 0x03);
 		m_pViewResult->InitGLview(0, 0);
 	}
 
 	m_ctrlTab.AddTab(m_pViewImage, L"Image View", (UINT)0);
-	m_ctrlTab.AddTab(m_pViewResult, L"Result View", (UINT)1);
+	m_ctrlTab.AddTab(m_pViewLog, L"Log View", (UINT)1);
+	m_ctrlTab.AddTab(m_pViewResult, L"Result View", (UINT)2);
 
 
 
@@ -199,6 +212,10 @@ void CTMatView::OnSize(UINT nType, int cx, int cy)
 	// TODO: Add your message handler code here
 	m_ctrlTab.SetWindowPos(NULL, -1, -1, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
 	m_ctrlTab.SetLocation(CMFCTabCtrl::LOCATION_TOP);
+
+	if (m_pViewLog){
+		m_pViewLog->ResizeView(cx, cy);
+	}
 }
 
 
@@ -207,8 +224,8 @@ void CTMatView::OnInitialUpdate()
 	CView::OnInitialUpdate();
 
 	// TODO: Add your specialized code here and/or call the base class
+	DragAcceptFiles(true);
 
-	m_Extractor.TestFunc();
 
 	ModifyStyleEx(WS_EX_CLIENTEDGE, 0, SWP_FRAMECHANGED);
 }
@@ -304,8 +321,7 @@ void CTMatView::ProcExtractTextBoundary()
 		CString strFile;
 		int addcnt = 0;
 		for (int i = 0; i < textbox.size(); i++){
-
-			cv::rectangle(img2, textbox[i], cv::Scalar(0, 0, 255), 1, 8, 0);
+			cv::rectangle(img2, textbox[i], cv::Scalar(i, 0, 255), 1, 8, 0);
 			//cv::Mat crop = img2(textbox[i]);
 			//if (SINGLETON_TMat::GetInstance()->InsertIntoLogDB(crop, textbox[i].x, textbox[i].x + textbox[i].width,
 			//	textbox[i].y, textbox[i].y + textbox[i].height, pPage->GetCode()) == false){
@@ -540,7 +556,7 @@ void CTMatView::OnTimer(UINT_PTR nIDEvent)
 			str += _T(" completed.");
 			pM->AddOutputString(str, true);
 
-			SetTimer(_TIMER_SEARCH_PAGE, 10, NULL);		// Continue //
+			SetTimer(_TIMER_SEARCH_PAGE, 1, NULL);		// Continue //
 		}
 		else{			
 			float complete = (float)m_searchCnt / (float)SINGLETON_TMat::GetInstance()->GetImgVec().size();
@@ -549,9 +565,74 @@ void CTMatView::OnTimer(UINT_PTR nIDEvent)
 			str += _T("%");
 			str += _T(" completed.");
 			pM->AddOutputString(str, true);
+
+			AddLogData();
 		}
 	}
 	CView::OnTimer(nIDEvent);
+}
+
+void CTMatView::ResetLogList()
+{
+	if (m_pViewLog){
+		m_pViewLog->ResetLogList();
+	}
+}
+
+void CTMatView::AddLogData()
+{
+	if (m_pViewLog){
+		CString strItem[8];
+
+		_vecPageObj pImgVec = SINGLETON_TMat::GetInstance()->GetImgVec();
+		int cnt = 0;
+		for (int i = 0; i < pImgVec.size(); i++){
+			unsigned int matchFile = getHashCode((CStringA)pImgVec[i]->GetPath());
+
+
+			CString strpath = pImgVec[i]->GetPath();
+			USES_CONVERSION;
+			char* sz = T2A(strpath);
+			IplImage *pSrc = SINGLETON_TMat::GetInstance()->LoadIplImage(strpath, 1);
+
+
+			std::vector<_MATCHInfo> matches = pImgVec[i]->GetMatchResult();
+			for (int j = 0; j < matches.size(); j++){
+			
+				unsigned int matchPos = (int)matches[j].rect.x1 * 10000 + (int)matches[j].rect.y1;
+
+				CString strId;
+				strId.Format(L"%u%u", matchFile, matchPos);
+				unsigned int matchId = getHashCode((CStringA)strId);				
+				
+				strItem[0].Format(L"%u", m_pMatchingProcessor.GetCutId());
+				strItem[1].Format(L"%u", m_pMatchingProcessor.GetFileId());
+				strItem[2].Format(L"%u", m_pMatchingProcessor.GetPosId());
+				strItem[3].Format(L"%u", matchId);
+				strItem[4].Format(L"%u", matchFile);
+				strItem[5].Format(L"%u", matchPos);
+				strItem[6].Format(L"%3.2f", m_pMatchingProcessor.GetThreshold());
+				strItem[7].Format(L"%3.2f", matches[j].accuracy);
+
+				m_pViewLog->AddRecord(strItem, 8);
+
+
+				// save cut and matched images //
+				
+
+				if (pSrc != NULL){
+					//IplImage* pCut = cvCreateImage(cvSize(matches[j].rect.width, matches[j].rect.height), pSrc->depth, pSrc->nChannels);
+					//cvSetImageROI(pSrc, cvRect(matches[j].rect.x1, matches[j].rect.y1, matches[j].rect.width, matches[j].rect.height));		// posx, posy = left - top
+					//cvCopy(pSrc, pCut);
+					CString strPath;
+					strPath.Format(L"%s\\%u.bmp", SINGLETON_TMat::GetInstance()->GetLogPath(), matchId);
+					cvSaveImage((CStringA)strPath, matches[j].pImgCut);
+					//cvReleaseImage(&pCut);
+				}
+			}
+			cvReleaseImage(&pSrc);
+		}		
+	}
 }
 
 
@@ -582,3 +663,33 @@ BOOL CTMatView::PreTranslateMessage(MSG* pMsg)
 }
 
 
+
+
+void CTMatView::OnDropFiles(HDROP hDropInfo)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	CView::OnDropFiles(hDropInfo);
+}
+
+
+void CTMatView::AddNewColumn()
+{
+	if (m_pViewLog){
+		m_pViewLog->AddNewColumn();
+	}
+}
+
+void CTMatView::SaveLogFile()
+{
+	if (m_pViewLog){
+		m_pViewLog->SaveLogFile();
+	}
+}
+
+void CTMatView::DrawGLText(CString str, POINT3D pos)
+{
+	if (m_pViewImage){
+		m_pViewImage->DrawTextFromOutSise(str, pos);
+	}
+}

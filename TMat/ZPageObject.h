@@ -19,6 +19,18 @@
 #define MAX_CAM_FOV 45.0f
 
 
+
+typedef struct _MATCHInfo
+{
+	POINT3D pos;
+	COLORf color;
+	float accuracy;
+	RECT2D rect;
+	CString strAccracy;
+	IplImage* pImgCut;
+}_MATCHInfo;
+
+
 class CZPageObject
 {
 public:
@@ -56,14 +68,14 @@ public:
 	unsigned long GetCode() { return nCode; }
 	unsigned long GetPCode() { return parentCode; }
 
-	bool IsDuplicate(POINT3D pos, int search_size);
+	bool IsDuplicate(_MATCHInfo& info, int search_size);
 
 	void RotatePos(float fSpeed);
 	bool LoadThumbImage(unsigned short resolution);
 	GLuint LoadFullImage();
 
 	void ClearMatchResult();
-	std::vector<_MATCHInfo>* GetMatchResult() { return &m_matched_pos; };
+	std::vector<_MATCHInfo>& GetMatchResult() { return m_matched_pos; };
 	int GetResultSize() { return m_matched_pos.size(); }
 	bool IsCandidate() { return m_bCandidate; }
 	void SetCandidate(bool isCan) { m_bCandidate = isCan; m_pos.z = 0.0f; }

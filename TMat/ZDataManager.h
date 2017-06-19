@@ -5,6 +5,9 @@
 
 
 
+
+
+
 #define ANI_FRAME_CNT 10
 
 typedef std::vector<CZPageObject*> _vecPageObj;
@@ -70,6 +73,7 @@ public:
 
 	bool InsertIntoLogDB(cv::Mat cutImg, int x1, int x2, int y1, int y2, unsigned int pageCode);
 	void SetLogPath(CString str); 
+	CString GetLogPath() { return m_strLogPath; }
 	void GetWordBoundaryByPageCode(unsigned long pcode, std::vector<WORD_POS>& vecBoundary);
 	void GetWordBoundaryByWordId(unsigned long wid, std::vector<WORD_POS>& vecBoundary);
 private:

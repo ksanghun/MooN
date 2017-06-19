@@ -41,6 +41,8 @@ public:
 	
 	bool IsReadyForSearch();
 
+	void DrawTextFromOutSise(CString str, POINT3D pos);
+
 private:
 
 	
@@ -49,7 +51,7 @@ private:
 	unsigned short m_rectWidth, m_rectHeight;
 	VA_DRAG_OPER m_dragOper;
 	LOGFONT		m_LogFont;
-//	BITMAPINFO* m_pBmpInfo;
+	BITMAPINFO* m_pBmpInfo;
 	unsigned int m_addImgCnt;
 
 	bool m_isAnimation;

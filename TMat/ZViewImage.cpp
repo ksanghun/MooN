@@ -9,6 +9,16 @@ enum TIMEREVNT { _RENDER = 100, _ADDIMG, _SEARCHIMG, _MOVECAMANI, _UPDATE_PAGE};
 
 CZViewImage::CZViewImage()
 {
+
+	memset(&m_LogFont, 0, sizeof(m_LogFont));
+	m_LogFont.lfCharSet = ANSI_CHARSET;
+	m_LogFont.lfHeight = -14;
+	m_LogFont.lfWidth = 0;
+//	m_LogFont.lfWeight = FW_BOLD;
+
+	m_pBmpInfo = (BITMAPINFO *)malloc(sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD) * 256));
+
+
 	m_addImgCnt = 0;
 	m_isAnimation = true;
 	m_mouseMode = 0;
@@ -31,6 +41,8 @@ CZViewImage::~CZViewImage()
 {
 	//if (m_pSelectPageForCNS != NULL)
 	//	delete m_pSelectPageForCNS;
+
+	delete m_pBmpInfo;
 }
 
 
@@ -587,4 +599,9 @@ RECT2D CZViewImage::GetSelectedAreaForCNS()
 		return selRect;
 	}
 	return RECT2D();
+}
+
+void CZViewImage::DrawTextFromOutSise(CString str, POINT3D pos)
+{
+	gl_DrawText(pos, str, m_LogFont, 1, m_pBmpInfo, m_CDCPtr);
 }

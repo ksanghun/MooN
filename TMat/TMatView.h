@@ -6,6 +6,7 @@
 
 #include "ZViewImage.h"
 #include "ZViewResult.h"
+#include "ZViewLog.h"
 #include "ZMatching.h"
 #include "Extractor.h"
 
@@ -34,12 +35,19 @@ public:
 
 	CZViewImage* GetViewImage() { return m_pViewImage; }
 
+	void AddNewColumn();
+	void SaveLogFile();
+
+	void AddLogData();
+	void ResetLogList();
+	void DrawGLText(CString str, POINT3D pos);
 // Operations
 public:
 
 private:
 	CMFCTabCtrl m_ctrlTab;
 	CZViewImage* m_pViewImage;
+	CZViewLog* m_pViewLog;
 	CZViewResult* m_pViewResult;
 
 	CZMatching m_pMatchingProcessor;
@@ -85,6 +93,7 @@ public:
 	afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnDropFiles(HDROP hDropInfo);
 };
 
 #ifndef _DEBUG  // debug version in TMatView.cpp

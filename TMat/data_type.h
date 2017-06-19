@@ -435,13 +435,7 @@ typedef struct _SNIMAGE
 
 
 
-typedef struct _MATCHInfo
-{
-	POINT3D pos;
-	COLORf color;
-	float accuracy;
-	RECT2D rect;
-}_MATCHInfo;
+
 
 struct WORD_POS{
 	unsigned short x1, x2, y1, y2;
