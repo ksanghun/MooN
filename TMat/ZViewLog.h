@@ -22,6 +22,7 @@ public:
 
 private:
 	CZListCtrlLog	m_List;
+	char* m_writeBuffer;
 	
 
 protected:

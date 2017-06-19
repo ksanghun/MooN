@@ -45,6 +45,9 @@ typedef struct _MATCHResults
 	unsigned long matchPos;
 	float fTh;
 	float accuracy;
+
+	CString strBase64;
+
 }_MATCHResults;
 
 typedef std::vector<_MATCHResults> _vecMATCHResult;

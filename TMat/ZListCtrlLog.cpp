@@ -448,20 +448,7 @@ void CZListCtrlLog::AddRecode()
 
 			SetItem(m_nRecordNum, 9, LVIF_TEXT, L"-", 0, 0, 0, NULL);
 
-			IplImage* pImg = iter_gr->second.matche[i].pImgCut;
-			cv::Mat m = cv::cvarrToMat(pImg);
-
-			std::vector<uchar> data_encode;
-			imencode(".png", m, data_encode);
-
-			CString strBase64 = SINGLETON_TMat::GetInstance()->base64_encode((unsigned char*)&data_encode[0], data_encode.size());
-			SetItem(m_nRecordNum, 10, LVIF_TEXT, strBase64, 0, 0, 0, NULL);
-
-			
-			cvSaveImage("d:/test.png", pImg);
-
-			TRACE(strBase64);
-
+			SetItem(m_nRecordNum, 10, LVIF_TEXT, iter_gr->second.matche[i].strBase64, 0, 0, 0, NULL);
 
 			m_nRecordNum++;
 		}

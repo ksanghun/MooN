@@ -137,7 +137,7 @@ CZDataManager::~CZDataManager()
 		fclose(fp);
 	}
 
-
+	ResetMatchingResult();
 }
 
 void CZDataManager::InitData()
@@ -653,7 +653,7 @@ void CZDataManager::ResetMatchingResult()
 
 void CZDataManager::SetMatchingResults()
 {
-	ResetMatchingResult();
+//	ResetMatchingResult();
 
 	MATCHGROUP vecMatchRes;
 
@@ -668,7 +668,7 @@ void CZDataManager::SetMatchingResults()
 		char* sz = T2A(strpath);
 		IplImage *pSrc = SINGLETON_TMat::GetInstance()->LoadIplImage(strpath, 1);
 
-		std::vector<_MATCHInfo> matches = pImgVec[i]->GetMatchResult();
+		std::vector<_MATCHInfo>& matches = pImgVec[i]->GetMatchResult();
 		for (int j = 0; j < matches.size(); j++){
 
 			if (matches[j].IsAdded == true)
@@ -695,40 +695,36 @@ void CZDataManager::SetMatchingResults()
 
 
 			if (pSrc != NULL){
-				matchRes.pImgCut = cvCreateImage(cvSize(matches[j].rect.width, matches[j].rect.height), pSrc->depth, pSrc->nChannels);
+			//	matchRes.pImgCut = cvCreateImage(cvSize(matches[j].rect.width, matches[j].rect.height), pSrc->depth, pSrc->nChannels);
+				IplImage* pTmp = cvCreateImage(cvSize(matches[j].rect.width, matches[j].rect.height), pSrc->depth, pSrc->nChannels);
 				cvSetImageROI(pSrc, cvRect(matches[j].rect.x1, matches[j].rect.y1, matches[j].rect.width, matches[j].rect.height));		// posx, posy = left - top
-				cvCopy(pSrc, matchRes.pImgCut);
+				cvCopy(pSrc, pTmp);
+								
+				matchRes.pImgCut = cvCreateImage(cvSize(64, 64), pTmp->depth, pTmp->nChannels);
+				cvResize(pTmp, matchRes.pImgCut);
+				cvReleaseImage(&pTmp);
+
+
+				//Encode image file to base64 //
+				cv::Mat m = cv::cvarrToMat(matchRes.pImgCut);
+				std::vector<uchar> data_encode;
+				imencode(".png", m, data_encode);
+				matchRes.strBase64 = SINGLETON_TMat::GetInstance()->base64_encode((unsigned char*)&data_encode[0], data_encode.size());
+				data_encode.clear();
+				//===========================================//
+
+				// Save Cut Image //
+				CString strName;
+				strName.Format(L"%s/%u.png", m_strLogPath, matchId);
+				cvSaveImage((CStringA)strName, matchRes.pImgCut);
 			}
 
-		//	m_matchResults.push_back(matchRes);
-		//	vecMatchRes.matche.push_back(matchRes);
-
-			//std::map<unsigned long, MATCHGROUP>::iterator iter_gr;
-
-			//iter_gr = m_matchResGroup.find(matchRes.searchId);
-			//if (iter_gr != m_matchResGroup.end()){
 			m_matchResGroup[matchRes.searchId].matche.push_back(matchRes);
 			m_matchResGroup[matchRes.searchId].searchId = matchRes.searchId;
-			//}
-			//else{
-
-			//}
 
 			matches[j].IsAdded = true;
 			IsAdded = true;
 		}
-	}
-
-	if (IsAdded){
-//		vecMatchRes.searchId = searchid;
-////		m_matchResGroup.push_back(vecMatchRes);
-//
-//		std::map<unsigned long, MATCHGROUP>::iterator iter_gr;
-//
-//		iter_gr = m_matchResGroup.find(searchid);
-//		if (iter_gr == m_matchResGroup.end()){
-//			m_matchResGroup[searchid] = vecMatchRes;
-//		}
 	}
 }
 
