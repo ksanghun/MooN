@@ -715,7 +715,7 @@ void CZDataManager::SetMatchingResults()
 
 				// Save Cut Image //
 				CString strName;
-				strName.Format(L"%s/%u.png", m_strLogPath, matchId);
+				strName.Format(L"%s/%d%u.png", m_strLogPath, (int)matchRes.accuracy*100, matchId);
 				cvSaveImage((CStringA)strName, matchRes.pImgCut);
 			}
 
