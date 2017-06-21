@@ -724,6 +724,7 @@ void CZDataManager::SetMatchingResults()
 
 			matches[j].IsAdded = true;
 			IsAdded = true;
+
 		}
 	}
 }
