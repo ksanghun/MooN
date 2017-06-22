@@ -14,6 +14,10 @@ public:
 	void SetThreshold(float _th);
 	void SetResColor(POINT3D _color);// { m_resColor.r = _color.x; m_resColor.g = _color.y; m_resColor.b = _color.z;  m_resColor.a = 1.0f; }
 
+	void LetterThining(IplImage* matBinary);
+
+	IplImage* GetCutImg() { return m_pCut; }
+
 	//unsigned int GetCutId(){ return m_iCutId; }
 	//unsigned int GetFileId() { return m_iFileId; }
 	//unsigned int GetPosId() { return m_iPosId; }
@@ -36,8 +40,8 @@ private:
 
 	void NomalizeCutImage(IplImage* pSrc, IplImage* pCut, RECT2D cutRect, unsigned short norSize);
 	void FitCutImageRect(IplImage* pSrc,  RECT2D& cutRect);
-	bool FindHorizonEage(IplImage* pSrc, RECT2D& cutRect, int type, int direction);
-	bool FindVerticalEage(IplImage* pSrc, RECT2D& cutRect, int type, int direction);
+	bool FindHorizonEage(IplImage* pSrc, RECT2D& cutRect, int type, int direction, RECT2D& oriRect);
+	bool FindVerticalEage(IplImage* pSrc, RECT2D& cutRect, int type, int direction, RECT2D& oriRect);
 
 };
 

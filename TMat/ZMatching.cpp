@@ -45,26 +45,39 @@ void CZMatching::NomalizeCutImage(IplImage* pSrc, IplImage* pCut, RECT2D cutRect
 
 void CZMatching::FitCutImageRect(IplImage* pSrc, RECT2D& cutRect)
 {
+
+	RECT2D oriCut = cutRect;
+
+	cutRect.x1 += 2;
+	cutRect.x2 -= 2;
+	cutRect.y1 += 2;
+	cutRect.y2 -= 2;
+	cutRect.width -= 4;
+	cutRect.height -= 4;
+
 	// find left edge //
 	IplImage* pBinImg = cvCreateImage(cvSize(pSrc->width, pSrc->height), IPL_DEPTH_8U, 1);
 	cvThreshold(pSrc, pBinImg, 128, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
 
-//	cvShowImage("Bin Image", pBinImg);
 
-	FindHorizonEage(pBinImg, cutRect, 0, 0);		// direction 0: left, 1: right
-	FindHorizonEage(pBinImg, cutRect, 0, 1);		// direction 0: left, 1: right
-	FindVerticalEage(pBinImg, cutRect, 0, 0);		// direction 0: left, 1: right
-	FindVerticalEage(pBinImg, cutRect, 0, 1);		// direction 0: left, 1: right
+	//	cvShowImage("Before Bin Image", pBinImg);
+	//	LetterThining(pBinImg);
+	//	cvShowImage("Afger-Bin Image", pBinImg);
+
+	FindHorizonEage(pBinImg, cutRect, 0, 0, oriCut);		// direction 0: left, 1: right
+	FindHorizonEage(pBinImg, cutRect, 0, 1, oriCut);		// direction 0: left, 1: right
+	FindVerticalEage(pBinImg, cutRect, 0, 0, oriCut);		// direction 0: left, 1: right
+	FindVerticalEage(pBinImg, cutRect, 0, 1, oriCut);		// direction 0: left, 1: right
 
 	cutRect.width = cutRect.x2 - cutRect.x1;
 	cutRect.height = cutRect.y2 - cutRect.y1;
 
-//	cvShowImage("Bin Image", pBinImg);
+	//	cvShowImage("Bin Image", pBinImg);
 
 	cvReleaseImage(&pBinImg);
 }
 
-bool CZMatching::FindVerticalEage(IplImage* pSrc, RECT2D& cutRect, int type, int direction)
+bool CZMatching::FindVerticalEage(IplImage* pSrc, RECT2D& cutRect, int type, int direction, RECT2D& oriRect)
 {
 	int sumPixel = 0;
 	for (int x = cutRect.x1; x < cutRect.x2; x++){
@@ -75,26 +88,34 @@ bool CZMatching::FindVerticalEage(IplImage* pSrc, RECT2D& cutRect, int type, int
 		if ((unsigned char)pSrc->imageData[id] < 1){
 			sumPixel++;
 		}
-
-
 	}
 
-	int pixelth = 1;
+	float fMaxExtend = 1.05f;
+	float fMinExtend = 0.8f;
+
+
+	int pixelth = 0;
 
 	switch (type){
 	case 0:		// first
 		if (sumPixel > pixelth){
 			if (direction == 0)				cutRect.y1 -= 1;		// case of top edge
 			else							cutRect.y2 += 1;		// case of right edge
-			
-			FindVerticalEage(pSrc, cutRect, 1, direction);		// go to the left
+
+			if ((cutRect.y2 - cutRect.y1) > oriRect.height*fMaxExtend){
+				return true;
+			}
+			FindVerticalEage(pSrc, cutRect, 1, direction, oriRect);		// go to the left
 		}
 
 		else{
 			if (direction == 0)				cutRect.y1 += 1;		// case of left edge
 			else							cutRect.y2 -= 1;		// case of right edge
 
-			FindVerticalEage(pSrc, cutRect, 2, direction);		// go to the left
+			if ((cutRect.y2 - cutRect.y1) < oriRect.height*fMinExtend){
+				return true;
+			}
+			FindVerticalEage(pSrc, cutRect, 2, direction, oriRect);		// go to the left
 		}
 		break;
 	case 1:  // Go to the negative way
@@ -102,7 +123,10 @@ bool CZMatching::FindVerticalEage(IplImage* pSrc, RECT2D& cutRect, int type, int
 			if (direction == 0)		cutRect.y1 -= 1;		// case of left edge
 			else					cutRect.y2 += 1;		// case of right edge
 
-			FindVerticalEage(pSrc, cutRect, 1, direction);		// go to the left
+			if ((cutRect.y2 - cutRect.y1) > oriRect.height*fMaxExtend){
+				return true;
+			}
+			FindVerticalEage(pSrc, cutRect, 1, direction, oriRect);		// go to the left
 		}
 		else{
 			return true;
@@ -113,7 +137,10 @@ bool CZMatching::FindVerticalEage(IplImage* pSrc, RECT2D& cutRect, int type, int
 			if (direction == 0)		cutRect.y1 += 1;		// case of left edge
 			else					cutRect.y2 -= 1;		// case of right edge
 
-			FindVerticalEage(pSrc, cutRect, 2, direction);		// go to the left
+			if ((cutRect.y2 - cutRect.y1) < oriRect.height*fMinExtend){
+				return true;
+			}
+			FindVerticalEage(pSrc, cutRect, 2, direction, oriRect);		// go to the left
 		}
 		else{
 			return true;
@@ -123,7 +150,7 @@ bool CZMatching::FindVerticalEage(IplImage* pSrc, RECT2D& cutRect, int type, int
 
 }
 
-bool CZMatching::FindHorizonEage(IplImage* pSrc, RECT2D& cutRect, int type, int direction)
+bool CZMatching::FindHorizonEage(IplImage* pSrc, RECT2D& cutRect, int type, int direction, RECT2D& oriRect)
 {
 	int sumPixel = 0;
 	for (int y = cutRect.y1; y < cutRect.y2; y++){
@@ -136,7 +163,10 @@ bool CZMatching::FindHorizonEage(IplImage* pSrc, RECT2D& cutRect, int type, int 
 		}
 	}
 
-//	return true;
+
+	float fMaxExtend = 1.05f;
+	float fMinExtend = 0.8f;
+
 
 	int pixelth  = 1;
 
@@ -146,14 +176,22 @@ bool CZMatching::FindHorizonEage(IplImage* pSrc, RECT2D& cutRect, int type, int 
 			if (direction == 0)			cutRect.x1 -= 1;		// case of left edge				
 			else						cutRect.x2 += 1;		// case of right edge				
 
-			FindHorizonEage(pSrc, cutRect, 1, direction);		// go to the left
+			if ((cutRect.x2 - cutRect.x1) > oriRect.width*fMaxExtend){
+				return true;
+			}
+
+			FindHorizonEage(pSrc, cutRect, 1, direction, oriRect);		// go to the left
 		}		
 
 		else{
 			if (direction == 0)		cutRect.x1 += 1;		// case of left edge				
 			else					cutRect.x2 -= 1;		// case of right edge				
 
-			FindHorizonEage(pSrc, cutRect, 2, direction);		// go to the left
+			if ((cutRect.x2 - cutRect.x1) < oriRect.width*fMinExtend){
+				return true;
+			}
+
+			FindHorizonEage(pSrc, cutRect, 2, direction, oriRect);		// go to the left
 		}
 		break;
 	case 1:  // Go to the negative way
@@ -161,7 +199,11 @@ bool CZMatching::FindHorizonEage(IplImage* pSrc, RECT2D& cutRect, int type, int 
 			if (direction == 0)		cutRect.x1 -= 1;		// case of left edge
 			else					cutRect.x2 += 1;		// case of right edge
 
-			FindHorizonEage(pSrc, cutRect, 1, direction);		// go to the left
+			if ((cutRect.x2 - cutRect.x1) > oriRect.width*fMaxExtend){
+				return true;
+			}
+
+			FindHorizonEage(pSrc, cutRect, 1, direction, oriRect);		// go to the left
 		}
 		else{
 			return true;
@@ -172,7 +214,11 @@ bool CZMatching::FindHorizonEage(IplImage* pSrc, RECT2D& cutRect, int type, int 
 			if (direction == 0)		cutRect.x1 += 1;		// case of left edge
 			else					cutRect.x2 -= 1;		// case of right edge
 
-			FindHorizonEage(pSrc, cutRect, 2, direction);		// go to the left
+			if ((cutRect.x2 - cutRect.x1) < oriRect.width*fMinExtend){
+				return true;
+			}
+
+			FindHorizonEage(pSrc, cutRect, 2, direction, oriRect);		// go to the left
 		}
 		else{
 			return true;
@@ -290,6 +336,9 @@ bool CZMatching::DoSearch(unsigned int& sCnt, unsigned int sId, CUT_INFO info)
 						//cvSetImageROI(gray, cvRect(mInfo.rect.x1, mInfo.rect.y1, mInfo.rect.width, mInfo.rect.height));		// posx, posy = left - top
 						//cvCopy(gray, mInfo.pImgCut);
 
+
+						FitCutImageRect(gray, mInfo.rect);
+
 						//	mInfo.color = SINGLETON_TMat::GetInstance()->GetColor((fD)*1.1f);
 						m_resColor.a = ((fD)*m_colorAccScale)*0.5f;
 						mInfo.color = m_resColor;
@@ -315,4 +364,35 @@ void CZMatching::SetResColor(POINT3D _color)
 { 
 	m_resColor.r = _color.x; m_resColor.g = _color.y; m_resColor.b = _color.z;  m_resColor.a = 1.0f; 
 	SINGLETON_TMat::GetInstance()->SetResColor(m_resColor);
+}
+
+
+void CZMatching::LetterThining(IplImage* matBinary)
+{
+	for (int y = 1; y < matBinary->height - 1; y++){
+		for (int x = 0; x < matBinary->width; x++){
+			int pId = (y - 1)*matBinary->widthStep + x;
+			int id = y*matBinary->widthStep + x;
+			int nId = (y + 1)*matBinary->widthStep + x;
+
+			//if (matBinary->imageData[id] < 100){		// black
+			//	if (matBinary->imageData[pId] > 128){
+			//		matBinary->imageData[id] = 100;
+			//	}
+			//}
+
+			if ((unsigned char)matBinary->imageData[id] < 128){		// black
+				if ((unsigned char)matBinary->imageData[nId] > 128){
+					matBinary->imageData[id] = (char)255;
+				}
+			}
+
+
+			//if (matBinary->imageData[id] == 100){
+			//	matBinary->imageData[id] = 255;
+			//}
+
+
+		}
+	}
 }

@@ -431,10 +431,10 @@ void CZListCtrlLog::AddRecode()
 			strItem.Format(L"%u", iter_gr->second.matche[i].posId);
 			SetItem(m_nRecordNum, 3, LVIF_TEXT, strItem, 0, 0, 0, NULL);
 
-			strItem.Format(L"%u", iter_gr->second.matche[i].matchId);
+			strItem.Format(L"%d%u", (int)(iter_gr->second.matche[i].accuracy * 100),iter_gr->second.matche[i].matchId);
 			SetItem(m_nRecordNum, 4, LVIF_TEXT, strItem, 0, 0, 0, NULL);
 
-			strItem.Format(L"%d%u", (int)iter_gr->second.matche[i].accuracy*100, iter_gr->second.matche[i].matchFile);
+			strItem.Format(L"%u", iter_gr->second.matche[i].matchFile);
 			SetItem(m_nRecordNum, 5, LVIF_TEXT, strItem, 0, 0, 0, NULL);
 
 			strItem.Format(L"%u", iter_gr->second.matche[i].matchPos);

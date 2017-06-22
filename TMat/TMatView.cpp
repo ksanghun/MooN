@@ -269,6 +269,15 @@ void CTMatView::ProcExtractTextBoundary()
 		IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 1);
 		cv::Mat img = cv::cvarrToMat(src);
 
+
+		//cv::Mat binaryMat(img.size(), img.type());
+		//Apply thresholding
+		//cv::threshold(img, binaryMat, 128, 255, cv::THRESH_BINARY);
+
+		
+
+
+
 		std::vector<cv::Rect> textbox;
 
 		pM->AddOutputString(L"Start to extract words", false);
@@ -315,14 +324,20 @@ void CTMatView::ProcExtractTextBoundary()
 	//	cv::resize(img, img, cv::Size(2 * img.cols, 2 * img.rows), 0, 0, CV_INTER_CUBIC);
 		m_Extractor.getContours(img, textbox, cropimg);
 
+	//	m_Extractor.getContours(binaryMat, textbox, cropimg);
+
+
+
+
+
 	//	//Test Display
-		src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 0);
+		src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 1);
 		cv::Mat img2 = cv::cvarrToMat(src);
 		
 		CString strFile;
 		int addcnt = 0;
 		for (int i = 0; i < textbox.size(); i++){
-			cv::rectangle(img2, textbox[i], cv::Scalar(i, 0, 255), 1, 8, 0);
+			cv::rectangle(img2, textbox[i], cv::Scalar(0, 0, 0), 1, 8, 0);
 			//cv::Mat crop = img2(textbox[i]);
 			//if (SINGLETON_TMat::GetInstance()->InsertIntoLogDB(crop, textbox[i].x, textbox[i].x + textbox[i].width,
 			//	textbox[i].y, textbox[i].y + textbox[i].height, pPage->GetCode()) == false){
@@ -340,6 +355,33 @@ void CTMatView::ProcExtractTextBoundary()
 		}
 ////		cv::imwrite("imgOut1.jpg", img);
 //
+
+
+		// broden space between characters //
+
+		//cv::Mat resMat(binaryMat.size(), binaryMat.type());
+		//resMat.setTo(1);
+
+
+		//cv::imshow("Before-binaryMat", binaryMat);
+		//for (int y = 1; y < binaryMat.rows - 1; y++){
+		//	for (int x = 0; x < binaryMat.cols; x++){
+		//		int pId = (y-1)*binaryMat.step + x;
+		//		int id = y*binaryMat.step + x;
+		//		int nId = (y + 1)*binaryMat.step + x;
+
+		//		if (binaryMat.data[id] < 128){		// black
+		//			if (binaryMat.data[nId] > 128){
+		//				binaryMat.data[id] = 255;
+		//			}
+		//		}
+		//	}
+		//}
+		//cv::imshow("After-binaryMat", binaryMat);
+
+
+
+
 		cv::imshow("Extraction", img2);
 
 		//CString strInfo;
@@ -569,8 +611,8 @@ void CTMatView::OnTimer(UINT_PTR nIDEvent)
 
 
 
-
-			SINGLETON_TMat::GetInstance()->SetMatchingResults();
+			
+			SINGLETON_TMat::GetInstance()->SetMatchingResults(m_pMatchingProcessor.GetCutImg());
 			SINGLETON_TMat::GetInstance()->SortMatchingResults();
 
 			if (m_pViewLog){

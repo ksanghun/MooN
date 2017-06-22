@@ -651,7 +651,7 @@ void CZDataManager::ResetMatchingResult()
 	m_matchResGroup.clear();
 }
 
-void CZDataManager::SetMatchingResults()
+void CZDataManager::SetMatchingResults(IplImage* pCut)
 {
 //	ResetMatchingResult();
 
@@ -700,7 +700,19 @@ void CZDataManager::SetMatchingResults()
 				cvSetImageROI(pSrc, cvRect(matches[j].rect.x1, matches[j].rect.y1, matches[j].rect.width, matches[j].rect.height));		// posx, posy = left - top
 				cvCopy(pSrc, pTmp);
 								
-				matchRes.pImgCut = cvCreateImage(cvSize(64, 64), pTmp->depth, pTmp->nChannels);
+
+
+				int w = 64, h = 64;
+				if (matches[j].rect.width > pCut->width * 2.0f){
+					w = 128;
+				}
+				if (matches[j].rect.height > pCut->height * 2.0f){
+					h = 128;
+				}
+
+
+
+				matchRes.pImgCut = cvCreateImage(cvSize(w, h), pTmp->depth, pTmp->nChannels);
 				cvResize(pTmp, matchRes.pImgCut);
 				cvReleaseImage(&pTmp);
 
@@ -708,14 +720,14 @@ void CZDataManager::SetMatchingResults()
 				//Encode image file to base64 //
 				cv::Mat m = cv::cvarrToMat(matchRes.pImgCut);
 				std::vector<uchar> data_encode;
-				imencode(".png", m, data_encode);
+				imencode(".bmp", m, data_encode);
 				matchRes.strBase64 = SINGLETON_TMat::GetInstance()->base64_encode((unsigned char*)&data_encode[0], data_encode.size());
 				data_encode.clear();
 				//===========================================//
 
 				// Save Cut Image //
 				CString strName;
-				strName.Format(L"%s/%d%u.png", m_strLogPath, (int)matchRes.accuracy*100, matchId);
+				strName.Format(L"%s/%d_%u.bmp", m_strLogPath, (int)(matchRes.accuracy*100), matchId);
 				cvSaveImage((CStringA)strName, matchRes.pImgCut);
 			}
 
