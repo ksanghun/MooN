@@ -5,6 +5,22 @@
 //#include <baseapi.h>
 //#include <allheaders.h>
 
+typedef struct{
+	cv::Rect textbox;
+	cv::Rect textboxForCheck;
+	int refCnt;
+	bool IsOk;
+	bool IsMerged;
+
+	void init()
+	{
+		refCnt = 0;
+		IsOk = false;
+		IsMerged = false;
+	};
+
+}_EXTRACT_BOX;
+
 class CExtractor
 {
 public:
@@ -22,7 +38,14 @@ public:
 
 
 	void extractWithOCR(cv::Mat image, std::vector<cv::Rect>& boundRect);
-		
+	std::vector<_EXTRACT_BOX>& GetTextBoxes() { return m_exTextBox; }
+	
+private:
+	std::vector<_EXTRACT_BOX> m_exTextBox;
+
+	void ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contour);
+	bool RcvMergeTextBox(int width, int height, float aRatio, int& depth);
+	bool CExtractor::BoxToBoxCheck(cv::Rect b1, cv::Rect b2);
 
 };
 

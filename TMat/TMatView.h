@@ -10,6 +10,11 @@
 #include "ZMatching.h"
 #include "Extractor.h"
 
+
+
+
+
+
 class CDragDropTreeCtrl;
 class CTMatView : public CView
 {
@@ -55,6 +60,7 @@ private:
 	unsigned int m_searchCnt;
 	unsigned int m_searchId;
 
+	
 
 	void AddImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl, int& cnt);
 	

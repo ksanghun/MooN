@@ -186,6 +186,7 @@ void CPropertiesWnd::InitPropList()
 	pPropSlider->SetData(_PROP_THRESHOLD);
 	groupSearch->AddSubItem(pPropSlider);
 
+
 	CMFCPropertyGridColorProperty* pColorProp = new CMFCPropertyGridColorProperty(_T("Result Color"), RGB(255, 50, 50), NULL, _T("Specifies the searching result color"));
 	pColorProp->EnableOtherButton(_T("Other..."));
 	pColorProp->EnableAutomaticButton(_T("Default"), ::GetSysColor(COLOR_3DFACE));

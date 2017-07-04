@@ -4,6 +4,10 @@
 #include "opencv2/imgproc/imgproc.hpp"
 
 #include "ZDataManager.h"
+
+
+#define _MAX_EXTRACT_ITERATION 5
+
 class comparator{
 public:
 	bool operator()(std::vector<cv::Point> c1, std::vector<cv::Point>c2){
@@ -257,23 +261,30 @@ void CExtractor::getContours(cv::Mat img, std::vector<cv::Rect>& boundRect, cv::
 //	cv::imshow("rotated", cropped);
 //	imwrite("example5.jpg", cropped);
 
-//	cv::Mat cropped2 = cropped.clone();
-	cropped2 = img.clone();
-//	cropped2 = cropped.clone();
-	cropped2 = img.clone();
-	cvtColor(cropped2, cropped2, CV_GRAY2RGB);
 
-//	cv::Mat cropped3 = cropped.clone();
-	cv::Mat cropped3 = img.clone();
-	cvtColor(cropped3, cropped3, CV_GRAY2RGB);
+
+
+
+
+////	cv::Mat cropped2 = cropped.clone();
+//	cropped2 = img.clone();
+////	cropped2 = cropped.clone();
+//	cropped2 = img.clone();
+//	cvtColor(cropped2, cropped2, CV_GRAY2RGB);
+//
+////	cv::Mat cropped3 = cropped.clone();
+//	cv::Mat cropped3 = img.clone();
+//	cvtColor(cropped3, cropped3, CV_GRAY2RGB);
+//
+
+
+
 
 	std::vector<std::vector<cv::Point> > contours;
 	std::vector<cv::Vec4i> hierarchy;
-
 	/// Find contours
 //	cv::findContours(cropped, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_KCOS, cv::Point(0, 0));
 	cv::findContours(img, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE, cv::Point(0, 0));
-
 
 
 	/// Approximate contours to polygons + get bounding rects and circles
@@ -290,52 +301,208 @@ void CExtractor::getContours(cv::Mat img, std::vector<cv::Rect>& boundRect, cv::
 	}
 
 
-	//Get only important contours, merge contours that are within another
-	int minSize = 10;
-	std::vector<std::vector<cv::Point> > validContours;
-	for (int i = 0; i<contours_poly.size(); i++){
-
-		cv::Rect r = cv::boundingRect(cv::Mat(contours_poly[i]));
-		if (r.area()<minSize)continue;
-
-		bool inside = false;
-		for (int j = 0; j<contours_poly.size(); j++){
-			if (j == i)continue;
-
-			cv::Rect r2 = cv::boundingRect(cv::Mat(contours_poly[j]));
-			if (r2.area()<minSize || r2.area()<r.area())continue;
-			if (r.x>r2.x&&r.x + r.width<r2.x + r2.width&&
-				r.y>r2.y&&r.y + r.height<r2.y + r2.height){
-
-				inside = true;
-			}
-		}
-		if (inside)continue;
-		validContours.push_back(contours_poly[i]);
-	}
+	//Get only important contours, merge contours that are within another	
+	//std::vector<std::vector<cv::Point> > validContours;
+	ProcExtractTextBox(contours_poly);
 
 
-	//Get bounding rects
-	for (int i = 0; i<validContours.size(); i++){
+
+
+
+
+//Get bounding rects
+for (int i = 0; i < m_exTextBox.size(); i++){
 	//	boundRect[i] = cv::boundingRect(cv::Mat(validContours[i]));
-		boundRect.push_back(cv::boundingRect(cv::Mat(validContours[i])));
-	}
+	boundRect.push_back(m_exTextBox[i].textbox);
+}
 
 
 //Display
-	//cv::Scalar color = cv::Scalar(0, 255, 0);
-	//for (int i = 0; i< validContours.size(); i++)
-	//{
-	//	if (boundRect[i].area()<100)continue;
-	//	drawContours(cropped2, validContours, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
-	//	rectangle(cropped2, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0);
-	//}
+//cv::Scalar color = cv::Scalar(0, 255, 0);
+//for (int i = 0; i< validContours.size(); i++)
+//{
+//	if (boundRect[i].area()<100)continue;
+//	drawContours(cropped2, validContours, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
+//	rectangle(cropped2, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0);
+//}
 
-	//imwrite("example6.jpg",cropped2);
+//imwrite("example6.jpg",cropped2);
 //	imshow("Contours", cropped2);
 
 //	detectLetters(cropped3, validContours, boundRect);
 }
+
+void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contour)
+{
+	m_exTextBox.clear();
+	// Vaildation contour =======================================//
+	//	std::vector<cv::Rect> boundRect;
+	int minSize = 30;
+	int maxWidth = 0, maxHeight = 0;
+	float aRatio = 0.0f;
+	for (int i = 0; i < contour.size(); i++){
+
+		cv::Rect r = cv::boundingRect(cv::Mat(contour[i]));
+		if (r.area() < minSize)continue;
+
+		bool inside = false;
+		for (int j = 0; j < contour.size(); j++){
+			if (j == i)continue;
+
+			cv::Rect r2 = cv::boundingRect(cv::Mat(contour[j]));
+			if (r2.area() < minSize || r2.area() < r.area())continue;
+			if (r.x > r2.x&&r.x + r.width<r2.x + r2.width&&
+				r.y>r2.y&&r.y + r.height < r2.y + r2.height){
+				inside = true;
+			}
+		}
+		if (inside)continue;
+
+		_EXTRACT_BOX textBox;
+		textBox.init();
+		textBox.textbox = cv::boundingRect(cv::Mat(contour[i]));
+		textBox.textboxForCheck = textBox.textbox;
+
+
+		// Find the max size of page, expand some along to x-axis ( In case of left to right, it should be y-axis expend //
+
+		aRatio = (float)textBox.textbox.width / (float)textBox.textbox.height;
+		if ((aRatio > 0.75f) && (aRatio < 1.25f)){
+			if (textBox.textbox.width > maxWidth){
+				maxWidth = textBox.textbox.width;
+			}
+
+			if (textBox.textbox.height > maxHeight){
+				maxHeight = textBox.textbox.height;
+			}
+		}
+
+		//if (maxWidth > maxHeight){
+		//	maxWidth = maxHeight;
+		//}
+		//else{
+		//	maxHeight = maxWidth;
+		//}
+
+
+		// !!X-Axix expension by 3 pixel//
+		float fExpand = 4;
+		textBox.textboxForCheck.x -= fExpand;
+		textBox.textboxForCheck.width += fExpand * 2;
+
+		fExpand = 2;
+		textBox.textboxForCheck.y -= fExpand;
+		textBox.textboxForCheck.height += fExpand * 2;
+		//=====================================//
+
+		m_exTextBox.push_back(textBox);
+	}
+
+
+	int depth = 0;
+	RcvMergeTextBox(maxWidth, maxHeight, aRatio, depth);
+}
+
+bool CExtractor::RcvMergeTextBox(int maxwidth, int maxheight, float aRatio, int& depth)
+{	
+	std::vector<_EXTRACT_BOX> tmp = m_exTextBox;
+	m_exTextBox = std::vector<_EXTRACT_BOX>();
+
+	bool IsMerged = false;
+	for (int i = 0; i < tmp.size(); i++){
+		if (tmp[i].IsMerged) continue;
+
+		for (int j = 0; j < tmp.size(); j++){
+			if (j == i) continue;
+			if (tmp[j].IsMerged) continue;
+
+			if ((abs(tmp[i].textboxForCheck.x - tmp[j].textboxForCheck.x) < maxwidth) &&
+				(abs(tmp[i].textboxForCheck.y - tmp[j].textboxForCheck.y) < maxheight)){
+
+				if (BoxToBoxCheck(tmp[i].textboxForCheck, tmp[j].textboxForCheck)){
+					// Merge Two box //
+					int x, y, x2, y2, width, height;
+
+					if (tmp[i].textbox.x < tmp[j].textbox.x)		
+						x = tmp[i].textbox.x;
+					else											
+						x = tmp[j].textbox.x;
+					if (tmp[i].textbox.x + tmp[i].textbox.width > tmp[j].textbox.x + tmp[j].textbox.width)
+						x2 = tmp[i].textbox.x + tmp[i].textbox.width;
+					else											
+						x2 = tmp[j].textbox.x + tmp[j].textbox.width;
+
+
+					if (tmp[i].textbox.y < tmp[j].textbox.y)
+						y = tmp[i].textbox.y;
+					else
+						y = tmp[j].textbox.y;
+					if (tmp[i].textbox.y + tmp[i].textbox.height > tmp[j].textbox.y + tmp[j].textbox.height)
+						y2 = tmp[i].textbox.y + tmp[i].textbox.height;
+					else
+						y2 = tmp[j].textbox.y + tmp[j].textbox.height;
+
+					width = x2 - x;
+					height = y2 - y;
+
+					if ((width < (maxwidth+6)) && (height < (maxheight+4))){
+						tmp[i].textbox.x = x;
+						tmp[i].textbox.y = y;
+						tmp[i].textbox.width = width;
+						tmp[i].textbox.height = height;
+
+						tmp[j].IsMerged = true;
+						IsMerged = true;
+					}
+				}
+
+			}
+		}
+	}
+
+
+
+	for (int i = 0; i < tmp.size(); i++){
+		if (tmp[i].IsMerged == false){
+			_EXTRACT_BOX tbox;
+			tbox.init();
+			tbox.textbox = tmp[i].textbox;
+			m_exTextBox.push_back(tbox);
+		}
+		//m_exTextBox.push_back(tmp[i]);
+	}
+	tmp.clear();
+
+	depth++;
+	if ((depth < _MAX_EXTRACT_ITERATION) && (IsMerged)){
+		RcvMergeTextBox(maxwidth, maxheight, aRatio, depth);
+	}
+
+	return true;
+}
+
+bool CExtractor::BoxToBoxCheck(cv::Rect b1, cv::Rect b2)
+{
+	cv::Rect a1, a2;
+	a1 = b1;
+	a2 = b2;
+
+	if (b1.area() > b2.area()){
+		a1 = b2;
+		a2 = b1;
+	}
+
+	if ((a1.x + a1.width < a2.x) || (a1.x > a2.x + a2.width)){
+		return false;
+	}
+
+	if ((a1.y + a1.height < a2.y) || (a1.y > a2.y + a2.height)){
+		return false;
+	}
+
+	return true;
+}
+
 
 void CExtractor::extractWithOCR(cv::Mat image, std::vector<cv::Rect>& boundRect)
 {
