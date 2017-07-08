@@ -337,8 +337,8 @@ void CTMatView::ProcExtractTextBoundary()
 		std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
 
 		for (int i = 0; i < ptexBox.size(); i++){
-			if (ptexBox[i].IsMerged){
-				cv::rectangle(img2, ptexBox[i].textbox, cv::Scalar(0, 0, 255), 1, 8, 0);
+			if (ptexBox[i].IsAmbig){
+				cv::rectangle(img2, ptexBox[i].textbox, cv::Scalar(0, 0, 255), 2, 8, 0);
 			}
 			else{
 				cv::rectangle(img2, ptexBox[i].textbox, cv::Scalar(0, 255, 0), 2, 8, 0);

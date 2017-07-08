@@ -7,6 +7,7 @@
 #include "TMatView.h"
 #include "MainFrm.h"
 #include "ZViewImage.h"
+#include "DlgExtractTool.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -745,7 +746,15 @@ void CMainFrame::OnProjectConfiguration()
 void CMainFrame::OnAnalyzeExtracttext()
 {
 	// TODO: Add your command handler code here
-	pView->ProcExtractTextBoundary();
+
+	CDlgExtractTool dlg;
+
+	if (dlg.DoModal() == IDOK){
+		pView->ProcExtractTextBoundary();
+	}
+
+
+	
 }
 
 

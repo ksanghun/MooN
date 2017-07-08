@@ -79,6 +79,8 @@
 #define IDC_CURSOR_SEARCH               315
 #define IDR_POPUP_MENU                  318
 #define IDD_DIALOG_ADDLIST              319
+#define IDD_DIALOG1                     320
+#define IDD_DLG_EXTRACT                 320
 #define IDC_EDIT_SRCPATH                1000
 #define IDC_EDIT_LOGPATH                1001
 #define IDC_BUTTON_BROWSER              1002
@@ -131,7 +133,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        320
+#define _APS_NEXT_RESOURCE_VALUE        321
 #define _APS_NEXT_COMMAND_VALUE         32813
 #define _APS_NEXT_CONTROL_VALUE         1005
 #define _APS_NEXT_SYMED_VALUE           315

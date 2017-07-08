@@ -11,12 +11,14 @@ typedef struct{
 	int refCnt;
 	bool IsOk;
 	bool IsMerged;
+	bool IsAmbig;
 
 	void init()
 	{
 		refCnt = 0;
 		IsOk = false;
 		IsMerged = false;
+		IsAmbig = false;
 	};
 
 }_EXTRACT_BOX;
@@ -45,7 +47,7 @@ private:
 
 	void ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contour);
 	bool RcvMergeTextBox(int width, int height, float aRatio, int& depth);
-	bool CExtractor::BoxToBoxCheck(cv::Rect b1, cv::Rect b2);
+	bool IsBoxToBoxIntersect(cv::Rect b1, cv::Rect b2);
 
 };
 

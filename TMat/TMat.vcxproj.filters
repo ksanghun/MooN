@@ -111,6 +111,9 @@
     <ClInclude Include="DlgAddCol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DlgExtractTool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TMat.cpp">
@@ -189,6 +192,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DlgAddCol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgExtractTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
