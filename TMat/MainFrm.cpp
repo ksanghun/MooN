@@ -746,15 +746,11 @@ void CMainFrame::OnProjectConfiguration()
 void CMainFrame::OnAnalyzeExtracttext()
 {
 	// TODO: Add your command handler code here
-
 	CDlgExtractTool dlg;
 
 	if (dlg.DoModal() == IDOK){
 		pView->ProcExtractTextBoundary();
-	}
-
-
-	
+	}	
 }
 
 
