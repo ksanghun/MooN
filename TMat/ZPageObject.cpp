@@ -105,6 +105,9 @@ void CZPageObject::SetName(CString _strpath, CString _strpname, CString _strname
 }
 void CZPageObject::SetSize(unsigned short _w, unsigned short _h, float _size)
 {
+	m_ImgRectSize.set(0, _w, 0, _h);
+
+
 	nImgWidth = _w;
 	nImgHeight = _h;
 	fARatio = (float)_w / (float)_h;
@@ -579,7 +582,7 @@ GLuint CZPageObject::LoadFullImage()
 
 		pimg = SINGLETON_TMat::GetInstance()->LoadPDFImage(strPath, 4);
 		if (pimg){
-			SetSize(pimg->width, pimg->height, DEFAULT_PAGE_SIZE);
+		//	SetSize(pimg->width, pimg->height, DEFAULT_PAGE_SIZE);
 			glGenTextures(1, &texId);
 			glBindTexture(GL_TEXTURE_2D, texId);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -740,5 +743,46 @@ RECT2D CZPageObject::ConvertVec3DtoImgateCoord(POINT3D v1, POINT3D v2)
 	selRect.height *= yScale;
 
 	return selRect;
+
+}
+
+//void CZPageObject::GenTexIDForExtract(RECT2D cutRect)
+//{
+//	//IplImage* pCut = cvCreateImage(cvSize(cutRect.width, selRect.height), pSrc->depth, pSrc->nChannels);
+//	//cvSetImageROI(pSrc, cvRect(selRect.x1, selRect.y1, selRect.width, selRect.height));		// posx, posy = left - top
+//	//cvCopy(pSrc, m_pCut);
+//}
+
+
+void CZPageObject::DrawWithoutTexID(float fAlpha)
+{
+
+	glPushMatrix();
+	glTranslatef(m_pos.x, m_pos.y, m_pos.z);
+
+	glColor4f(1.0f, 1.0f, 1.0f, fAlpha);
+	glBegin(GL_QUADS);
+	glTexCoord2f(m_texcoord[0].x, m_texcoord[0].y);
+	glVertex3f(m_vertex[0].x, m_vertex[0].y, m_vertex[0].z);
+	glTexCoord2f(m_texcoord[1].x, m_texcoord[1].y);
+	glVertex3f(m_vertex[1].x, m_vertex[1].y, m_vertex[1].z);
+	glTexCoord2f(m_texcoord[2].x, m_texcoord[2].y);
+	glVertex3f(m_vertex[2].x, m_vertex[2].y, m_vertex[2].z);
+	glTexCoord2f(m_texcoord[3].x, m_texcoord[3].y);
+	glVertex3f(m_vertex[3].x, m_vertex[3].y, m_vertex[3].z);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+
+	glColor4f(m_vBgColor.x, m_vBgColor.y, m_vBgColor.z, 0.7f);
+	glBegin(GL_LINE_STRIP);
+	glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
+	glVertex3f(m_vertexBg[1].x, m_vertexBg[1].y, m_vertexBg[1].z);
+	glVertex3f(m_vertexBg[2].x, m_vertexBg[2].y, m_vertexBg[2].z);
+	glVertex3f(m_vertexBg[3].x, m_vertexBg[3].y, m_vertexBg[3].z);
+	glVertex3f(m_vertexBg[0].x, m_vertexBg[0].y, m_vertexBg[0].z);
+	glEnd();
+
+	glPopMatrix();
+
 
 }

@@ -96,8 +96,18 @@ public:
 
 	bool UpdateTextBoundary();
 
-	
+	void DrawWithoutTexID(float fAlpha);
+	RECT2D GetImgRect() { return m_ImgRectSize; }
 
+
+	// For Extration =====================//
+	//void GenTexIDForExtract(RECT2D cutRect);
+	float GetImgCols() { return m_fImgCols; }
+	float GetImgRows() { return m_fImgRows; }
+
+	float GetfXScale() { return m_fXScale; }
+	float GetfYScale() { return m_fYScale; }
+	
 private:
 	CString strPath;
 	CString strPName;
@@ -110,13 +120,14 @@ private:
 	//unsigned short nHeight;
 	float fARatio;
 
-	GLuint thTexId, texId;
+	GLuint thTexId, texId, m_texIdforExtract;
 
 	float	m_fRectWidth;
 	POINT3D m_pos;
 	POINT3D m_targetPos;
 
-	
+	float m_fImgCols;
+	float m_fImgRows;
 
 	POINT3D m_vertex[4];
 	POINT3D m_vertexBg[4];
@@ -128,8 +139,7 @@ private:
 	unsigned short nImgWidth;
 	unsigned short nImgHeight;
 	
-	float m_fImgCols;
-	float m_fImgRows;
+	
 
 	
 	float m_fXScale, m_fYScale;
@@ -142,6 +152,7 @@ private:
 	bool m_bIsNear;
 
 	RECT2D m_RectImg;
+	RECT2D m_ImgRectSize;
 
 	std::vector<WORD_POS> m_wordBoundary;
 	std::vector<_MATCHInfo> m_matched_pos;

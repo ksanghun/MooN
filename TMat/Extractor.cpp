@@ -17,6 +17,9 @@ public:
 
 CExtractor::CExtractor()
 {
+	int m_xExpand = 0;
+	int m_yExpand = 0;
+
 }
 
 
@@ -380,9 +383,11 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 		//	maxHeight = maxWidth;
 		//}
 
+		maxWidth += m_xExpand;
+		maxHeight += m_yExpand;
 
 		// !!X-Axix expension by 3 pixel//
-		float fExpand = 2;
+		float fExpand = 0;
 		textBox.textboxForCheck.x -= fExpand;
 		textBox.textboxForCheck.width += fExpand * 2;
 

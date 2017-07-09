@@ -79,7 +79,6 @@
 #define IDC_CURSOR_SEARCH               315
 #define IDR_POPUP_MENU                  318
 #define IDD_DIALOG_ADDLIST              319
-#define IDD_DIALOG1                     320
 #define IDD_DLG_EXTRACT                 320
 #define IDC_EDIT_SRCPATH                1000
 #define IDC_EDIT_LOGPATH                1001
@@ -87,6 +86,12 @@
 #define IDC_EDIT_COLNAME                1003
 #define IDC_EDIT2                       1004
 #define IDC_EDIT_COLW                   1004
+#define IDC_BUTTON1                     1005
+#define IDC_BN_EXTRACT                  1005
+#define IDC_BN_XINCRE                   1006
+#define IDC_BN_XDEC                     1007
+#define IDC_BN_YINCRE                   1008
+#define IDC_BN_YDEC                     1009
 #define ID_FILE_CONFIGURATION           32771
 #define IDR_TOOLBAR_24                  32772
 #define ID_BUTTON32773                  32773
@@ -135,7 +140,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        321
 #define _APS_NEXT_COMMAND_VALUE         32813
-#define _APS_NEXT_CONTROL_VALUE         1005
+#define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           315
 #endif
 #endif

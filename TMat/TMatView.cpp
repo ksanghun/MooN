@@ -55,6 +55,8 @@ CTMatView::CTMatView()
 	m_pViewLog = NULL;
 	m_searchCnt = 0;
 	m_searchId = 100;
+
+	m_pDlgExtract = NULL;
 	// Init Data Manager //
 	SINGLETON_TMat::GetInstance()->InitData();
 }
@@ -70,6 +72,9 @@ CTMatView::~CTMatView()
 	}
 	if (m_pViewLog != NULL){
 		delete m_pViewLog;
+	}
+	if (m_pDlgExtract){
+		delete m_pDlgExtract;
 	}
 
 }
@@ -201,6 +206,10 @@ int CTMatView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_ctrlTab.AddTab(m_pViewResult, L"Result View", (UINT)2);
 
 
+	m_pDlgExtract = new CDlgExtractTool;
+	m_pDlgExtract->Create(this);
+	m_pDlgExtract->ShowWindow(SW_HIDE);
+
 
 	return 0;
 }
@@ -258,156 +267,158 @@ void CTMatView::InitCamera(bool bmovexy)
 	}
 }
 
-void CTMatView::ProcExtractTextBoundary()
-{
 
-	CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();
-	USES_CONVERSION;	
-
-	CZPageObject* pPage = m_pViewImage->GetSelectedPageForCNS();
-	if (pPage){
-		IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 1);
-		cv::Mat img = cv::cvarrToMat(src);
-
-
-		//cv::Mat binaryMat(img.size(), img.type());
-		//Apply thresholding
-		//cv::threshold(img, binaryMat, 128, 255, cv::THRESH_BINARY);
-
-
-
-
-
-		std::vector<cv::Rect> textbox;
-
-		pM->AddOutputString(L"Start to extract words", false);
-
-		//m_Extractor.extractWithOCR(img, textbox);
-
-
-
-		/*
-		//CString strFile;
-		int addcnt = 0;
-		for (int i = 0; i < textbox.size(); i++){
-
-		cv::rectangle(img, textbox[i], cv::Scalar(0, 255, 0), 1, 8, 0);
-
-		cv::Mat crop = img(textbox[i]);
-
-		if (SINGLETON_TMat::GetInstance()->InsertIntoLogDB(crop, textbox[i].x, textbox[i].x + textbox[i].width,
-		textbox[i].y, textbox[i].y + textbox[i].height, pPage->GetCode())==false){
-		addcnt++;
-		}
-
-		//strFile.Format(L"C:/FGBD_project/Books/log/%d_%d.bmp", pPage->GetCode(), i);
-		//char* sz = T2A(strFile);
-		//cv::imwrite(sz, crop);
-		//	imshow("before deskew img ", crop);
-		}
-		cv::imshow("extractionWithOCR", img);
-		CString strInfo;
-		strInfo.Format(L"%d of %d are added", addcnt, textbox.size());
-		pM->AddOutputString(L"Extraction is finished", false);
-		pM->AddOutputString(strInfo, false);
-		*/
-
-
-
-
-
-		//	m_Extractor.ProcDeskewing(img);
-
-		//		std::vector<cv::Rect> textbox;
-		cv::Mat cropimg;
-		//	m_Extractor.extractContours(img, textbox);
-		//	cv::resize(img, img, cv::Size(2 * img.cols, 2 * img.rows), 0, 0, CV_INTER_CUBIC);
-		m_Extractor.getContours(img, textbox, cropimg);
-
-		//	m_Extractor.getContours(binaryMat, textbox, cropimg);
-
-		//	//Test Display
-		src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 0);
-		cv::Mat img2 = cv::cvarrToMat(src);
-
-		CString strFile;
-		int addcnt = 0;
-
-
-		std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
-
-		for (int i = 0; i < ptexBox.size(); i++){
-			if (ptexBox[i].IsAmbig){
-				cv::rectangle(img2, ptexBox[i].textbox, cv::Scalar(0, 0, 255), 2, 8, 0);
-			}
-			else{
-				cv::rectangle(img2, ptexBox[i].textbox, cv::Scalar(0, 255, 0), 2, 8, 0);
-			}
-		}
-
-
-
-		//cv::Mat crop = img2(textbox[i]);
-		//if (SINGLETON_TMat::GetInstance()->InsertIntoLogDB(crop, textbox[i].x, textbox[i].x + textbox[i].width,
-		//	textbox[i].y, textbox[i].y + textbox[i].height, pPage->GetCode()) == false){
-		//	addcnt++;
-		//}
-
-
-		//cv::rectangle(img, textbox[i], cv::Scalar(0, 0, 255), 1, cv::LINE_8, 0);
-		//cv::Mat crop = img(textbox[i]);
-		//strFile.Format(L"C:/FGBD_project/Books/log/%d_%d.bmp", pPage->GetCode(), i);
-		//char* sz = T2A(strFile);
-		//cv::imwrite(sz, crop);
-		//	imshow("before deskew img ", crop);
-//	}
-////		cv::imwrite("imgOut1.jpg", img);
+//void CTMatView::ProcExtractTextBoundary()
+//{
 //
+//	CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();
+//	USES_CONVERSION;	
+//
+//	CZPageObject* pPage = m_pViewImage->GetSelectedPageForCNS();
+//	if (pPage){
+//		IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 1);
+//		cv::Mat img = cv::cvarrToMat(src);
+//
+//
+//		//cv::Mat binaryMat(img.size(), img.type());
+//		//Apply thresholding
+//		//cv::threshold(img, binaryMat, 128, 255, cv::THRESH_BINARY);
+//
+//
+//
+//
+//
+//		std::vector<cv::Rect> textbox;
+//
+//		pM->AddOutputString(L"Start to extract words", false);
+//
+//		//m_Extractor.extractWithOCR(img, textbox);
+//
+//
+//
+//		/*
+//		//CString strFile;
+//		int addcnt = 0;
+//		for (int i = 0; i < textbox.size(); i++){
+//
+//		cv::rectangle(img, textbox[i], cv::Scalar(0, 255, 0), 1, 8, 0);
+//
+//		cv::Mat crop = img(textbox[i]);
+//
+//		if (SINGLETON_TMat::GetInstance()->InsertIntoLogDB(crop, textbox[i].x, textbox[i].x + textbox[i].width,
+//		textbox[i].y, textbox[i].y + textbox[i].height, pPage->GetCode())==false){
+//		addcnt++;
+//		}
+//
+//		//strFile.Format(L"C:/FGBD_project/Books/log/%d_%d.bmp", pPage->GetCode(), i);
+//		//char* sz = T2A(strFile);
+//		//cv::imwrite(sz, crop);
+//		//	imshow("before deskew img ", crop);
+//		}
+//		cv::imshow("extractionWithOCR", img);
+//		CString strInfo;
+//		strInfo.Format(L"%d of %d are added", addcnt, textbox.size());
+//		pM->AddOutputString(L"Extraction is finished", false);
+//		pM->AddOutputString(strInfo, false);
+//		*/
+//
+//
+//
+//
+//
+//		//	m_Extractor.ProcDeskewing(img);
+//
+//		//		std::vector<cv::Rect> textbox;
+//		cv::Mat cropimg;
+//		//	m_Extractor.extractContours(img, textbox);
+//		//	cv::resize(img, img, cv::Size(2 * img.cols, 2 * img.rows), 0, 0, CV_INTER_CUBIC);
+//		m_Extractor.getContours(img, textbox, cropimg);
+//
+//		//	m_Extractor.getContours(binaryMat, textbox, cropimg);
+//
+//		//	//Test Display
+//		src = SINGLETON_TMat::GetInstance()->LoadIplImage(pPage->GetPath(), 0);
+//		cv::Mat img2 = cv::cvarrToMat(src);
+//
+//		CString strFile;
+//		int addcnt = 0;
+//
+//
+//		std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
+//
+//		for (int i = 0; i < ptexBox.size(); i++){
+//			if (ptexBox[i].IsAmbig){
+//				cv::rectangle(img2, ptexBox[i].textbox, cv::Scalar(0, 0, 255), 2, 8, 0);
+//			}
+//			else{
+//				cv::rectangle(img2, ptexBox[i].textbox, cv::Scalar(0, 255, 0), 2, 8, 0);
+//			}
+//		}
+//
+//
+//
+//		//cv::Mat crop = img2(textbox[i]);
+//		//if (SINGLETON_TMat::GetInstance()->InsertIntoLogDB(crop, textbox[i].x, textbox[i].x + textbox[i].width,
+//		//	textbox[i].y, textbox[i].y + textbox[i].height, pPage->GetCode()) == false){
+//		//	addcnt++;
+//		//}
+//
+//
+//		//cv::rectangle(img, textbox[i], cv::Scalar(0, 0, 255), 1, cv::LINE_8, 0);
+//		//cv::Mat crop = img(textbox[i]);
+//		//strFile.Format(L"C:/FGBD_project/Books/log/%d_%d.bmp", pPage->GetCode(), i);
+//		//char* sz = T2A(strFile);
+//		//cv::imwrite(sz, crop);
+//		//	imshow("before deskew img ", crop);
+////	}
+//////		cv::imwrite("imgOut1.jpg", img);
+////
+//
+//
+//		// broden space between characters //
+//
+//		//cv::Mat resMat(binaryMat.size(), binaryMat.type());
+//		//resMat.setTo(1);
+//
+//
+//		//cv::imshow("Before-binaryMat", binaryMat);
+//		//for (int y = 1; y < binaryMat.rows - 1; y++){
+//		//	for (int x = 0; x < binaryMat.cols; x++){
+//		//		int pId = (y-1)*binaryMat.step + x;
+//		//		int id = y*binaryMat.step + x;
+//		//		int nId = (y + 1)*binaryMat.step + x;
+//
+//		//		if (binaryMat.data[id] < 128){		// black
+//		//			if (binaryMat.data[nId] > 128){
+//		//				binaryMat.data[id] = 255;
+//		//			}
+//		//		}
+//		//	}
+//		//}
+//		//cv::imshow("After-binaryMat", binaryMat);
+//
+//
+//
+//
+//		cv::imshow("Extraction", img2);
+//
+//		//CString strInfo;
+//		//strInfo.Format(L"%d of %d are added", addcnt, textbox.size());
+//		//pM->AddOutputString(L"Extraction is finished", false);
+//		//pM->AddOutputString(strInfo, false);
+//
+//
+//		cvReleaseImage(&src);
+//		img.release();		
+////		pPage->UpdateTextBoundary();
+//	}
+//
+//	else{
+//		AfxMessageBox(L"Page is not selected");
+//	}
+//
+//}
 
-
-		// broden space between characters //
-
-		//cv::Mat resMat(binaryMat.size(), binaryMat.type());
-		//resMat.setTo(1);
-
-
-		//cv::imshow("Before-binaryMat", binaryMat);
-		//for (int y = 1; y < binaryMat.rows - 1; y++){
-		//	for (int x = 0; x < binaryMat.cols; x++){
-		//		int pId = (y-1)*binaryMat.step + x;
-		//		int id = y*binaryMat.step + x;
-		//		int nId = (y + 1)*binaryMat.step + x;
-
-		//		if (binaryMat.data[id] < 128){		// black
-		//			if (binaryMat.data[nId] > 128){
-		//				binaryMat.data[id] = 255;
-		//			}
-		//		}
-		//	}
-		//}
-		//cv::imshow("After-binaryMat", binaryMat);
-
-
-
-
-		cv::imshow("Extraction", img2);
-
-		//CString strInfo;
-		//strInfo.Format(L"%d of %d are added", addcnt, textbox.size());
-		//pM->AddOutputString(L"Extraction is finished", false);
-		//pM->AddOutputString(strInfo, false);
-
-
-		cvReleaseImage(&src);
-		img.release();		
-//		pPage->UpdateTextBoundary();
-	}
-
-	else{
-		AfxMessageBox(L"Page is not selected");
-	}
-
-}
 short CTMatView::ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl)
 {
 	if (m_pViewImage){
@@ -580,12 +591,18 @@ void CTMatView::DoCurNSearch()
 		pView->InitCamera(false);
 		Sleep(150);
 
-		m_pMatchingProcessor.PrepareCutNSearch(m_pViewImage->GetSelectedPageForCNS(), m_pViewImage->GetSelectedAreaForCNS());
+		RECT2D rect = m_pViewImage->GetSelectedAreaForCNS();
+		if (rect.width > 0){
+			m_pMatchingProcessor.PrepareCutNSearch(m_pViewImage->GetSelectedPageForCNS(), m_pViewImage->GetSelectedAreaForCNS());
 
-		m_searchCnt = 0;
-		SetTimer(_TIMER_SEARCH_PAGE, 10, NULL);
-		CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();
-		pM->AddOutputString(_T("Start Search Process...."), true);
+			m_searchCnt = 0;
+			SetTimer(_TIMER_SEARCH_PAGE, 10, NULL);
+			CMainFrame* pM = (CMainFrame*)AfxGetMainWnd();
+			pM->AddOutputString(_T("Start Search Process...."), true);
+		}
+		else{
+			AfxMessageBox(L"Select area for Searching");
+		}
 	}
 }
 
@@ -696,4 +713,30 @@ void CTMatView::DrawGLText(CString str, POINT3D pos)
 	if (m_pViewImage){
 		m_pViewImage->DrawTextFromOutSise(str, pos);
 	}
+}
+
+void CTMatView::TextExtraction()
+{
+	if (m_pDlgExtract){
+		if (m_pViewImage){
+			CZPageObject* pSelPage = m_pViewImage->GetSelectedPageForCNS();
+			if (pSelPage){
+				RECT2D rect = m_pViewImage->GetSelectedAreaForExtraction();
+				if (rect.width < 1){
+					rect = pSelPage->GetImgRect();					
+				}
+				m_pDlgExtract->SetExtractImage(pSelPage, rect);
+				m_pDlgExtract->ShowWindow(SW_SHOW);
+			}
+			else{
+				AfxMessageBox(L"Page is not selected");
+			}
+		}		
+	}
+
+	//CDlgExtractTool dlg;
+	//
+	//if (dlg.DoModal() == IDOK){
+
+	//}
 }

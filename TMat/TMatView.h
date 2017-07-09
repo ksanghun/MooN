@@ -8,9 +8,9 @@
 #include "ZViewResult.h"
 #include "ZViewLog.h"
 #include "ZMatching.h"
-#include "Extractor.h"
+//#include "Extractor.h"
 
-
+#include "DlgExtractTool.h"
 
 
 
@@ -28,7 +28,7 @@ public:
 
 	void SetTreeDragItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
 	short ProcSetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl);
-	void ProcExtractTextBoundary();
+//	void ProcExtractTextBoundary();
 	short SetSelectedItem(HTREEITEM hItem, CDragDropTreeCtrl* pCtrl, float& offset);
 	void RemoveImageData(HTREEITEM _item, CDragDropTreeCtrl* pCtrl);
 
@@ -45,6 +45,9 @@ public:
 
 	void ResetLogList();
 	void DrawGLText(CString str, POINT3D pos);
+
+	void TextExtraction();
+
 // Operations
 public:
 
@@ -54,8 +57,11 @@ private:
 	CZViewLog* m_pViewLog;
 	CZViewResult* m_pViewResult;
 
+
+	CDlgExtractTool* m_pDlgExtract;
+
 	CZMatching m_pMatchingProcessor;
-	CExtractor m_Extractor;
+//	CExtractor m_Extractor;
 
 	unsigned int m_searchCnt;
 	unsigned int m_searchId;

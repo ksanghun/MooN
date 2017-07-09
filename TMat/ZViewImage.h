@@ -38,6 +38,7 @@ public:
 
 	CZPageObject* GetSelectedPageForCNS() { return m_pSelectPageForCNS; }
 	RECT2D GetSelectedAreaForCNS();
+	RECT2D GetSelectedAreaForExtraction();
 	
 	bool IsReadyForSearch();
 

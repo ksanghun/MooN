@@ -42,12 +42,21 @@ public:
 	void extractWithOCR(cv::Mat image, std::vector<cv::Rect>& boundRect);
 	std::vector<_EXTRACT_BOX>& GetTextBoxes() { return m_exTextBox; }
 	
+	void ChangeXExpand(int _d) { m_xExpand += _d; }
+	void ChangeYExpand(int _d) { m_yExpand += _d; }
+
 private:
 	std::vector<_EXTRACT_BOX> m_exTextBox;
+	int m_xExpand;
+	int m_yExpand;
+	int m_maxWidth;
+	int m_maxHeight;
 
 	void ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contour);
 	bool RcvMergeTextBox(int width, int height, float aRatio, int& depth);
 	bool IsBoxToBoxIntersect(cv::Rect b1, cv::Rect b2);
+
+	
 
 };
 
