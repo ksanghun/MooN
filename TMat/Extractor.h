@@ -1,5 +1,6 @@
 #pragma once
 #include "opencv2/opencv.hpp"
+#include "data_type.h"
 
 // tessract library //
 //#include <baseapi.h>
@@ -42,8 +43,10 @@ public:
 	void extractWithOCR(cv::Mat image, std::vector<cv::Rect>& boundRect);
 	std::vector<_EXTRACT_BOX>& GetTextBoxes() { return m_exTextBox; }
 	
-	void ChangeXExpand(int _d) { m_xExpand += _d; }
-	void ChangeYExpand(int _d) { m_yExpand += _d; }
+	void ChangeXExpand(int _d);// { m_xExpand += _d; }
+	void ChangeYExpand(int _d);// { m_yExpand += _d; }
+
+	RECT2D GetSearchingRect();
 
 private:
 	std::vector<_EXTRACT_BOX> m_exTextBox;

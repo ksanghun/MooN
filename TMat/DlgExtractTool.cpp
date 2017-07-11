@@ -167,6 +167,8 @@ void CDlgExtractTool::OnBnClickedBnYdec()
 	// TODO: Add your control notification handler code here
 	if (m_pExtView){
 		m_pExtView->ChangeYExpand(-1);
+	//	m_pExtView->ProcExtractTextBoundary();
+		m_pExtView->Render();
 	}
 }
 
@@ -176,6 +178,8 @@ void CDlgExtractTool::OnBnClickedBnYincre()
 	// TODO: Add your control notification handler code here
 	if (m_pExtView){
 		m_pExtView->ChangeYExpand(1);
+	//	m_pExtView->ProcExtractTextBoundary();
+		m_pExtView->Render();
 	}
 }
 
@@ -185,6 +189,8 @@ void CDlgExtractTool::OnBnClickedBnXdec()
 	// TODO: Add your control notification handler code here
 	if (m_pExtView){
 		m_pExtView->ChangeXExpand(-1);
+	//	m_pExtView->ProcExtractTextBoundary();
+		m_pExtView->Render();
 	}
 }
 
@@ -194,5 +200,7 @@ void CDlgExtractTool::OnBnClickedBnXincre()
 	// TODO: Add your control notification handler code here
 	if (m_pExtView){
 		m_pExtView->ChangeXExpand(1);
+	//	m_pExtView->ProcExtractTextBoundary();
+		m_pExtView->Render();
 	}
 }

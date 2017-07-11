@@ -17,9 +17,11 @@ public:
 
 CExtractor::CExtractor()
 {
-	int m_xExpand = 0;
-	int m_yExpand = 0;
+	m_xExpand = 0;
+	m_yExpand = 0;
 
+	m_maxWidth = 0;
+	m_maxHeight = 0;
 }
 
 
@@ -341,7 +343,11 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 	// Vaildation contour =======================================//
 	//	std::vector<cv::Rect> boundRect;
 	int minSize = 30;
-	int maxWidth = 0, maxHeight = 0;
+//	int maxWidth = 0, maxHeight = 0;
+
+	m_maxWidth = 0;
+	m_maxHeight = 0;
+
 	float aRatio = 0.0f;
 	for (int i = 0; i < contour.size(); i++){
 
@@ -370,12 +376,12 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 		// Find the max size of page, expand some along to x-axis ( In case of left to right, it should be y-axis expend //
 		aRatio = (float)textBox.textbox.width / (float)textBox.textbox.height;
 		if ((aRatio > 0.75f) && (aRatio < 1.25f)){
-			if (textBox.textbox.width > maxWidth){
-				maxWidth = textBox.textbox.width;
+			if (textBox.textbox.width > m_maxWidth){
+				m_maxWidth = textBox.textbox.width;
 			}
 
-			if (textBox.textbox.height > maxHeight){
-				maxHeight = textBox.textbox.height;
+			if (textBox.textbox.height > m_maxHeight){
+				m_maxHeight = textBox.textbox.height;
 			}
 		}
 
@@ -383,15 +389,14 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 		//	maxHeight = maxWidth;
 		//}
 
-		maxWidth += m_xExpand;
-		maxHeight += m_yExpand;
+		
 
 		// !!X-Axix expension by 3 pixel//
-		float fExpand = 0;
+		float fExpand = 2;
 		textBox.textboxForCheck.x -= fExpand;
 		textBox.textboxForCheck.width += fExpand * 2;
 
-		fExpand = 0;
+		fExpand = 2;
 		textBox.textboxForCheck.y -= fExpand;
 		textBox.textboxForCheck.height += fExpand * 2;
 		//=====================================//
@@ -399,14 +404,16 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 		m_exTextBox.push_back(textBox);
 	}
 
+	m_maxWidth += m_xExpand;
+	m_maxHeight += m_yExpand;
 
 	int depth = 0;
-	RcvMergeTextBox(maxWidth, maxHeight, aRatio, depth);
+	RcvMergeTextBox(m_maxWidth, m_maxHeight, aRatio, depth);
 
 
 	// check ambigous ..
-	float area = maxWidth*maxHeight*0.3f;
-	aRatio = (float)maxWidth / (float)maxHeight;
+	float area = m_maxWidth*m_maxHeight*0.3f;
+	aRatio = (float)m_maxWidth / (float)m_maxHeight;
 
 	for (int i = 0; i < m_exTextBox.size(); i++){
 		float r = (float)m_exTextBox[i].textbox.width / (float)m_exTextBox[i].textbox.height;
@@ -432,7 +439,13 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 	//		}
 		}
 	}
+}
 
+RECT2D CExtractor::GetSearchingRect()
+{
+	RECT2D rect;
+	rect.set(0, m_maxWidth, 0, m_maxHeight);
+	return rect;
 }
 
 bool CExtractor::RcvMergeTextBox(int maxwidth, int maxheight, float aRatio, int& depth)
@@ -616,4 +629,16 @@ void CExtractor::TestFunc()
 //	ProcDeskewing();
 //	DeSkewImg();
 //	getContours("C:/Temp/deskew.bmp");
+}
+
+
+void CExtractor::ChangeXExpand(int _d)
+{
+	m_xExpand += _d; 
+	m_maxWidth += _d;
+}
+void CExtractor::ChangeYExpand(int _d)
+{
+	m_yExpand += _d; 
+	m_maxHeight += _d;
 }

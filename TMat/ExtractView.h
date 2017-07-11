@@ -23,7 +23,7 @@ public:
 	void ChangeXExpand(int _d);// { m_Extractor.ChangeXExpand(_d); }
 	void ChangeYExpand(int _d);// { m_Extractor.ChangeYExpand(_d); }
 
-
+	void DrawSearchRect();
 private:
 	POINT3D m_lookAt;
 	unsigned short m_rectWidth, m_rectHeight;
