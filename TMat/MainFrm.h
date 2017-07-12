@@ -8,6 +8,7 @@
 #include "PropertiesWnd.h"
 #include "DlgConfig.h"
 
+
 #include <Iphlpapi.h>
 #pragma comment(lib, "iphlpapi.lib")
 
@@ -55,6 +56,8 @@ protected:  // control bar embedded members
 
 	CString			m_strSrcPath;
 	CString			m_strLogPath;
+	
+
 
 // Generated message map functions
 protected:

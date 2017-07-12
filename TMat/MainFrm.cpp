@@ -8,6 +8,7 @@
 #include "MainFrm.h"
 #include "ZViewImage.h"
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -53,6 +54,7 @@ END_MESSAGE_MAP()
 CMainFrame::CMainFrame()
 {
 	// TODO: add member initialization code here
+
 }
 
 CMainFrame::~CMainFrame()
@@ -745,7 +747,15 @@ void CMainFrame::OnProjectConfiguration()
 void CMainFrame::OnAnalyzeExtracttext()
 {
 	// TODO: Add your command handler code here
-	pView->ProcExtractTextBoundary();
+/*	CDlgExtractTool dlg;
+
+	if (dlg.DoModal() == IDOK){
+		pView->ProcExtractTextBoundary();
+	}*/	
+
+	//m_pDlgExtract->ShowWindow(SW_SHOW);
+
+	pView->TextExtraction();
 }
 
 

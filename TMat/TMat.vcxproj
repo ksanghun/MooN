@@ -116,9 +116,11 @@
     <ClInclude Include="data_type.h" />
     <ClInclude Include="DlgAddCol.h" />
     <ClInclude Include="DlgConfig.h" />
+    <ClInclude Include="DlgExtractTool.h" />
     <ClInclude Include="DragDropTreeCtrl.h" />
     <ClInclude Include="DragEventListener.h" />
     <ClInclude Include="Extractor.h" />
+    <ClInclude Include="ExtractView.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="math_tool.h" />
@@ -148,8 +150,10 @@
     <ClCompile Include="Camera2Axis.cpp" />
     <ClCompile Include="DlgAddCol.cpp" />
     <ClCompile Include="DlgConfig.cpp" />
+    <ClCompile Include="DlgExtractTool.cpp" />
     <ClCompile Include="DragDropTreeCtrl.cpp" />
     <ClCompile Include="Extractor.cpp" />
+    <ClCompile Include="ExtractView.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="math_tool.cpp" />

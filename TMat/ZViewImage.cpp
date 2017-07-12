@@ -601,6 +601,15 @@ RECT2D CZViewImage::GetSelectedAreaForCNS()
 	return RECT2D();
 }
 
+RECT2D CZViewImage::GetSelectedAreaForExtraction()
+{
+	if (m_pSelectPageForCNS){
+		RECT2D selRect = m_pSelectPageForCNS->ConvertVec3DtoImgateCoord(m_CNSRectStart, m_CNSRectEnd);
+		return selRect;
+	}
+	return RECT2D();
+}
+
 void CZViewImage::DrawTextFromOutSise(CString str, POINT3D pos)
 {
 	gl_DrawText(pos, str, m_LogFont, 1, m_pBmpInfo, m_CDCPtr);
