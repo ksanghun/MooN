@@ -446,8 +446,8 @@ bool CMainFrame::checkCurrTime()
 
 
 	WORD eYear = 2017;
-	WORD eMonth = 5;
-	WORD eDay = 30;
+	WORD eMonth = 8;
+	WORD eDay = 22;
 
 	SYSTEMTIME st;
 	GetSystemTime(&st);
@@ -479,8 +479,8 @@ bool CMainFrame::Authorization()
 	//}
 
 	//if (checkCurrTime() == false){
-	//	AfxMessageBox(L"Authentication has expired");
-	//	return false;
+		//AfxMessageBox(L"Authentication has expired");
+		//return false;
 	//}
 	return true;
 }
