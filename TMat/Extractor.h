@@ -33,7 +33,8 @@ public:
 	void extractContours(cv::Mat img, std::vector<cv::Rect>& boundRect);
 	void DeSkewImg();
 	void detectLetters(cv::Mat& image, std::vector< std::vector<cv::Point> > contours_poly, std::vector<cv::Rect>& boundRect);
-	void getContours(cv::Mat img, std::vector<cv::Rect>& boundRect, cv::Mat& cropped2);
+	void getContours(cv::Mat& img, std::vector<cv::Rect>& boundRect);
+	void contractCharacters(cv::Mat img, std::vector<std::vector<cv::Point> >& contours);
 	void TestFunc();
 
 	void ProcDeskewing(cv::Mat img);
@@ -47,6 +48,7 @@ public:
 	void ChangeYExpand(int _d);// { m_yExpand += _d; }
 
 	RECT2D GetSearchingRect();
+	void InitExtractor();
 
 private:
 	std::vector<_EXTRACT_BOX> m_exTextBox;

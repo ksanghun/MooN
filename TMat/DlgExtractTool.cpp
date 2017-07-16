@@ -11,10 +11,14 @@
 
 IMPLEMENT_DYNAMIC(CDlgExtractTool, CDialog)
 
+enum EXTRACTOR_TIMER_EVT{ X_INC, XDEC, Y_INC, Y_DEC };
+
 CDlgExtractTool::CDlgExtractTool(CWnd* pParent /*=NULL*/)
 	: CDialog(CDlgExtractTool::IDD, pParent)
 {
 	m_pExtView = NULL;
+	m_sWidth = 0;
+	m_sHeight = 0;
 }
 
 CDlgExtractTool::~CDlgExtractTool()
@@ -27,6 +31,8 @@ CDlgExtractTool::~CDlgExtractTool()
 void CDlgExtractTool::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_SLIDER_WIDTH, m_sliderWidth);
+	DDX_Control(pDX, IDC_SLIDER_HEIGHT, m_sliderHeight);
 }
 
 
@@ -43,6 +49,11 @@ BEGIN_MESSAGE_MAP(CDlgExtractTool, CDialog)
 	ON_BN_CLICKED(IDC_BN_YINCRE, &CDlgExtractTool::OnBnClickedBnYincre)
 	ON_BN_CLICKED(IDC_BN_XDEC, &CDlgExtractTool::OnBnClickedBnXdec)
 	ON_BN_CLICKED(IDC_BN_XINCRE, &CDlgExtractTool::OnBnClickedBnXincre)
+	ON_WM_TIMER()
+	ON_NOTIFY(NM_CUSTOMDRAW, IDC_SLIDER_WIDTH, &CDlgExtractTool::OnNMCustomdrawSliderWidth)
+	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_SLIDER_WIDTH, &CDlgExtractTool::OnNMReleasedcaptureSliderWidth)
+	ON_NOTIFY(NM_CUSTOMDRAW, IDC_SLIDER_HEIGHT, &CDlgExtractTool::OnNMCustomdrawSliderHeight)
+	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_SLIDER_HEIGHT, &CDlgExtractTool::OnNMReleasedcaptureSliderHeight)
 END_MESSAGE_MAP()
 
 
@@ -54,7 +65,14 @@ BOOL CDlgExtractTool::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// TODO:  Add extra initialization here
-	
+	m_sliderWidth.SetRange(-100, 100, TRUE);
+	m_sliderWidth.SetPos(0);
+	m_sliderWidth.SetTicFreq(100);
+
+
+	m_sliderHeight.SetRange(-100, 100, TRUE);
+	m_sliderHeight.SetPos(0);
+	m_sliderHeight.SetTicFreq(100);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
@@ -202,5 +220,94 @@ void CDlgExtractTool::OnBnClickedBnXincre()
 		m_pExtView->ChangeXExpand(1);
 	//	m_pExtView->ProcExtractTextBoundary();
 		m_pExtView->Render();
+
+		//m_nTimer = 200;
+		//SetTimer(X_INC, m_nTimer, NULL);
 	}
+}
+
+
+void CDlgExtractTool::OnNMReleasedcaptureSlider1(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	// TODO: Add your control notification handler code here
+	*pResult = 0;
+}
+
+
+void CDlgExtractTool::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (nIDEvent == X_INC){
+		m_pExtView->ChangeXExpand(1);
+		m_pExtView->Render();
+
+		KillTimer(X_INC);
+
+		if (m_nTimer > 60)
+			m_nTimer -= 50;
+		
+		SetTimer(X_INC, m_nTimer, NULL);
+	}
+
+	CDialog::OnTimer(nIDEvent);
+}
+
+
+void CDlgExtractTool::OnNMCustomdrawSliderWidth(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
+	// TODO: Add your control notification handler code here
+	int pos = m_sliderWidth.GetPos();
+	if (pos != 0){
+		if (m_sWidth != pos){
+			int diff = pos - m_sWidth;
+			m_pExtView->ChangeXExpand(diff);
+			m_pExtView->Render();
+			m_sWidth = pos;
+		}
+	}
+
+	*pResult = 0;
+}
+
+
+void CDlgExtractTool::OnNMReleasedcaptureSliderWidth(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	// TODO: Add your control notification handler code here
+	m_pExtView->ProcExtractTextBoundary();
+	m_pExtView->Render();
+
+	m_sliderWidth.SetPos(0);
+	m_sWidth = 0;
+
+	*pResult = 0;
+}
+
+
+void CDlgExtractTool::OnNMCustomdrawSliderHeight(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
+	// TODO: Add your control notification handler code here
+	int pos = m_sliderHeight.GetPos();
+	if (pos != 0){
+		if (m_sHeight != pos){
+			int diff = pos - m_sHeight;
+			m_pExtView->ChangeYExpand(diff);
+			m_pExtView->Render();
+			m_sHeight = pos;
+		}
+	}
+	*pResult = 0;
+}
+
+
+void CDlgExtractTool::OnNMReleasedcaptureSliderHeight(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	// TODO: Add your control notification handler code here
+	m_pExtView->ProcExtractTextBoundary();
+	m_pExtView->Render();
+
+	m_sliderHeight.SetPos(0);
+	m_sHeight = 0;
+	*pResult = 0;
 }

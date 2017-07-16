@@ -100,8 +100,16 @@ void CExtractView::Render()
 void CExtractView::DrawSearchRect()
 {
 	glPushMatrix();
+	
+
+	
+//	glTranslatef(-m_pImg->GetImgWidth()*0.6f, +m_pImg->GetImgHeight()*0.6f, 0.0f);
+//	glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
+	glTranslatef(m_posSearchBox.x+5, m_posSearchBox.y+5, 0.0f);
 	glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
-	glTranslatef(-m_pImg->GetImgWidth()*0.5f, +m_pImg->GetImgHeight()*0.5f, 0.0f);
+	
+
+	
 
 	RECT2D rect = m_Extractor.GetSearchingRect();
 
@@ -138,6 +146,8 @@ void CExtractView::OnSize(UINT nType, int cx, int cy)
 	m_rectHeight = cy;
 	m_cameraPri.SetProjectionMatrix(45.0f, 0.0f, 0.0f, cx, cy);
 	m_cameraPri.SetModelViewMatrix(m_lookAt, 0.0f, 0.0f);
+
+	
 }
 
 
@@ -155,9 +165,13 @@ void CExtractView::SetExtractImage(CZPageObject* pImg, RECT2D cutRect)
 { 
 	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
 
+	m_Extractor.InitExtractor();
+
 	float levelheight = 700;
 	m_cameraPri.SetInitLevelHeight(levelheight);
 //	m_cameraPri.SetModelViewMatrix(pImg->GetPos(), 0, 0);
+
+	m_posSearchBox = m_cameraPri.ScreenToWorld(0, m_rectHeight);
 
 
 	if (m_eTexId != 0){
@@ -259,17 +273,62 @@ void CExtractView::SetExtractImage(CZPageObject* pImg, RECT2D cutRect)
 	Render();
 }
 
+void CExtractView::ContractImage(cv::Mat& img)
+{
+//	cv::imshow("Before-binaryMat", img);
+	for (int y = 1; y < img.rows - 1; y++){
+		for (int x = 1; x < img.cols - 1; x++){
+			int pId = (y - 1)*img.step + x;
+			int id = y*img.step + x;
+			int nId = (y + 1)*img.step + x;
+
+			if (img.data[id] < 128){		// black
+				if (img.data[nId] > 128){
+					img.data[id] = 255;
+				}
+			}
+			//if (img2.data[id] > 128){		// black
+			//	if (img2.data[pId] < 128){
+			//		img2.data[pId] = 255;
+			//	}
+			//}
+
+			//pId = (y)*img.step + x - 1;
+			//id = y*img.step + x;
+			//nId = (y)*img.step + x + 1;
+
+			//if (img.data[id] < 128){		// black
+			//	if (img.data[nId] > 128){
+			//		img.data[id] = 255;
+			//	}
+			//}
+
+		}
+	}
+		//}
+//	cv::imshow("After-binaryMat", img);
+}
 
 void CExtractView::ProcExtractTextBoundary()
 {
 	std::vector<cv::Rect> textbox;
-	cv::Mat cropimg;
+	//cv::Mat tImg;
 	cv::Mat img2;
 	m_MatImg.copyTo(img2);
 
 
-	m_Extractor.getContours(img2, textbox, cropimg);
+	//cv::Mat img2(m_MatImg.size(), m_MatImg.type());
+	////Apply thresholding
+	//cv::threshold(m_MatImg, img2, 200, 255, cv::THRESH_BINARY);
+	//cv::imshow("THRESH_BINARY", img2);
+	//img2.copyTo(tImg);
+//	m_MatImg.copyTo(img2);
+	
+	//ContractImage(img2);
+	//cv::imshow("ContractImage", img2);
 
+	m_Extractor.getContours(img2, textbox);
+	img2.release();
 
 	
 

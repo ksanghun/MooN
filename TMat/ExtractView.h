@@ -19,6 +19,7 @@ public:
 	//===========================//
 	void SetExtractImage(CZPageObject* pImg, RECT2D cutRect);// { m_pImg = pImg; }
 	void ProcExtractTextBoundary();
+	void ContractImage(cv::Mat& img);
 
 	void ChangeXExpand(int _d);// { m_Extractor.ChangeXExpand(_d); }
 	void ChangeYExpand(int _d);// { m_Extractor.ChangeYExpand(_d); }
@@ -35,6 +36,8 @@ private:
 	cv::Mat m_MatImg;
 	CExtractor m_Extractor;
 	CString m_strImgPath;
+
+	POINT3D m_posSearchBox;
 
 public:
 	DECLARE_MESSAGE_MAP()

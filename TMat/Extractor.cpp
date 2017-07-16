@@ -29,6 +29,14 @@ CExtractor::~CExtractor()
 {
 }
 
+void CExtractor::InitExtractor()
+{
+	m_xExpand = 0;
+	m_yExpand = 0;
+
+	m_maxWidth = 0;
+	m_maxHeight = 0;
+}
 void CExtractor::ProcDeskewing(cv::Mat img)
 {
 	
@@ -213,15 +221,29 @@ void CExtractor::detectLetters(cv::Mat& image, std::vector< std::vector<cv::Poin
 	}
 }
 
-void CExtractor::getContours(cv::Mat img, std::vector<cv::Rect>& boundRect, cv::Mat& cropped2)
+
+void CExtractor::contractCharacters(cv::Mat img, std::vector<std::vector<cv::Point> >& contours)
+{
+	cv::Size size(3, 3);
+	cv::GaussianBlur(img, img, size, 0);
+	adaptiveThreshold(img, img, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 75, 10);
+	cv::bitwise_not(img, img);
+	std::vector<cv::Vec4i> hierarchy;
+	/// Find contours
+	//	cv::findContours(cropped, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_KCOS, cv::Point(0, 0));
+	cv::findContours(img, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE, cv::Point(0, 0));
+
+}
+
+void CExtractor::getContours(cv::Mat& img, std::vector<cv::Rect>& boundRect)
 {
 //	cv::Mat img = cv::imread(filename, 0);
 
 //	cv::imshow("original", img);
 
 	//Apply blur to smooth edges and use adapative thresholding
-	cv::Size size(3, 3);
-	cv::GaussianBlur(img, img, size, 0);
+	//cv::Size size(1, 1);
+	//cv::GaussianBlur(img, img, size, 0);
 	adaptiveThreshold(img, img, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 75, 10);
 	cv::bitwise_not(img, img);
 
@@ -342,8 +364,8 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 	m_exTextBox.clear();
 	// Vaildation contour =======================================//
 	//	std::vector<cv::Rect> boundRect;
-	int minSize = 30;
-//	int maxWidth = 0, maxHeight = 0;
+	int minSize = 10;
+	//int maxWidth = 0, maxHeight = 0;
 
 	m_maxWidth = 0;
 	m_maxHeight = 0;
@@ -374,8 +396,10 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 
 
 		// Find the max size of page, expand some along to x-axis ( In case of left to right, it should be y-axis expend //
+
+		
 		aRatio = (float)textBox.textbox.width / (float)textBox.textbox.height;
-		if ((aRatio > 0.75f) && (aRatio < 1.25f)){
+		if ((aRatio > 0.2f) && (aRatio < 5.0f)){
 			if (textBox.textbox.width > m_maxWidth){
 				m_maxWidth = textBox.textbox.width;
 			}
@@ -384,6 +408,7 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 				m_maxHeight = textBox.textbox.height;
 			}
 		}
+
 
 		//if (maxWidth < maxHeight){
 		//	maxHeight = maxWidth;
@@ -406,6 +431,19 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 
 	m_maxWidth += m_xExpand;
 	m_maxHeight += m_yExpand;
+
+	if (m_maxWidth < 0)	
+		m_maxWidth = 0;
+	if (m_maxHeight < 0)	
+		m_maxHeight = 0;
+
+	//if ((m_maxHeight == 0) && (m_maxWidth == 0))
+	//{
+	//	m_maxWidth = maxWidth;
+	//	m_maxHeight = maxHeight;
+	//}
+
+
 
 	int depth = 0;
 	RcvMergeTextBox(m_maxWidth, m_maxHeight, aRatio, depth);
@@ -527,6 +565,17 @@ bool CExtractor::RcvMergeTextBox(int maxwidth, int maxheight, float aRatio, int&
 			tbox.textboxForCheck.y -= fExpand;
 			tbox.textboxForCheck.height += fExpand * 2;
 
+
+
+			// Filtering line//
+
+			if ((tbox.textbox.height > m_maxHeight*2.0f) || (tbox.textbox.width > m_maxWidth*2.0f))
+			{
+				float ar = (float)tbox.textbox.width / (float)tbox.textbox.height;
+				if ((ar<0.1f) || (ar>10.0f)){
+					continue;
+				}
+			}
 
 			m_exTextBox.push_back(tbox);
 		}
