@@ -25,6 +25,9 @@ public:
 	void ChangeYExpand(int _d);// { m_Extractor.ChangeYExpand(_d); }
 
 	void DrawSearchRect();
+
+
+	void ExtractLines(_TEXT_ORDER order);
 private:
 	POINT3D m_lookAt;
 	unsigned short m_rectWidth, m_rectHeight;

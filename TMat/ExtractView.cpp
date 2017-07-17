@@ -61,6 +61,41 @@ void CExtractView::Render()
 		m_pImg->DrawWithoutTexID(1.0f);
 		glDisable(GL_TEXTURE_2D);
 
+		
+		glLineWidth(1);
+		std::vector<_EXTRACT_BOX> pLine = m_Extractor.GetLineBoxes ();
+		if (pLine.size() > 0){
+			// Draw detected position //
+			glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
+			glPushMatrix();
+			glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
+			glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
+
+			for (int i = 0; i < pLine.size(); i++){
+				RECT2D rect;
+				rect.set(pLine[i].textbox.x, pLine[i].textbox.x + pLine[i].textbox.width, pLine[i].textbox.y, pLine[i].textbox.y + pLine[i].textbox.height);
+
+				glColor4f(0.0f, 0.0f, 1.0f, 0.3f);
+				glBegin(GL_QUADS);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glEnd();
+
+				glColor4f(0.0f, 0.0f, 1.0f, 0.99f);
+				glBegin(GL_LINE_STRIP);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glEnd();
+			}
+			glPopMatrix();
+		}
+
+
 		glLineWidth(2);
 		std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
 		if (ptexBox.size() > 0){
@@ -77,28 +112,19 @@ void CExtractView::Render()
 				RECT2D rect;
 				rect.set(ptexBox[i].textbox.x, ptexBox[i].textbox.x + ptexBox[i].textbox.width,
 					ptexBox[i].textbox.y, ptexBox[i].textbox.y+ptexBox[i].textbox.height);
-
 				
-				if (ptexBox[i].IsAmbig)
-					glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
-				else
-					glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
+				if (ptexBox[i].IsAmbig)					glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
+				else									glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
+
 				glBegin(GL_LINE_STRIP);
-				//glColor4f(1.0f, 0.0f, 0.0f, 0.7f);
-
-				
-
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
 				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
 				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glEnd();
-			}
 
-
-
-			
+			}			
 			glPopMatrix();
 		}
 	}
@@ -279,26 +305,19 @@ void CExtractView::SetExtractImage(CZPageObject* pImg, RECT2D cutRect)
 
 	//m_pImg->m_fImgCols = pCut->width;
 	//m_pImg->m_fImgRows = pCut->height;
-
-
-
-
-
-
+	
 	m_MatImg.release();
 
 	
 	m_MatImg = cv::cvarrToMat(pCut);
 	cvtColor(m_MatImg, m_MatImg, CV_BGR2GRAY);
-
 	
-
 
 	cvReleaseImage(&pimg);
 	cvReleaseImage(&pCut);
 
 
-	ProcExtractTextBoundary();
+//	ProcExtractTextBoundary();
 	Render();
 }
 
@@ -354,6 +373,7 @@ void CExtractView::ProcExtractTextBoundary()
 //	m_MatImg.copyTo(img2);
 	
 	ContractImage(img2);
+
 	//cv::imshow("ContractImage", img2);
 
 	m_Extractor.getContours(img2, textbox);
@@ -385,4 +405,20 @@ void CExtractView::ChangeYExpand(int _d)
 	m_Extractor.ChangeYExpand(_d); 
 //	ProcExtractTextBoundary();
 //	Render();
+}
+
+
+
+void CExtractView::ExtractLines(_TEXT_ORDER order)
+{
+	std::vector<cv::Rect> textbox;
+	cv::Mat img2;
+	m_MatImg.copyTo(img2);
+
+//	ContractImage(img2);
+
+	m_Extractor.ProcExtraction(img2, order);
+	img2.release();
+
+	Render();
 }

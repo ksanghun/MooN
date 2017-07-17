@@ -58,4 +58,10 @@ public:
 	afx_msg void OnNMCustomdrawSliderHeight(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMReleasedcaptureSliderHeight(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+	afx_msg void OnBnClickedBnDetectLines();
+	int m_textOrder;
+	BOOL m_bVertical;
+	BOOL m_bHorizontal;
+	afx_msg void OnBnClickedCheckVorder();
+	afx_msg void OnBnClickedCheckHorder();
 };

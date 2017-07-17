@@ -15,6 +15,9 @@ enum EXTRACTOR_TIMER_EVT{ X_INC, XDEC, Y_INC, Y_DEC };
 
 CDlgExtractTool::CDlgExtractTool(CWnd* pParent /*=NULL*/)
 	: CDialog(CDlgExtractTool::IDD, pParent)
+	, m_textOrder(0)
+	, m_bVertical(FALSE)
+	, m_bHorizontal(FALSE)
 {
 	m_pExtView = NULL;
 	m_sWidth = 0;
@@ -33,6 +36,8 @@ void CDlgExtractTool::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_SLIDER_WIDTH, m_sliderWidth);
 	DDX_Control(pDX, IDC_SLIDER_HEIGHT, m_sliderHeight);
+	DDX_Check(pDX, IDC_CHECK_VORDER, m_bVertical);
+	DDX_Check(pDX, IDC_CHECK_HORDER, m_bHorizontal);
 }
 
 
@@ -55,6 +60,9 @@ BEGIN_MESSAGE_MAP(CDlgExtractTool, CDialog)
 	ON_NOTIFY(NM_CUSTOMDRAW, IDC_SLIDER_HEIGHT, &CDlgExtractTool::OnNMCustomdrawSliderHeight)
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_SLIDER_HEIGHT, &CDlgExtractTool::OnNMReleasedcaptureSliderHeight)
 	ON_WM_MOUSEWHEEL()
+	ON_BN_CLICKED(IDC_BN_DETECT_LINES, &CDlgExtractTool::OnBnClickedBnDetectLines)
+	ON_BN_CLICKED(IDC_CHECK_VORDER, &CDlgExtractTool::OnBnClickedCheckVorder)
+	ON_BN_CLICKED(IDC_CHECK_HORDER, &CDlgExtractTool::OnBnClickedCheckHorder)
 END_MESSAGE_MAP()
 
 
@@ -74,6 +82,10 @@ BOOL CDlgExtractTool::OnInitDialog()
 	m_sliderHeight.SetRange(-100, 100, TRUE);
 	m_sliderHeight.SetPos(0);
 	m_sliderHeight.SetTicFreq(100);
+
+	m_bVertical = true;
+	m_bHorizontal = false;
+	UpdateData(FALSE);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
@@ -322,4 +334,36 @@ BOOL CDlgExtractTool::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	}
 
 	return CDialog::OnMouseWheel(nFlags, zDelta, pt);
+}
+
+
+void CDlgExtractTool::OnBnClickedBnDetectLines()
+{
+	// TODO: Add your control notification handler code here
+	if (m_pExtView){
+		if (m_bVertical){
+			m_pExtView->ExtractLines(V_ORDER);
+		}
+		else{
+			m_pExtView->ExtractLines(H_ORDER);
+		}
+	}
+}
+
+
+void CDlgExtractTool::OnBnClickedCheckVorder()
+{
+	// TODO: Add your control notification handler code here
+	m_bVertical = true;
+	m_bHorizontal = false;
+	UpdateData(FALSE);
+}
+
+
+void CDlgExtractTool::OnBnClickedCheckHorder()
+{
+	// TODO: Add your control notification handler code here
+	m_bVertical = false;
+	m_bHorizontal = true;
+	UpdateData(FALSE);
 }

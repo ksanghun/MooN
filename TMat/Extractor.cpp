@@ -6,7 +6,7 @@
 #include "ZDataManager.h"
 
 
-#define _MAX_EXTRACT_ITERATION 5
+#define _MAX_EXTRACT_ITERATION 10
 
 class comparator{
 public:
@@ -36,6 +36,8 @@ void CExtractor::InitExtractor()
 
 	m_maxWidth = 0;
 	m_maxHeight = 0;
+
+	m_exTextBox.clear();
 }
 void CExtractor::ProcDeskewing(cv::Mat img)
 {
@@ -331,6 +333,7 @@ void CExtractor::getContours(cv::Mat& img, std::vector<cv::Rect>& boundRect)
 	//Get only important contours, merge contours that are within another	
 	//std::vector<std::vector<cv::Point> > validContours;
 	ProcExtractTextBox(contours_poly, 0,0);
+//	ProcExtractTextBox(contours_poly, img.cols, 0);
 
 //	ProcExtractTextBox(contours_poly, m_averTextSize.width, m_averTextSize.height);
 
@@ -365,7 +368,7 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 	m_exTextBox.clear();
 	// Vaildation contour =======================================//
 	//	std::vector<cv::Rect> boundRect;
-	int minSize = 10;
+	int minSize = 1;
 	//int maxWidth = 0, maxHeight = 0;
 
 	m_maxWidth = 0;
@@ -419,11 +422,11 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 		
 
 		// !!X-Axix expension by 3 pixel//
-		float fExpand = 4;
+		float fExpand = 1;
 		textBox.textboxForCheck.x -= fExpand;
 		textBox.textboxForCheck.width += fExpand * 2;
 
-		fExpand = 2;
+		fExpand = 1;
 		textBox.textboxForCheck.y -= fExpand;
 		textBox.textboxForCheck.height += fExpand * 2;
 		//=====================================//
@@ -432,10 +435,6 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 	}
 
 
-	if (maxWidth > 0){
-		m_maxWidth = maxWidth;
-		m_maxHeight = maxHeight;
-	}
 	
 	m_maxWidth *= 0.9f;
 	m_maxHeight *= 0.9f;
@@ -447,6 +446,14 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 		m_maxWidth = 0;
 	if (m_maxHeight < 0)	
 		m_maxHeight = 0;
+
+	if (maxWidth > 0){
+		m_maxWidth = maxWidth;
+	}
+
+	if (maxHeight > 0){
+		m_maxHeight = maxHeight;
+	}
 
 
 // !! sorting ======================//
@@ -481,10 +488,7 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 
 	// check ambigous ..
 //	float area = m_averTextSize.width*m_averTextSize.height;
-
 	float area = m_maxWidth*m_maxHeight;
-
-
 	aRatio = (float)m_maxWidth / (float)m_maxHeight;
 
 	for (int i = 0; i < m_exTextBox.size(); i++){
@@ -749,3 +753,206 @@ void CExtractor::ChangeYExpand(int _d)
 	m_yExpand += _d; 
 	m_maxHeight += _d;
 }
+
+
+
+// Extraction Functions ===================//
+void CExtractor::ProcExtraction(cv::Mat& img, _TEXT_ORDER _torder)
+{
+// Detect Contours========================================================================//
+	adaptiveThreshold(img, img, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 75, 10);
+	cv::bitwise_not(img, img);
+
+	std::vector<std::vector<cv::Point> > contours;
+	std::vector<cv::Vec4i> hierarchy;
+	/// Find contours
+	cv::findContours(img, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE, cv::Point(0, 0));
+
+	/// Approximate contours to polygons + get bounding rects and circles
+	std::vector<std::vector<cv::Point> > contours_poly(contours.size());
+	//	std::vector<cv::Rect> boundRect(contours.size());
+	std::vector<cv::Point2f>center(contours.size());
+	std::vector<float>radius(contours.size());
+	
+	//Get poly contours
+	float aRatio = 0;
+	int minSize = 25;
+	int maxwidth = 0, maxheight = 0;
+	for (int i = 0; i < contours.size(); i++)
+	{
+		approxPolyDP(cv::Mat(contours[i]), contours_poly[i], 1, true);
+
+		cv::Rect r2 = cv::boundingRect(cv::Mat(contours_poly[i]));
+
+		if (r2.area() < minSize) continue;
+
+		aRatio = (float)r2.width / (float)r2.height;
+		if ((aRatio > 0.5f) && (aRatio < 2.0f)){
+			if (r2.width > maxwidth){
+				maxwidth = r2.width;
+			}
+			if (r2.height > maxheight){
+				maxheight = r2.height;
+			}
+		}
+	}
+//========================================================================================//
+	maxwidth += m_xExpand;
+	maxheight += m_yExpand;
+
+// Detect Lines===========================================================================//	
+	if (_torder == V_ORDER){		// Vertical
+	//	maxheight = img.rows;
+		ExtractLines(contours_poly, vecLines, maxwidth, img.rows, 0, maxwidth);
+	}
+	else{
+	//	maxwidth = img.cols;
+		ExtractLines(contours_poly, vecLines, img.cols, maxheight, maxheight, 0);
+	}
+//=========================================================================================//
+	
+	
+// For test //	
+	//m_exTextBox = vecLines;
+	//vecLines = std::vector<_EXTRACT_BOX>();
+
+
+	//for (int i = 0; i < vecLines.size(); i++){
+	//	m_exTextBox.push_back(vecLines[i]);
+	//}
+
+	m_maxWidth = maxwidth;
+	m_maxHeight = maxheight;
+
+//	ProcExtractTextBox(contours_poly, 0, 0);
+	//	ProcExtractTextBox(contours_poly, img.cols, 0);
+
+	//	ProcExtractTextBox(contours_poly, m_averTextSize.width, m_averTextSize.height);
+}
+
+void CExtractor::ExtractLines(std::vector<std::vector<cv::Point> >& contour, std::vector<_EXTRACT_BOX>& veclineBox, int maxWidth, int maxHeight, int extX, int extY)
+{
+	float aRatio = 0.0f;
+	int minSize = 4;
+	for (int i = 0; i < contour.size(); i++){
+		_EXTRACT_BOX textBox;
+		textBox.init();
+		textBox.textbox = cv::boundingRect(cv::Mat(contour[i]));
+		textBox.setExtendBox(extX, extY);
+
+		if (textBox.textbox.area() < minSize) continue;
+
+		if ((textBox.textbox.width < maxWidth*2.0f) && (textBox.textbox.height < maxHeight*2.0f)){
+			veclineBox.push_back(textBox);
+		}
+	}
+
+	// Initial extraction //
+	int depth = 0;
+	RcvMeargingBoundingBox(maxWidth, maxHeight, veclineBox, depth, extX, extY);
+}
+
+bool CExtractor::RcvMeargingBoundingBox(int maxwidth, int maxheight, std::vector<_EXTRACT_BOX>& veclineBox, int& depth, int extX, int extY)
+{
+	std::vector<_EXTRACT_BOX> tmp = veclineBox;
+	veclineBox = std::vector<_EXTRACT_BOX>();
+
+	m_averTextSize.width = 0;
+	m_averTextSize.height = 0;
+	int addcnt = 0;
+
+
+	int nWidth = 0, nHeight = 0;
+	bool IsMerged = false;
+	for (int i = 0; i < tmp.size(); i++){
+		//	for (int i = tmp.size()-1; i >=0; i--){
+		if (tmp[i].IsMerged) continue;
+
+		for (int j = 0; j < tmp.size(); j++){
+			//		for (int j = tmp.size()-1; j >=0; j--){
+			if (j != i){
+				if (tmp[j].IsMerged) continue;
+
+				if (IsBoxToBoxIntersect(tmp[i].textboxForCheck, tmp[j].textboxForCheck) == true){
+					// Merge Two box //
+					int x, y, x2, y2, width, height;
+
+					if (tmp[i].textbox.x < tmp[j].textbox.x)
+						x = tmp[i].textbox.x;
+					else
+						x = tmp[j].textbox.x;
+					if (tmp[i].textbox.x + tmp[i].textbox.width > tmp[j].textbox.x + tmp[j].textbox.width)
+						x2 = tmp[i].textbox.x + tmp[i].textbox.width;
+					else
+						x2 = tmp[j].textbox.x + tmp[j].textbox.width;
+
+
+					if (tmp[i].textbox.y < tmp[j].textbox.y)
+						y = tmp[i].textbox.y;
+					else
+						y = tmp[j].textbox.y;
+					if (tmp[i].textbox.y + tmp[i].textbox.height > tmp[j].textbox.y + tmp[j].textbox.height)
+						y2 = tmp[i].textbox.y + tmp[i].textbox.height;
+					else
+						y2 = tmp[j].textbox.y + tmp[j].textbox.height;
+
+					width = x2 - x;
+					height = y2 - y;
+
+					if ((width < (maxwidth*1.25f)) && (height < (maxheight*1.25f))){
+						tmp[i].textbox.x = x;
+						tmp[i].textbox.y = y;
+						tmp[i].textbox.width = width;
+						tmp[i].textbox.height = height;
+
+						tmp[j].IsMerged = true;
+						IsMerged = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+
+
+	for (int i = 0; i < tmp.size(); i++){
+		if (tmp[i].IsMerged == false){
+			_EXTRACT_BOX tbox;
+			tbox.init();
+			tbox.textbox = tmp[i].textbox;
+			tbox.setExtendBox(extX, extY);
+
+			// Filtering line//
+			if ((tbox.textbox.height > maxheight*2.0f) || (tbox.textbox.width > maxwidth*2.0f))
+			{
+				float ar = (float)tbox.textbox.width / (float)tbox.textbox.height;
+				if ((ar<0.1f) || (ar>10.0f)){
+					continue;
+				}
+			}
+			veclineBox.push_back(tbox);
+
+			m_averTextSize.width += tmp[i].textbox.width;
+			m_averTextSize.height += tmp[i].textbox.height;
+			addcnt++;		
+		}
+	}
+	tmp.clear();
+
+	if (addcnt > 0){
+		float aWidth = (float)m_averTextSize.width / (float)addcnt;
+		float aHeight = (float)m_averTextSize.height / (float)addcnt;
+		m_averTextSize.set(0, aWidth, 0, aHeight);
+	}
+
+	if ((depth < _MAX_EXTRACT_ITERATION) && (IsMerged)){
+		RcvMeargingBoundingBox(maxwidth, maxheight, veclineBox, depth, extX, extY);
+	}
+	depth++;
+
+	return true;
+}
+
+
+
