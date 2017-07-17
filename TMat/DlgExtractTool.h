@@ -57,4 +57,5 @@ public:
 	afx_msg void OnNMReleasedcaptureSliderWidth(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMCustomdrawSliderHeight(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMReleasedcaptureSliderHeight(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 };

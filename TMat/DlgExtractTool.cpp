@@ -54,6 +54,7 @@ BEGIN_MESSAGE_MAP(CDlgExtractTool, CDialog)
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_SLIDER_WIDTH, &CDlgExtractTool::OnNMReleasedcaptureSliderWidth)
 	ON_NOTIFY(NM_CUSTOMDRAW, IDC_SLIDER_HEIGHT, &CDlgExtractTool::OnNMCustomdrawSliderHeight)
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_SLIDER_HEIGHT, &CDlgExtractTool::OnNMReleasedcaptureSliderHeight)
+	ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
 
 
@@ -310,4 +311,15 @@ void CDlgExtractTool::OnNMReleasedcaptureSliderHeight(NMHDR *pNMHDR, LRESULT *pR
 	m_sliderHeight.SetPos(0);
 	m_sHeight = 0;
 	*pResult = 0;
+}
+
+
+BOOL CDlgExtractTool::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (m_pExtView){
+		m_pExtView->MouseWheel(zDelta);
+	}
+
+	return CDialog::OnMouseWheel(nFlags, zDelta, pt);
 }

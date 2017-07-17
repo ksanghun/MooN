@@ -31,13 +31,27 @@ void CExtractView::InitGLview(int _nWidth, int _nHeight)
 }
 void CExtractView::MouseWheel(short zDelta)
 {
+	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
 
+	float fLevelHeight = m_cameraPri.GetLevelHeight();
+	float zoomValue = fLevelHeight*0.1f + MIN_CAM_HIGHTLEVEL;
+	if (zDelta > 0){ zoomValue = -zoomValue; }
+	fLevelHeight += zoomValue;
+
+	//	if (fLevelHeight > MAX_CAM_HIGHTLEVEL*15){ fLevelHeight = MAX_CAM_HIGHTLEVEL*15; }
+	if (fLevelHeight < MIN_CAM_HIGHTLEVEL){ fLevelHeight = MIN_CAM_HIGHTLEVEL; }
+
+	m_cameraPri.SetInitLevelHeight(fLevelHeight);
+	m_cameraPri.SetModelViewMatrix(m_lookAt, 0, 0);
+
+	m_posSearchBox = m_cameraPri.ScreenToWorld(0, m_rectHeight);
+	Render();
 }
 void CExtractView::Render()
 {
 	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
 
-	glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
+	glClearColor(0.1f, 0.2f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
@@ -112,6 +126,7 @@ void CExtractView::DrawSearchRect()
 	
 
 	RECT2D rect = m_Extractor.GetSearchingRect();
+	RECT2D averRect = m_Extractor.GetAverRect();
 
 	glColor4f(1.0f, 1.0f, 0.0f, 0.99f);
 	glBegin(GL_LINE_STRIP);
@@ -121,6 +136,20 @@ void CExtractView::DrawSearchRect()
 	glVertex3f(rect.x2, rect.y1, 0.0f);
 	glVertex3f(rect.x1, rect.y1, 0.0f);
 	glEnd();
+
+
+	glPushMatrix();
+	glTranslatef(rect.width + 5, 0, 0);
+
+	glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
+	glBegin(GL_LINE_STRIP);
+	glVertex3f(averRect.x1, averRect.y1, 0.0f);
+	glVertex3f(averRect.x1, averRect.y2, 0.0f);
+	glVertex3f(averRect.x2, averRect.y2, 0.0f);
+	glVertex3f(averRect.x2, averRect.y1, 0.0f);
+	glVertex3f(averRect.x1, averRect.y1, 0.0f);
+	glEnd();
+	glPopMatrix();
 
 
 	glPopMatrix();
@@ -147,7 +176,7 @@ void CExtractView::OnSize(UINT nType, int cx, int cy)
 	m_cameraPri.SetProjectionMatrix(45.0f, 0.0f, 0.0f, cx, cy);
 	m_cameraPri.SetModelViewMatrix(m_lookAt, 0.0f, 0.0f);
 
-	
+	m_posSearchBox = m_cameraPri.ScreenToWorld(0, m_rectHeight);
 }
 
 
@@ -287,7 +316,7 @@ void CExtractView::ContractImage(cv::Mat& img)
 					img.data[id] = 255;
 				}
 			}
-			//if (img2.data[id] > 128){		// black
+			//if (img.data[id] > 128){		// black
 			//	if (img2.data[pId] < 128){
 			//		img2.data[pId] = 255;
 			//	}
@@ -324,7 +353,7 @@ void CExtractView::ProcExtractTextBoundary()
 	//img2.copyTo(tImg);
 //	m_MatImg.copyTo(img2);
 	
-	//ContractImage(img2);
+	ContractImage(img2);
 	//cv::imshow("ContractImage", img2);
 
 	m_Extractor.getContours(img2, textbox);

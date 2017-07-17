@@ -48,6 +48,7 @@ public:
 	void ChangeYExpand(int _d);// { m_yExpand += _d; }
 
 	RECT2D GetSearchingRect();
+	RECT2D GetAverRect() { return m_averTextSize; }
 	void InitExtractor();
 
 private:
@@ -57,7 +58,9 @@ private:
 	int m_maxWidth;
 	int m_maxHeight;
 
-	void ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contour);
+	RECT2D m_averTextSize;
+
+	void ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contour, int maxWidth, int maxHeight);
 	bool RcvMergeTextBox(int width, int height, float aRatio, int& depth);
 	bool IsBoxToBoxIntersect(cv::Rect b1, cv::Rect b2);
 
