@@ -372,6 +372,16 @@ void CExtractor::getContours(cv::Mat& img, cv::Mat& oImg, std::vector<cv::Rect>&
 
 
 
+	cv::Scalar color = cv::Scalar(255);
+	for (int i = 0; i < contours_poly.size(); i++)
+	{
+		//	if (boundRect[i].area()<100)continue;
+		drawContours(img, contours_poly, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
+
+		//	rectangle(cropped2, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0);
+	}
+	cv::imshow("contour_polygon", img);
+
 
 
 
