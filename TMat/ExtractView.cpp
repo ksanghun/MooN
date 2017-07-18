@@ -54,13 +54,11 @@ void CExtractView::Render()
 	glClearColor(0.1f, 0.2f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
 	if (m_pImg){
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, m_eTexId);
 		m_pImg->DrawWithoutTexID(1.0f);
 		glDisable(GL_TEXTURE_2D);
-
 		
 		glLineWidth(1);
 		std::vector<_EXTRACT_BOX> pLine = m_Extractor.GetLineBoxes ();
@@ -131,10 +129,8 @@ void CExtractView::Render()
 
 	DrawSearchRect();
 	glLineWidth(1);
-
-
+	
 	SwapBuffers(m_CDCPtr->GetSafeHdc());
-
 }
 
 void CExtractView::DrawSearchRect()
@@ -309,8 +305,8 @@ void CExtractView::SetExtractImage(CZPageObject* pImg, RECT2D cutRect)
 	m_MatImg.release();
 
 	
-	m_MatImg = cv::cvarrToMat(pCut);
-	cvtColor(m_MatImg, m_MatImg, CV_BGR2GRAY);
+	m_MatOImg = cv::cvarrToMat(pCut);
+	cvtColor(m_MatOImg, m_MatImg, CV_BGR2GRAY);
 	
 
 	cvReleaseImage(&pimg);
@@ -341,15 +337,15 @@ void CExtractView::ContractImage(cv::Mat& img)
 			//	}
 			//}
 
-			//pId = (y)*img.step + x - 1;
-			//id = y*img.step + x;
-			//nId = (y)*img.step + x + 1;
+			pId = (y)*img.step + x - 1;
+			id = y*img.step + x;
+			nId = (y)*img.step + x + 1;
 
-			//if (img.data[id] < 128){		// black
-			//	if (img.data[nId] > 128){
-			//		img.data[id] = 255;
-			//	}
-			//}
+			if (img.data[id] < 128){		// black
+				if (img.data[nId] > 128){
+					img.data[id] = 255;
+				}
+			}
 
 		}
 	}
@@ -372,14 +368,20 @@ void CExtractView::ProcExtractTextBoundary()
 	//img2.copyTo(tImg);
 //	m_MatImg.copyTo(img2);
 	
-	ContractImage(img2);
+//	ContractImage(img2);
+//	ContractImage(img2);
 
-	//cv::imshow("ContractImage", img2);
+//	cv::imshow("ContractImage", img2);
 
-	m_Extractor.getContours(img2, textbox);
+
+
+	m_Extractor.getContours(img2, m_MatOImg, textbox);
 	img2.release();
 
 	
+
+
+
 
 	//for (int i = 0; i < ptexBox.size(); i++){
 	//	if (ptexBox[i].IsAmbig){
@@ -415,8 +417,8 @@ void CExtractView::ExtractLines(_TEXT_ORDER order)
 	cv::Mat img2;
 	m_MatImg.copyTo(img2);
 
-//	ContractImage(img2);
-
+	// 
+	m_Extractor.ShrinkCharacter(img2);
 	m_Extractor.ProcExtraction(img2, order);
 	img2.release();
 

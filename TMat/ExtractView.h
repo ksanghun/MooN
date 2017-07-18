@@ -37,6 +37,7 @@ private:
 	RECT2D m_cutRect;
 
 	cv::Mat m_MatImg;
+	cv::Mat m_MatOImg;
 	CExtractor m_Extractor;
 	CString m_strImgPath;
 

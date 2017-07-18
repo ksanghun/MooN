@@ -38,6 +38,8 @@ void CExtractor::InitExtractor()
 	m_maxHeight = 0;
 
 	m_exTextBox.clear();
+	vecLines.clear();
+
 }
 void CExtractor::ProcDeskewing(cv::Mat img)
 {
@@ -237,8 +239,42 @@ void CExtractor::contractCharacters(cv::Mat img, std::vector<std::vector<cv::Poi
 
 }
 
-void CExtractor::getContours(cv::Mat& img, std::vector<cv::Rect>& boundRect)
+void CExtractor::getContours(cv::Mat& img, cv::Mat& oImg, std::vector<cv::Rect>& boundRect)
 {
+	if (0){
+		cv::Mat tmpImg;
+		tmpImg = img.clone();
+
+		adaptiveThreshold(tmpImg, tmpImg, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 75, 10);
+		cv::bitwise_not(tmpImg, tmpImg);
+
+		std::vector<std::vector<cv::Point> > contours2;
+		std::vector<cv::Vec4i> hierarchy2;
+		/// Find contours
+		//	cv::findContours(cropped, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_KCOS, cv::Point(0, 0));
+		cv::findContours(tmpImg, contours2, hierarchy2, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE, cv::Point(0, 0));
+
+		/// Approximate contours to polygons + get bounding rects and circles
+		std::vector<std::vector<cv::Point> > contours_poly2(contours2.size());
+		for (int i = 0; i < contours2.size(); i++)
+		{
+			approxPolyDP(cv::Mat(contours2[i]), contours_poly2[i], 1, true);
+		}
+
+		cv::imshow("contour_before", img);
+		cv::Scalar color = cv::Scalar(255);
+		for (int i = 0; i < contours_poly2.size(); i++)
+		{
+			//	if (boundRect[i].area()<100)continue;
+			drawContours(img, contours_poly2, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
+
+			//	rectangle(cropped2, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0);
+		}
+		cv::imshow("contour_after", img);
+	}
+
+
+
 //	cv::Mat img = cv::imread(filename, 0);
 
 //	cv::imshow("original", img);
@@ -295,11 +331,7 @@ void CExtractor::getContours(cv::Mat& img, std::vector<cv::Rect>& boundRect)
 
 
 
-////	cv::Mat cropped2 = cropped.clone();
-//	cropped2 = img.clone();
-////	cropped2 = cropped.clone();
-//	cropped2 = img.clone();
-//	cvtColor(cropped2, cropped2, CV_GRAY2RGB);
+	
 //
 ////	cv::Mat cropped3 = cropped.clone();
 //	cv::Mat cropped3 = img.clone();
@@ -319,11 +351,12 @@ void CExtractor::getContours(cv::Mat& img, std::vector<cv::Rect>& boundRect)
 	/// Approximate contours to polygons + get bounding rects and circles
 	std::vector<std::vector<cv::Point> > contours_poly(contours.size());
 //	std::vector<cv::Rect> boundRect(contours.size());
-	std::vector<cv::Point2f>center(contours.size());
-	std::vector<float>radius(contours.size());
+//	std::vector<cv::Point2f>center(contours.size());
+//	std::vector<float>radius(contours.size());
 
 
 	//Get poly contours
+	
 	for (int i = 0; i < contours.size(); i++)
 	{
 		approxPolyDP(cv::Mat(contours[i]), contours_poly[i], 1, true);
@@ -332,9 +365,18 @@ void CExtractor::getContours(cv::Mat& img, std::vector<cv::Rect>& boundRect)
 
 	//Get only important contours, merge contours that are within another	
 	//std::vector<std::vector<cv::Point> > validContours;
-	ProcExtractTextBox(contours_poly, 0,0);
-//	ProcExtractTextBox(contours_poly, img.cols, 0);
 
+
+
+	ProcExtractTextBox(contours_poly, 0, 0);
+
+
+
+
+
+
+//	cv::Scalar color = cv::Scalar(255, 255, 255);
+//	ProcExtractTextBox(contours_poly, img.cols, 0);
 //	ProcExtractTextBox(contours_poly, m_averTextSize.width, m_averTextSize.height);
 
 
@@ -349,18 +391,21 @@ void CExtractor::getContours(cv::Mat& img, std::vector<cv::Rect>& boundRect)
 
 
 //Display
-//cv::Scalar color = cv::Scalar(0, 255, 0);
-//for (int i = 0; i< validContours.size(); i++)
+//cv::Scalar color = cv::Scalar(255);
+//for (int i = 0; i< contours_poly.size(); i++)
 //{
-//	if (boundRect[i].area()<100)continue;
-//	drawContours(cropped2, validContours, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
-//	rectangle(cropped2, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0);
+//	drawContours(img, contours_poly, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
 //}
+//cv::imshow("contgour", img);
+
 
 //imwrite("example6.jpg",cropped2);
 //	imshow("Contours", cropped2);
 
 //	detectLetters(cropped3, validContours, boundRect);
+
+
+
 }
 
 void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contour, int maxWidth, int maxHeight)
@@ -368,7 +413,7 @@ void CExtractor::ProcExtractTextBox(std::vector<std::vector<cv::Point> >& contou
 	m_exTextBox.clear();
 	// Vaildation contour =======================================//
 	//	std::vector<cv::Rect> boundRect;
-	int minSize = 1;
+	int minSize = 16;
 	//int maxWidth = 0, maxHeight = 0;
 
 	m_maxWidth = 0;
@@ -776,7 +821,7 @@ void CExtractor::ProcExtraction(cv::Mat& img, _TEXT_ORDER _torder)
 	
 	//Get poly contours
 	float aRatio = 0;
-	int minSize = 25;
+	int minSize = 9;
 	int maxwidth = 0, maxheight = 0;
 	for (int i = 0; i < contours.size(); i++)
 	{
@@ -833,7 +878,7 @@ void CExtractor::ProcExtraction(cv::Mat& img, _TEXT_ORDER _torder)
 void CExtractor::ExtractLines(std::vector<std::vector<cv::Point> >& contour, std::vector<_EXTRACT_BOX>& veclineBox, int maxWidth, int maxHeight, int extX, int extY)
 {
 	float aRatio = 0.0f;
-	int minSize = 4;
+	int minSize = 9;
 	for (int i = 0; i < contour.size(); i++){
 		_EXTRACT_BOX textBox;
 		textBox.init();
@@ -954,5 +999,31 @@ bool CExtractor::RcvMeargingBoundingBox(int maxwidth, int maxheight, std::vector
 	return true;
 }
 
+void CExtractor::ShrinkCharacter(cv::Mat& img)
+{
+	cv::Mat tmpImg;
+	tmpImg = img.clone();
 
+	adaptiveThreshold(tmpImg, tmpImg, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 75, 10);
+	cv::bitwise_not(tmpImg, tmpImg);
+
+	std::vector<std::vector<cv::Point> > contours;
+	std::vector<cv::Vec4i> hierarchy;
+	/// Find contours
+	cv::findContours(tmpImg, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE, cv::Point(0, 0));
+
+	/// Approximate contours to polygons + get bounding rects and circles
+	std::vector<std::vector<cv::Point> > contours_poly2(contours.size());
+	for (int i = 0; i < contours.size(); i++)
+	{
+		approxPolyDP(cv::Mat(contours[i]), contours_poly2[i], 1, true);
+	}
+
+//	cv::imshow("contour_before", img);
+	cv::Scalar color = cv::Scalar(255);
+	for (int i = 0; i < contours_poly2.size(); i++){	
+		drawContours(img, contours_poly2, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());		
+	}
+	cv::imshow("contour_after", img);
+}
 

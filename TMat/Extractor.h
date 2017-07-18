@@ -58,7 +58,7 @@ public:
 	void extractContours(cv::Mat img, std::vector<cv::Rect>& boundRect);
 	void DeSkewImg();
 	void detectLetters(cv::Mat& image, std::vector< std::vector<cv::Point> > contours_poly, std::vector<cv::Rect>& boundRect);
-	void getContours(cv::Mat& img, std::vector<cv::Rect>& boundRect);
+	void getContours(cv::Mat& img, cv::Mat& oImg, std::vector<cv::Rect>& boundRect);
 	void contractCharacters(cv::Mat img, std::vector<std::vector<cv::Point> >& contours);
 	void TestFunc();
 
@@ -69,6 +69,7 @@ public:
 	void extractWithOCR(cv::Mat image, std::vector<cv::Rect>& boundRect);
 	std::vector<_EXTRACT_BOX>& GetTextBoxes() { return m_exTextBox; }
 	std::vector<_EXTRACT_BOX>& GetLineBoxes() { return vecLines; }
+
 	
 	void ChangeXExpand(int _d);// { m_xExpand += _d; }
 	void ChangeYExpand(int _d);// { m_yExpand += _d; }
@@ -79,6 +80,7 @@ public:
 
 
 	// Extraction Functions //
+	void ShrinkCharacter(cv::Mat& img);
 	void ProcExtraction(cv::Mat& img, _TEXT_ORDER _torder);
 	void ExtractLines(std::vector<std::vector<cv::Point> >& contour, std::vector<_EXTRACT_BOX>& veclineBox, int maxWidth, int maxHeight, int extX, int extY);
 	bool RcvMeargingBoundingBox(int maxwidth, int maxheight, std::vector<_EXTRACT_BOX>& veclineBox, int& depth, int extX, int extY);
@@ -86,6 +88,9 @@ public:
 private:
 	std::vector<_EXTRACT_BOX> m_exTextBox;
 	std::vector<_EXTRACT_BOX> vecLines;
+
+
+
 	int m_xExpand;
 	int m_yExpand;
 	int m_maxWidth;
