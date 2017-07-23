@@ -48,6 +48,8 @@ public:
 
 	void TextExtraction();
 
+	void AddMatchResultList();
+
 // Operations
 public:
 

@@ -107,6 +107,7 @@ public:
 //	void AddMatchingResult(_MATCHInfo* match);
 	void ResetMatchingResult();
 	void SetMatchingResults(IplImage* pCut);
+	void SetMatchingResultsExtraction();
 	void SortMatchingResults();
 	void GenerateMatchingResultsImg();
 

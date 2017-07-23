@@ -64,4 +64,5 @@ public:
 	BOOL m_bHorizontal;
 	afx_msg void OnBnClickedCheckVorder();
 	afx_msg void OnBnClickedCheckHorder();
+	afx_msg void OnBnClickedBnExtractText();
 };

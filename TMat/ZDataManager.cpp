@@ -540,6 +540,7 @@ bool CZDataManager::InsertIntoLogDB(cv::Mat cutImg, int x1, int x2, int y1, int 
 		if (fAcc> 0.7f){
 			matchid = i;
 			bmatched = true;
+			break;
 		}
 		cvReleaseImage(&dst);
 	}
@@ -710,8 +711,6 @@ void CZDataManager::SetMatchingResults(IplImage* pCut)
 					h = 128;
 				}
 
-
-
 				matchRes.pImgCut = cvCreateImage(cvSize(w, h), pTmp->depth, pTmp->nChannels);
 				cvResize(pTmp, matchRes.pImgCut);
 				cvReleaseImage(&pTmp);
@@ -730,6 +729,56 @@ void CZDataManager::SetMatchingResults(IplImage* pCut)
 				strName.Format(L"%s/%d_%u.bmp", m_strLogPath, (int)(matchRes.accuracy*100), matchId);
 				cvSaveImage((CStringA)strName, matchRes.pImgCut);
 			}
+
+			m_matchResGroup[matchRes.searchId].matche.push_back(matchRes);
+			m_matchResGroup[matchRes.searchId].searchId = matchRes.searchId;
+
+			matches[j].IsAdded = true;
+			IsAdded = true;
+
+		}
+	}
+}
+
+void CZDataManager::SetMatchingResultsExtraction()
+{
+	//	ResetMatchingResult();
+
+	MATCHGROUP vecMatchRes;
+
+	bool IsAdded = false;
+	_vecPageObj pImgVec = GetImgVec();
+	int cnt = 0;
+	for (int i = 0; i < pImgVec.size(); i++){
+		unsigned int matchFile = getHashCode((CStringA)pImgVec[i]->GetPath());
+
+
+		std::vector<_MATCHInfo>& matches = pImgVec[i]->GetMatchResult();
+		for (int j = 0; j < matches.size(); j++){
+
+			if (matches[j].IsAdded == true)
+				continue;
+
+
+			unsigned int matchPos = (int)matches[j].rect.x1 * 10000 + (int)matches[j].rect.y1;
+
+			CString strId;
+			strId.Format(L"%u%u", matchFile, matchPos);
+			unsigned int matchId = getHashCode((CStringA)strId);
+
+			_MATCHResults matchRes;
+
+			matchRes.searchId = matches[j].searchId;
+			matchRes.cutId = matches[j].cInfo.id;
+			matchRes.fileId = matches[j].cInfo.fileid;
+			matchRes.posId = matches[j].cInfo.posid;
+			matchRes.matchId = matchId;
+			matchRes.matchFile = matchFile;
+			matchRes.matchPos = matchPos;
+			matchRes.accuracy = matches[j].accuracy;
+			matchRes.fTh = matches[j].cInfo.th;
+			matchRes.pImgCut = NULL;
+
 
 			m_matchResGroup[matchRes.searchId].matche.push_back(matchRes);
 			m_matchResGroup[matchRes.searchId].searchId = matchRes.searchId;

@@ -650,6 +650,16 @@ void CTMatView::OnTimer(UINT_PTR nIDEvent)
 	CView::OnTimer(nIDEvent);
 }
 
+void CTMatView::AddMatchResultList()
+{
+	SINGLETON_TMat::GetInstance()->SetMatchingResultsExtraction();
+	SINGLETON_TMat::GetInstance()->SortMatchingResults();
+
+	if (m_pViewLog){
+		m_pViewLog->AddRecord();
+	}
+}
+
 void CTMatView::ResetLogList()
 {
 	if (m_pViewLog){

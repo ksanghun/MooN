@@ -63,6 +63,7 @@ BEGIN_MESSAGE_MAP(CDlgExtractTool, CDialog)
 	ON_BN_CLICKED(IDC_BN_DETECT_LINES, &CDlgExtractTool::OnBnClickedBnDetectLines)
 	ON_BN_CLICKED(IDC_CHECK_VORDER, &CDlgExtractTool::OnBnClickedCheckVorder)
 	ON_BN_CLICKED(IDC_CHECK_HORDER, &CDlgExtractTool::OnBnClickedCheckHorder)
+	ON_BN_CLICKED(IDC_BN_EXTRACT_TEXT, &CDlgExtractTool::OnBnClickedBnExtractText)
 END_MESSAGE_MAP()
 
 
@@ -135,6 +136,12 @@ int CDlgExtractTool::OnCreate(LPCREATESTRUCT lpCreateStruct)
 void CDlgExtractTool::OnBnClickedOk()
 {
 	// TODO: Add your control notification handler code here
+
+	// Save extracted charcter into DB
+	if (m_pExtView){
+		m_pExtView->InsertExtrationIntoDB();
+	}
+
 	CDialog::OnOK();
 }
 
@@ -342,10 +349,10 @@ void CDlgExtractTool::OnBnClickedBnDetectLines()
 	// TODO: Add your control notification handler code here
 	if (m_pExtView){
 		if (m_bVertical){
-			m_pExtView->ExtractLines(V_ORDER);
+			m_pExtView->DoExtraction(V_ORDER);
 		}
 		else{
-			m_pExtView->ExtractLines(H_ORDER);
+			m_pExtView->DoExtraction(H_ORDER);
 		}
 	}
 }
@@ -366,4 +373,10 @@ void CDlgExtractTool::OnBnClickedCheckHorder()
 	m_bVertical = false;
 	m_bHorizontal = true;
 	UpdateData(FALSE);
+}
+
+
+void CDlgExtractTool::OnBnClickedBnExtractText()
+{
+	// TODO: Add your control notification handler code here
 }

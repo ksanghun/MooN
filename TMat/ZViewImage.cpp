@@ -284,6 +284,7 @@ void CZViewImage::DrawBGPageAni()
 	for (; iter != SINGLETON_TMat::GetInstance()->GetVecImageEnd(); iter++){
 		(*iter)->DrawThumbNail(0.3f);
 		(*iter)->RotatePos(1.0f);
+		(*iter)->DrawMatchItem(m_selWordId);
 	}
 	glPointSize(1);
 }
@@ -294,6 +295,7 @@ void CZViewImage::DrawBGPage()
 	glPointSize(2);
 	for (; iter != SINGLETON_TMat::GetInstance()->GetVecImageEnd(); iter++){
 		(*iter)->DrawThumbNail(0.3f);
+		(*iter)->DrawMatchItem(m_selWordId);
 	}
 	glPointSize(1);
 
@@ -376,10 +378,6 @@ void CZViewImage::IDragMap(int x, int y, short sFlag)
 		m_dragOper.init();
 		break;
 	}
-
-
-
-
 }
 
 void CZViewImage::OnLButtonUp(UINT nFlags, CPoint point)
@@ -449,7 +447,8 @@ int CZViewImage::SelectObject3D(int x, int y, int rect_width, int rect_height, i
 	if (m_IsDBSearch){
 		_vecPageObj::iterator iter = SINGLETON_TMat::GetInstance()->GetVecImageBegin();
 		for (; iter != SINGLETON_TMat::GetInstance()->GetVecImageEnd(); iter++){
-			(*iter)->DrawWordBoundaryForPick();
+		//	(*iter)->DrawWordBoundaryForPick();
+			(*iter)->DrawMatchItemForPick();
 		}
 	}
 	else{

@@ -62,12 +62,16 @@ public:
 	void DrawBMPText();
 	void DrawWordBoundary(int selid);
 	void DrawWordBoundaryForPick();	
+	void DrawMatchItem(int selId);
+	void DrawMatchItemForPick();
 
 	bool AddMatchedPoint(_MATCHInfo info, int search_size);
 
 	GLuint GetTexId() { return texId; };
 	GLuint GetThTex() { return thTexId; };
 	CString GetPath() { return strPath; };
+	CString GetPName() { return strPName; };
+	CString GetName() { return strName; };
 	//unsigned short GetWidth() { return nWidth; };
 	//unsigned short GetHeight() { return nHeight; };
 	POINT3D GetPos() { return m_pos; };

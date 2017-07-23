@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ExtractView.h"
-#include "ZDataManager.h"
-
+#include "TMatView.h"
+#define _NORMALIZE_SIZE 64
 
 CExtractView::CExtractView()
 {
@@ -13,7 +13,7 @@ CExtractView::CExtractView()
 
 CExtractView::~CExtractView()
 {
-
+	m_MatImg.release();
 }
 
 
@@ -49,6 +49,9 @@ void CExtractView::MouseWheel(short zDelta)
 }
 void CExtractView::Render()
 {
+	m_posSearchBox = m_cameraPri.ScreenToWorld(0, m_rectHeight);
+
+
 	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
 
 	glClearColor(0.1f, 0.2f, 0.0f, 1.0f);
@@ -184,6 +187,9 @@ void CExtractView::Render2D()
 }BEGIN_MESSAGE_MAP(CExtractView, COGLWnd)
 ON_WM_SIZE()
 ON_WM_TIMER()
+ON_WM_MOUSEMOVE()
+ON_WM_LBUTTONDOWN()
+ON_WM_LBUTTONUP()
 END_MESSAGE_MAP()
 
 
@@ -198,7 +204,7 @@ void CExtractView::OnSize(UINT nType, int cx, int cy)
 	m_cameraPri.SetProjectionMatrix(45.0f, 0.0f, 0.0f, cx, cy);
 	m_cameraPri.SetModelViewMatrix(m_lookAt, 0.0f, 0.0f);
 
-	m_posSearchBox = m_cameraPri.ScreenToWorld(0, m_rectHeight);
+	
 }
 
 
@@ -212,9 +218,11 @@ void CExtractView::OnTimer(UINT_PTR nIDEvent)
 	COGLWnd::OnTimer(nIDEvent);
 }
 
-void CExtractView::SetExtractImage(CZPageObject* pImg, RECT2D cutRect)
+void CExtractView::SetExtractImage(CZPageObject* _pImg, RECT2D cutRect)
 { 
 	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
+
+	m_pSelectcImg = _pImg;
 
 	m_Extractor.InitExtractor();
 
@@ -237,7 +245,9 @@ void CExtractView::SetExtractImage(CZPageObject* pImg, RECT2D cutRect)
 	m_pImg = new CZPageObject;
 
 	// Add Image Data //
-	m_pImg->SetName(L"", L"", L"", 0, 0);
+//	m_pImg->SetName(L"", L"", L"", 0, 0);
+
+	m_pImg->SetName(_pImg->GetPath(), _pImg->GetPName(), _pImg->GetName(), _pImg->GetPCode(), _pImg->GetCode());
 	POINT3D pos;
 	mtSetPoint3D(&pos, 0.0f, 0.0f, 0.0f);
 	m_pImg->SetPosition(pos);
@@ -247,17 +257,17 @@ void CExtractView::SetExtractImage(CZPageObject* pImg, RECT2D cutRect)
 
 
 	IplImage* pCut = NULL;
-	m_strImgPath = pImg->GetPath();
+	m_strImgPath = _pImg->GetPath();
 	
 
 	USES_CONVERSION;
-	char* sz = T2A(pImg->GetPath());
+	char* sz = T2A(_pImg->GetPath());
 	IplImage *pimg = NULL;
 
-	CString str = PathFindExtension(pImg->GetPath());
+	CString str = PathFindExtension(_pImg->GetPath());
 	if ((str == L".pdf") || (str == L".jpg") || (str == L".JPG") || (str == L".jpeg")){
 
-		pimg = SINGLETON_TMat::GetInstance()->LoadPDFImage(pImg->GetPath(), 4);
+		pimg = SINGLETON_TMat::GetInstance()->LoadPDFImage(_pImg->GetPath(), 4);
 
 		pCut = cvCreateImage(cvSize(cutRect.width, cutRect.height), pimg->depth, pimg->nChannels);
 		cvSetImageROI(pimg, cvRect(cutRect.x1, cutRect.y1, cutRect.width, cutRect.height));		// posx, posy = left - top
@@ -303,10 +313,12 @@ void CExtractView::SetExtractImage(CZPageObject* pImg, RECT2D cutRect)
 	//m_pImg->m_fImgRows = pCut->height;
 	
 	m_MatImg.release();
+	m_MatOImg.release();
 
 	
-	m_MatOImg = cv::cvarrToMat(pCut);
-	cvtColor(m_MatOImg, m_MatImg, CV_BGR2GRAY);
+	m_MatImg = cv::cvarrToMat(pCut);
+	m_MatImg.copyTo(m_MatOImg);
+	cvtColor(m_MatImg, m_MatImg, CV_BGR2GRAY);
 	
 
 	cvReleaseImage(&pimg);
@@ -337,20 +349,20 @@ void CExtractView::ContractImage(cv::Mat& img)
 			//	}
 			//}
 
-			pId = (y)*img.step + x - 1;
-			id = y*img.step + x;
-			nId = (y)*img.step + x + 1;
+			//pId = (y)*img.step + x - 1;
+			//id = y*img.step + x;
+			//nId = (y)*img.step + x + 1;
 
-			if (img.data[id] < 128){		// black
-				if (img.data[nId] > 128){
-					img.data[id] = 255;
-				}
-			}
+			//if (img.data[id] < 128){		// black
+			//	if (img.data[nId] > 128){
+			//		img.data[id] = 255;
+			//	}
+			//}
 
 		}
 	}
 		//}
-//	cv::imshow("After-binaryMat", img);
+	
 }
 
 void CExtractView::ProcExtractTextBoundary()
@@ -375,7 +387,7 @@ void CExtractView::ProcExtractTextBoundary()
 
 
 
-	m_Extractor.getContours(img2, m_MatOImg, textbox);
+	m_Extractor.getContours(img2, m_MatImg, textbox);
 	img2.release();
 
 	
@@ -409,18 +421,361 @@ void CExtractView::ChangeYExpand(int _d)
 //	Render();
 }
 
+void CExtractView::GroupingExtractions()
+{
+	std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
+	std::map<int, int> matchRes;
+	float fTh = 0.75;
+	for (int i = 0; i < ptexBox.size(); i++){
+		float fD = 0.0f;
+		for (int j = 0; j < ptexBox.size(); j++){
+
+			if (i == j) continue;
+			if (ptexBox[j].IsMatched == true) continue;
+			
+			fD = MatchingCutImgs(ptexBox[i].pcutImg, ptexBox[j].pcutImg);
+			if (fD > fTh){
+				ptexBox[j].IsMatched = true;
+			}
+		}
+	}
+}
+
+void CExtractView::CutNSearchExtractions()
+{
+	if (m_pImg){
+		IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
+		std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
+		for (int i = 0; i < ptexBox.size(); i++){
+
+			if (ptexBox[i].pcutImg != NULL){
+				cvReleaseImage(&ptexBox[i].pcutImg);
+				ptexBox[i].pcutImg = NULL;
+			}
+
+			cv::Rect rect = ptexBox[i].textbox;
+			rect.x += m_cutRect.x1;
+			rect.y += m_cutRect.y1;
+
+			IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
+			cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
+			cvCopy(src, pCut);
+
+			ptexBox[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE, _NORMALIZE_SIZE), pCut->depth, pCut->nChannels);
+			cvResize(pCut, ptexBox[i].pcutImg);
+			cvReleaseImage(&pCut);
+
+			//cvShowImage("Cut", ptexBox[i].pcutImg);
+			//break;
+		}
+
+		float fTh = 0.75;
+		for (int i = 0; i < ptexBox.size(); i++){
+			float fD = 0.0f;
+
+			COLORf color;
+			color.r = (float)(rand() % 100)*0.01f;
+			color.g = (float)(rand() % 100)*0.01f;
+			color.b = (float)(rand() % 100)*0.01f;
+			color.a = 0.3f;
 
 
-void CExtractView::ExtractLines(_TEXT_ORDER order)
+			for (int j = 0; j < ptexBox.size(); j++){
+
+				if (ptexBox[j].IsMatched == true) continue;
+
+				CUT_INFO cutInfo;
+				cutInfo.fileid = getHashCode((CStringA)m_pSelectcImg->GetPath());
+				cutInfo.posid = (int)ptexBox[i].textbox.x * 10000 + (int)ptexBox[i].textbox.y;
+				CString strId;
+				strId.Format(L"%u%u", cutInfo.fileid, cutInfo.posid);
+				cutInfo.id = getHashCode((CStringA)strId);
+				cutInfo.th = fTh;
+
+
+				//		if (i == j) continue;
+				fD = MatchingCutImgs(ptexBox[i].pcutImg, ptexBox[j].pcutImg);
+				if (fD > fTh){
+
+					cv::Rect rect = ptexBox[j].textbox;
+					rect.x += m_cutRect.x1;
+					rect.y += m_cutRect.y1;
+
+					_MATCHInfo mInfo;
+					mInfo.pos.x = rect.x + rect.width*0.5f;
+					mInfo.pos.y = rect.y + rect.height*0.5f;
+					mInfo.pos.z = 0;
+					mInfo.accuracy = fD;
+					//mInfo.strAccracy.Format(L"%d", (int)(fD * 100));
+
+					mInfo.strAccracy.Format(L"%d", i);
+
+
+					mInfo.rect.set(rect.x, rect.x + rect.width, rect.y, rect.y + rect.height);
+					mInfo.searchId = i;
+					mInfo.cInfo = cutInfo;
+
+					//	mInfo.color = SINGLETON_TMat::GetInstance()->GetColor((fD)*1.1f);
+					//	m_resColor.a = ((fD)*m_colorAccScale)*0.5f;
+					mInfo.color = color;
+					mInfo.IsAdded = false;
+					m_pSelectcImg->AddMatchedPoint(std::move(mInfo), 0);
+
+					//cvShowImage("Cut01", ptexBox[i].pcutImg);
+					//cvShowImage("Cut02", ptexBox[j].pcutImg);
+					//break;
+
+					ptexBox[j].IsMatched = true;
+				}
+			}
+		}
+	}
+	pView->AddMatchResultList();
+}
+
+void CExtractView::DoExtraction(_TEXT_ORDER order)
 {
 	std::vector<cv::Rect> textbox;
 	cv::Mat img2;
 	m_MatImg.copyTo(img2);
 
-	// 
-	m_Extractor.ShrinkCharacter(img2);
+	//m_Extractor.ShrinkCharacter(img2);
+	//ContractImage(img2);
+	
 	m_Extractor.ProcExtraction(img2, order);
 	img2.release();
 
+
+	CutNSearchExtractions();
+	// 1. Set cutimage from extracted box for Matching between extracted chars //
+	//if (m_pImg){
+	//	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
+	//	std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
+	//	for (int i = 0; i < ptexBox.size(); i++){
+
+	//		if (ptexBox[i].pcutImg != NULL){
+	//			cvReleaseImage(&ptexBox[i].pcutImg);
+	//			ptexBox[i].pcutImg = NULL;
+	//		}
+
+	//		cv::Rect rect = ptexBox[i].textbox;
+	//		rect.x += m_cutRect.x1;
+	//		rect.y += m_cutRect.y1;
+
+	//		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
+	//		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
+	//		cvCopy(src, pCut);
+
+	//		ptexBox[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE, _NORMALIZE_SIZE), pCut->depth, pCut->nChannels);
+	//		cvResize(pCut, ptexBox[i].pcutImg);
+	//		cvReleaseImage(&pCut);
+
+	//		//cvShowImage("Cut", ptexBox[i].pcutImg);
+	//		//break;
+	//	}
+	//}
+
 	Render();
+
+
+
+	
+}
+
+void CExtractView::IDragMap(int x, int y, short sFlag)
+{
+	POINT3D curPos, prePos, transPos, ptLookAt;
+	BOOL res = FALSE;
+	int dx = 0, dy = 0;
+
+
+	switch (sFlag){
+	case 0:		// DOWN
+		m_dragOper.init();
+		m_dragOper.IsDrag = true;
+		m_dragOper.px = x;
+		m_dragOper.py = y;
+		break;
+
+	case 1:		// MOVE
+		if (m_dragOper.IsDrag){
+
+			curPos = m_cameraPri.ScreenToWorld(x, y);
+			prePos = m_cameraPri.ScreenToWorld(m_dragOper.px, m_dragOper.py);
+			transPos = prePos - curPos;
+			ptLookAt = m_cameraPri.GetLookAt();
+
+			ptLookAt.x += transPos.x*m_moveVec.x;
+			ptLookAt.y += transPos.y*m_moveVec.y;
+
+			m_dragOper.px = x;
+			m_dragOper.py = y;
+
+			//	m_DemProj->ProjectPoint(&ptLookAt, &m_cameraPri.m_currentBlockid);
+			m_cameraPri.SetModelViewMatrix(ptLookAt, 0, 0);
+			m_lookAt = ptLookAt;
+			//	UpdateCamera(ptLookAt, 0,0);
+		}
+		break;
+
+	case 2:		// UP
+		ReleaseCapture();
+		m_dragOper.init();
+		break;
+	}
+}
+
+void CExtractView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
+	// TODO: Add your message handler code here and/or call default
+	if (GetCapture()){
+		if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
+			int xDelta = point.x - m_stratPnt.x;
+			int yDelta = point.y - m_stratPnt.y;
+
+			if (xDelta*xDelta > yDelta*yDelta){
+				m_moveVec.x = 1.0f;			m_moveVec.y = 0;
+			}
+			else{
+				m_moveVec.y = 1.0f;			m_moveVec.x = 0;
+			}
+			if (m_mouseMode == 2){		// MOVE
+				if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
+					IDragMap(point.x, point.y, 1);
+				}
+			}
+			Render();
+		}
+	}
+
+	COGLWnd::OnMouseMove(nFlags, point);
+}
+
+
+void CExtractView::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	m_stratPnt = point;
+	m_mouseMode = 2;
+	IDragMap(point.x, point.y, 0);
+	SetCapture();
+
+	COGLWnd::OnLButtonDown(nFlags, point);
+}
+
+
+void CExtractView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	m_mouseMode = 0;
+	IDragMap(point.x, point.y, 2);
+	ReleaseCapture();
+
+	COGLWnd::OnLButtonUp(nFlags, point);
+}
+
+
+void CExtractView::InsertExtrationIntoDB()
+{
+	//CString strFile;
+
+	if (m_pImg){
+		IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 1);
+		cv::Mat img = cv::cvarrToMat(src);
+
+		std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
+		int addcnt = 0;
+		int x1, x2, y1, y2;
+		for (int i = 0; i < ptexBox.size(); i++){
+
+			for (int j = 0; j < ptexBox.size(); j++){
+
+				if (i == j) continue;
+
+				if (MatchingCutImgs(ptexBox[i].pcutImg, ptexBox[j].pcutImg) > 0.75f){
+					break;
+				}
+
+			}
+
+
+
+			//cv::rectangle(img, ptexBox[i].textbox, cv::Scalar(0, 255, 0), 1, 8, 0);
+			//cv::Mat crop = img(ptexBox[i].textbox);
+
+			//x1 = ptexBox[i].textbox.x + m_cutRect.x1;
+			//x2 = ptexBox[i].textbox.x + ptexBox[i].textbox.width+m_cutRect.x1;
+			//y1 = ptexBox[i].textbox.y + m_cutRect.y1;
+			//y2 = ptexBox[i].textbox.y + ptexBox[i].textbox.height + m_cutRect.y1;
+
+			//if (SINGLETON_TMat::GetInstance()->InsertIntoLogDB(crop, x1, x2, y1, y2, m_pImg->GetCode()) == false){
+			//	addcnt++;
+			//}
+
+			//strFile.Format(L"C:/FGBD_project/Books/log/%d_%d.bmp", pPage->GetCode(), i);
+			//char* sz = T2A(strFile);
+			//cv::imwrite(sz, crop);
+			//	imshow("before deskew img ", crop);
+		}
+		cv::imshow("extractionWithOCR", img);
+	}
+
+}
+
+
+
+float CExtractView::MatchingCutImgs(IplImage* pCut, IplImage* dst)
+{
+	float fAccur = 0.0f;
+	bool IsOk = true;
+
+	if ((pCut->width != _NORMALIZE_SIZE) || (pCut->height != _NORMALIZE_SIZE) || (dst->width != _NORMALIZE_SIZE) || (dst->height != _NORMALIZE_SIZE)){
+		IsOk = false;
+	}
+
+	
+	if (IsOk){
+
+
+		short newWidth = dst->width + _NORMALIZE_SIZE;
+		short newHeight = dst->height + _NORMALIZE_SIZE;
+		IplImage* src = cvCreateImage(cvSize(newWidth, newHeight), dst->depth, dst->nChannels);
+		cvSet(src, cvScalar(255));
+
+		CvRect rect;
+		rect.x = newWidth / 2 - dst->width / 2;
+		rect.y = newHeight / 2 - dst->height / 2;
+		rect.width = dst->width;
+		rect.height = dst->height;
+
+		cvSetImageROI(src, rect);
+		cvResize(dst, src);
+		cvResetImageROI(src);
+
+
+
+		IplImage *result_img = 0;
+		result_img = cvCreateImage(cvSize(src->width - pCut->width + 1, src->height - pCut->height + 1), IPL_DEPTH_32F, 1);
+	//	result_img = cvCreateImage(cvSize(1,1), IPL_DEPTH_32F, 1);
+		cvMatchTemplate(src, pCut, result_img, CV_TM_CCOEFF_NORMED);
+
+		float sTh = 0.0f;
+		float* d = (float*)result_img->imageData;
+		for (int y = 0; y < result_img->height; y++){
+			for (int x = 0; x < result_img->width; x++){
+				float fD = *(d + y*result_img->width + x);
+				if (fD > sTh)	{
+					sTh = fD;
+					fAccur = fD;
+				}
+			}
+		}
+
+		cvReleaseImage(&src);
+		cvReleaseImage(&result_img);
+	}
+
+	return fAccur;
+
 }
