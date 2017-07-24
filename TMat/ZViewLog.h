@@ -21,7 +21,9 @@ public:
 	void AddRecord();
 
 private:
-	CZListCtrlLog	m_List;
+	CImageList m_imgList;
+	CZListCtrlLog	m_List;	
+	int m_nRecordNum;
 	char* m_writeBuffer;
 	
 

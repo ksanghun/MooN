@@ -42,6 +42,8 @@ public:
 	int     m_Columns;
 	int		m_PrevItem;
 
+	
+
 protected:
 
 	virtual void PreSubclassWindow();

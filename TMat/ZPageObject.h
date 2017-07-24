@@ -32,6 +32,7 @@ typedef struct _MATCHInfo
 	bool IsAdded;
 
 	CUT_INFO cInfo;
+	IplImage* pImg;
 
 }_MATCHInfo;
 

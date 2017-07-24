@@ -83,6 +83,9 @@ void CZListCtrlLog::InitListCtrl()
 {
 	//m_Edit.Create(WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL , CRect(0, 0, 800, 500), this, NULL);
 	//m_Edit.ShowWindow(SW_HIDE);
+
+	
+	
 }
 
 
@@ -165,7 +168,6 @@ void CZListCtrlLog::OnNMCustomdraw(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult = CDRF_DODEFAULT;
 	//obtain row and column of item
 
-	
 
 	//Remove standard highlighting of selected (sub)item.
 	pNMCD->nmcd.uItemState = CDIS_DEFAULT;
@@ -411,8 +413,6 @@ void CZListCtrlLog::AddRecode()
 
 	CString strItem;
 	std::map<unsigned long, MATCHGROUP>& matches = SINGLETON_TMat::GetInstance()->GetMatchResults();
-
-
 	std::map<unsigned long, MATCHGROUP>::iterator iter_gr = matches.begin();
 
 	for (; iter_gr != matches.end(); iter_gr++){

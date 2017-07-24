@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ExtractView.h"
 #include "TMatView.h"
-#define _NORMALIZE_SIZE 64
+
 
 CExtractView::CExtractView()
 {
@@ -480,6 +480,7 @@ void CExtractView::CutNSearchExtractions()
 					rect.y += m_cutRect.y1;
 
 					_MATCHInfo mInfo;
+					mInfo.pImg = (*ptexBox)[j].pcutImg;
 					mInfo.pos.x = rect.x + rect.width*0.5f;
 					mInfo.pos.y = rect.y + rect.height*0.5f;
 					mInfo.pos.z = 0;

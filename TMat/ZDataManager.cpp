@@ -641,11 +641,12 @@ void CZDataManager::ResetMatchingResult()
 	std::map<unsigned long, MATCHGROUP>::iterator iter_gr = m_matchResGroup.begin();
 
 	for (; iter_gr != m_matchResGroup.end(); iter_gr++){
-		for (int j = 0; j < iter_gr->second.matche.size(); j++){
-			if (iter_gr->second.matche[j].pImgCut != NULL){
-				cvReleaseImage(&iter_gr->second.matche[j].pImgCut);
-			}
-		}
+		//for (int j = 0; j < iter_gr->second.matche.size(); j++){
+		//	if (iter_gr->second.matche[j].pImgCut != NULL){
+		//		cvReleaseImage(&iter_gr->second.matche[j].pImgCut);
+		//		iter_gr->second.matche[j].pImgCut = NULL;
+		//	}
+		//}
 		iter_gr->second.matche.clear();
 	}
 
@@ -777,7 +778,7 @@ void CZDataManager::SetMatchingResultsExtraction()
 			matchRes.matchPos = matchPos;
 			matchRes.accuracy = matches[j].accuracy;
 			matchRes.fTh = matches[j].cInfo.th;
-			matchRes.pImgCut = NULL;
+			matchRes.pImgCut = matches[j].pImg;
 
 
 			m_matchResGroup[matchRes.searchId].matche.push_back(matchRes);
@@ -873,4 +874,60 @@ CString CZDataManager::base64_encode(unsigned char const* bytes_to_encode, unsig
 std::string CZDataManager::base64_decode(std::string const& s)
 {
 	return "";
+}
+
+CBitmap* CZDataManager::GetLogCBitmap(IplImage* pImg)
+{
+	if (pImg){
+
+		CDC dc;
+		CDC memDC;
+
+		CBitmap* bmp = new CBitmap;
+		CBitmap* pOldBmp;
+
+		if (!dc.CreateDC(_T("DISPLAY"), NULL, NULL, NULL))
+			return NULL;
+
+		if (!memDC.CreateCompatibleDC(&dc))
+			return NULL;
+
+		int w, h;
+		int nWidth = pImg->width;
+		int nHeight = pImg->height;
+		BYTE* pSrcBits = (BYTE *)pImg->imageData;
+		BYTE* pBmpBits = (BYTE *)malloc(sizeof(BYTE)*nWidth*nHeight * 4);
+
+
+		// IplImage에 저장된 값을 직접 읽어서 
+		// 비트맵 데이터를 만듬 
+		for (h = 0; h < nHeight; ++h)
+		{
+			BYTE* pSrc = pSrcBits + pImg->widthStep * h;
+			BYTE* pDst = pBmpBits + nWidth * 4 * h;
+			for (w = 0; w < nWidth; ++w)
+			{
+				*(pDst++) = *(pSrc++);
+				*(pDst++) = *(pSrc++);
+				*(pDst++) = *(pSrc++);
+				*(pDst++) = 0;
+			}
+		}
+		//		memDC.CreateCompatibleDC(pDC);
+		bmp->CreateCompatibleBitmap(&dc, nWidth, nHeight);
+		// 위에서 만들어진 데이터를 가지고 
+		// 비트맵을 만듬 
+		bmp->SetBitmapBits(nWidth*nHeight * 4, pBmpBits);
+		pOldBmp = memDC.SelectObject(bmp);
+
+
+		memDC.SelectObject(pOldBmp);
+		memDC.DeleteDC();
+		dc.DeleteDC();
+
+		return bmp;
+	}
+	else{
+		return NULL;
+	}
 }

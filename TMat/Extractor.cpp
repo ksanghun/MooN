@@ -33,6 +33,7 @@ CExtractor::~CExtractor()
 	for (int i = 0; i < m_exTextBox.size(); i++){
 		if (m_exTextBox[i].pcutImg != NULL){
 			cvReleaseImage(&m_exTextBox[i].pcutImg);
+			m_exTextBox[i].pcutImg = NULL;
 		}
 	}
 	m_exTextBox.clear();

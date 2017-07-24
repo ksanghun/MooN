@@ -7,7 +7,7 @@
 
 
 
-
+#define _NORMALIZE_SIZE 32
 #define ANI_FRAME_CNT 10
 
 typedef std::vector<CZPageObject*> _vecPageObj;
@@ -117,6 +117,8 @@ public:
 	CString base64_encode(unsigned char const*, unsigned int len);
 	std::string base64_decode(std::string const& s);
 	//=================================================================//
+
+	CBitmap* GetLogCBitmap(IplImage* pImg);
 
 private:
 
