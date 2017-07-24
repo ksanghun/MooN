@@ -92,8 +92,8 @@ public:
 
 
 	void extractWithOCR(cv::Mat image, std::vector<cv::Rect>& boundRect);
-	std::vector<_EXTRACT_BOX>& GetTextBoxes() { return m_exTextBox; }
-	std::vector<_EXTRACT_BOX>& GetLineBoxes() { return vecLines; }
+	std::vector<_EXTRACT_BOX>* GetTextBoxes() { return &m_exTextBox; }
+	std::vector<_EXTRACT_BOX>* GetLineBoxes() { return &vecLines; }
 
 	
 	void ChangeXExpand(int _d);// { m_xExpand += _d; }

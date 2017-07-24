@@ -64,17 +64,18 @@ void CExtractView::Render()
 		glDisable(GL_TEXTURE_2D);
 		
 		glLineWidth(1);
-		std::vector<_EXTRACT_BOX> pLine = m_Extractor.GetLineBoxes ();
-		if (pLine.size() > 0){
+		std::vector<_EXTRACT_BOX>* pLine = m_Extractor.GetLineBoxes ();
+		if (pLine->size() > 0){
 			// Draw detected position //
 			glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
 			glPushMatrix();
 			glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
 			glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
 
-			for (int i = 0; i < pLine.size(); i++){
+			for (int i = 0; i < pLine->size(); i++){			
+
 				RECT2D rect;
-				rect.set(pLine[i].textbox.x, pLine[i].textbox.x + pLine[i].textbox.width, pLine[i].textbox.y, pLine[i].textbox.y + pLine[i].textbox.height);
+				rect.set(pLine->at(i).textbox.x, pLine->at(i).textbox.x + pLine->at(i).textbox.width, pLine->at(i).textbox.y, pLine->at(i).textbox.y + pLine->at(i).textbox.height);
 
 				glColor4f(0.0f, 0.0f, 1.0f, 0.3f);
 				glBegin(GL_QUADS);
@@ -98,8 +99,8 @@ void CExtractView::Render()
 
 
 		glLineWidth(2);
-		std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
-		if (ptexBox.size() > 0){
+		std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
+		if (ptexBox->size() > 0){
 			// Draw detected position //
 			glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
 			glPushMatrix();
@@ -108,13 +109,13 @@ void CExtractView::Render()
 
 			//if (m_bIsNear){		
 			
-			for (int i = 0; i < ptexBox.size(); i++){
+			for (int i = 0; i < ptexBox->size(); i++){
 
 				RECT2D rect;
-				rect.set(ptexBox[i].textbox.x, ptexBox[i].textbox.x + ptexBox[i].textbox.width,
-					ptexBox[i].textbox.y, ptexBox[i].textbox.y+ptexBox[i].textbox.height);
+				rect.set((*ptexBox)[i].textbox.x, (*ptexBox)[i].textbox.x + (*ptexBox)[i].textbox.width,
+					(*ptexBox)[i].textbox.y, (*ptexBox)[i].textbox.y + (*ptexBox)[i].textbox.height);
 				
-				if (ptexBox[i].IsAmbig)					glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
+				if ((*ptexBox)[i].IsAmbig)					glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
 				else									glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
 
 				glBegin(GL_LINE_STRIP);
@@ -423,19 +424,19 @@ void CExtractView::ChangeYExpand(int _d)
 
 void CExtractView::GroupingExtractions()
 {
-	std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
+	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
 	std::map<int, int> matchRes;
 	float fTh = 0.75;
-	for (int i = 0; i < ptexBox.size(); i++){
+	for (int i = 0; i < ptexBox->size(); i++){
 		float fD = 0.0f;
-		for (int j = 0; j < ptexBox.size(); j++){
+		for (int j = 0; j < ptexBox->size(); j++){
 
 			if (i == j) continue;
-			if (ptexBox[j].IsMatched == true) continue;
+			if ((*ptexBox)[j].IsMatched == true) continue;
 			
-			fD = MatchingCutImgs(ptexBox[i].pcutImg, ptexBox[j].pcutImg);
+			fD = MatchingCutImgs((*ptexBox)[i].pcutImg, (*ptexBox)[j].pcutImg);
 			if (fD > fTh){
-				ptexBox[j].IsMatched = true;
+				(*ptexBox)[j].IsMatched = true;
 			}
 		}
 	}
@@ -444,33 +445,10 @@ void CExtractView::GroupingExtractions()
 void CExtractView::CutNSearchExtractions()
 {
 	if (m_pImg){
-		IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
-		std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
-		for (int i = 0; i < ptexBox.size(); i++){
+		std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
 
-			if (ptexBox[i].pcutImg != NULL){
-				cvReleaseImage(&ptexBox[i].pcutImg);
-				ptexBox[i].pcutImg = NULL;
-			}
-
-			cv::Rect rect = ptexBox[i].textbox;
-			rect.x += m_cutRect.x1;
-			rect.y += m_cutRect.y1;
-
-			IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
-			cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
-			cvCopy(src, pCut);
-
-			ptexBox[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE, _NORMALIZE_SIZE), pCut->depth, pCut->nChannels);
-			cvResize(pCut, ptexBox[i].pcutImg);
-			cvReleaseImage(&pCut);
-
-			//cvShowImage("Cut", ptexBox[i].pcutImg);
-			//break;
-		}
-
-		float fTh = 0.75;
-		for (int i = 0; i < ptexBox.size(); i++){
+		float fTh = 0.7f;
+		for (int i = 0; i < (*ptexBox).size(); i++){
 			float fD = 0.0f;
 
 			COLORf color;
@@ -480,13 +458,13 @@ void CExtractView::CutNSearchExtractions()
 			color.a = 0.3f;
 
 
-			for (int j = 0; j < ptexBox.size(); j++){
+			for (int j = 0; j < (*ptexBox).size(); j++){
 
-				if (ptexBox[j].IsMatched == true) continue;
+				if ((*ptexBox)[j].IsMatched == true) continue;
 
 				CUT_INFO cutInfo;
 				cutInfo.fileid = getHashCode((CStringA)m_pSelectcImg->GetPath());
-				cutInfo.posid = (int)ptexBox[i].textbox.x * 10000 + (int)ptexBox[i].textbox.y;
+				cutInfo.posid = (int)(*ptexBox)[i].textbox.x * 10000 + (int)(*ptexBox)[i].textbox.y;
 				CString strId;
 				strId.Format(L"%u%u", cutInfo.fileid, cutInfo.posid);
 				cutInfo.id = getHashCode((CStringA)strId);
@@ -494,10 +472,10 @@ void CExtractView::CutNSearchExtractions()
 
 
 				//		if (i == j) continue;
-				fD = MatchingCutImgs(ptexBox[i].pcutImg, ptexBox[j].pcutImg);
+				fD = MatchingCutImgs((*ptexBox)[i].pcutImg, (*ptexBox)[j].pcutImg);
 				if (fD > fTh){
 
-					cv::Rect rect = ptexBox[j].textbox;
+					cv::Rect rect = (*ptexBox)[j].textbox;
 					rect.x += m_cutRect.x1;
 					rect.y += m_cutRect.y1;
 
@@ -525,7 +503,7 @@ void CExtractView::CutNSearchExtractions()
 					//cvShowImage("Cut02", ptexBox[j].pcutImg);
 					//break;
 
-					ptexBox[j].IsMatched = true;
+					(*ptexBox)[j].IsMatched = true;
 				}
 			}
 		}
@@ -545,6 +523,33 @@ void CExtractView::DoExtraction(_TEXT_ORDER order)
 	m_Extractor.ProcExtraction(img2, order);
 	img2.release();
 
+
+
+
+	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
+	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
+	for (int i = 0; i < ptexBox->size(); i++){
+
+		if ((*ptexBox)[i].pcutImg != NULL){
+			cvReleaseImage(&(*ptexBox)[i].pcutImg);
+			(*ptexBox)[i].pcutImg = NULL;
+		}
+
+		cv::Rect rect = (*ptexBox)[i].textbox;
+		rect.x += m_cutRect.x1;
+		rect.y += m_cutRect.y1;
+
+		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
+		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
+		cvCopy(src, pCut);
+
+		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE, _NORMALIZE_SIZE), pCut->depth, pCut->nChannels);
+		cvResize(pCut, (*ptexBox)[i].pcutImg);
+		cvReleaseImage(&pCut);
+
+		//cvShowImage("Cut", ptexBox[i].pcutImg);
+		//break;
+	}
 
 	CutNSearchExtractions();
 	// 1. Set cutimage from extracted box for Matching between extracted chars //
@@ -684,16 +689,16 @@ void CExtractView::InsertExtrationIntoDB()
 		IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 1);
 		cv::Mat img = cv::cvarrToMat(src);
 
-		std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
+		std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
 		int addcnt = 0;
 		int x1, x2, y1, y2;
-		for (int i = 0; i < ptexBox.size(); i++){
+		for (int i = 0; i < ptexBox->size(); i++){
 
-			for (int j = 0; j < ptexBox.size(); j++){
+			for (int j = 0; j < ptexBox->size(); j++){
 
 				if (i == j) continue;
 
-				if (MatchingCutImgs(ptexBox[i].pcutImg, ptexBox[j].pcutImg) > 0.75f){
+				if (MatchingCutImgs((*ptexBox)[i].pcutImg, (*ptexBox)[j].pcutImg) > 0.75f){
 					break;
 				}
 
