@@ -64,6 +64,7 @@ BEGIN_MESSAGE_MAP(CDlgExtractTool, CDialog)
 	ON_BN_CLICKED(IDC_CHECK_VORDER, &CDlgExtractTool::OnBnClickedCheckVorder)
 	ON_BN_CLICKED(IDC_CHECK_HORDER, &CDlgExtractTool::OnBnClickedCheckHorder)
 	ON_BN_CLICKED(IDC_BN_EXTRACT_TEXT, &CDlgExtractTool::OnBnClickedBnExtractText)
+	ON_BN_CLICKED(IDC_BN_FINE_EXTRACT, &CDlgExtractTool::OnBnClickedBnFineExtract)
 END_MESSAGE_MAP()
 
 
@@ -349,10 +350,10 @@ void CDlgExtractTool::OnBnClickedBnDetectLines()
 	// TODO: Add your control notification handler code here
 	if (m_pExtView){
 		if (m_bVertical){
-			m_pExtView->DoExtraction(V_ORDER);
+			m_pExtView->DoExtractionLine(V_ORDER);
 		}
 		else{
-			m_pExtView->DoExtraction(H_ORDER);
+			m_pExtView->DoExtractionLine(H_ORDER);
 		}
 	}
 }
@@ -379,4 +380,26 @@ void CDlgExtractTool::OnBnClickedCheckHorder()
 void CDlgExtractTool::OnBnClickedBnExtractText()
 {
 	// TODO: Add your control notification handler code here
+	if (m_pExtView){
+		if (m_bVertical){
+			m_pExtView->DoExtractionText(V_ORDER);
+		}
+		else{
+			m_pExtView->DoExtractionText(H_ORDER);
+		}
+	}
+}
+
+
+void CDlgExtractTool::OnBnClickedBnFineExtract()
+{
+	// TODO: Add your control notification handler code here
+	if (m_pExtView){
+		if (m_bVertical){
+			m_pExtView->DoFineExtractionText(V_ORDER);
+		}
+		else{
+			m_pExtView->DoFineExtractionText(H_ORDER);
+		}
+	}
 }

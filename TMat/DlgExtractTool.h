@@ -65,4 +65,5 @@ public:
 	afx_msg void OnBnClickedCheckVorder();
 	afx_msg void OnBnClickedCheckHorder();
 	afx_msg void OnBnClickedBnExtractText();
+	afx_msg void OnBnClickedBnFineExtract();
 };
