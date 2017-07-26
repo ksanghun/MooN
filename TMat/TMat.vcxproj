@@ -122,7 +122,6 @@
     <ClInclude Include="Extractor.h" />
     <ClInclude Include="ExtractView.h" />
     <ClInclude Include="FileView.h" />
-    <ClInclude Include="GuideLine.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="math_tool.h" />
     <ClInclude Include="OGLWnd.h" />
@@ -156,7 +155,6 @@
     <ClCompile Include="Extractor.cpp" />
     <ClCompile Include="ExtractView.cpp" />
     <ClCompile Include="FileView.cpp" />
-    <ClCompile Include="GuideLine.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="math_tool.cpp" />
     <ClCompile Include="OGLWnd.cpp" />

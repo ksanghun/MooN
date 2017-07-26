@@ -117,9 +117,6 @@
     <ClInclude Include="ExtractView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GuideLine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TMat.cpp">
@@ -204,9 +201,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ExtractView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GuideLine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

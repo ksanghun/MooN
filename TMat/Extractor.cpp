@@ -25,8 +25,6 @@ CExtractor::CExtractor()
 
 	m_maxWidth = 0;
 	m_maxHeight = 0;
-
-	m_fineExtractCoff = 0;
 }
 
 
@@ -862,130 +860,16 @@ void CExtractor::ChangeYExpand(int _d)
 	m_maxHeight += _d;
 }
 
-cv::Rect CExtractor::GetBoundingBox(cv::Rect r1, cv::Rect r2)
-{
-	cv::Rect rect;
 
-	int x1, x2, y1, y2;
-	if (r1.x < r2.x)		x1 = r1.x;
-	else					x1 = r2.x;
-
-	if (r1.y < r2.y)		y1 = r1.y;
-	else					y1 = r2.y;
-
-
-	if ((r1.x + r1.width) >(r2.x + r2.width))		x2 = r1.x + r1.width;
-	else											x2 = r2.x + r2.width;
-
-	if ((r1.y + r1.height) >(r2.y + r2.height))		y2 = r1.y + r1.height;
-	else											y2 = r2.y + r2.height;
-
-	rect.x = x1-1;
-	rect.y = y1-1;
-	rect.width = x2 - x1 +2;
-	rect.height = y2 - y1 +2;
-
-	return rect;
-}
 
 // Extraction Functions ===================//
-void CExtractor::ProcFineExtraction(cv::Mat& img, _TEXT_ORDER _torder, int _w, int _h)
+
+void CExtractor::ProcExtraction(cv::Mat& img, _TEXT_ORDER _torder)
 {
-//	ContractImage(img);
+	//cv::Mat oImg;
+	//img.copyTo(oImg);
 
-
-	// Detect Contours========================================================================//
-	adaptiveThreshold(img, img, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 75, 10);
-	cv::bitwise_not(img, img);
-
-
-	std::vector<_EXTRACT_BOX> tmp = m_exTextBox;
-	m_exTextBox = std::vector<_EXTRACT_BOX>();
-//	int area = _w*_h;
-
-	//	aRatio = (float)m_maxWidth / (float)m_maxHeight;
-	for (int i = 0; i < tmp.size(); i++){
-		tmp[i].IsAmbig = false;
-		tmp[i].IsMerged = false;
-	}
-	for (int i = 0; i < tmp.size(); i++){
-
-		if (tmp[i].IsMerged == true) continue;
-
-		float r = (float)tmp[i].textbox.width / (float)tmp[i].textbox.height;
-
-		if (tmp[i].IsAmbig == false){
-			int area = tmp[i].detectArea;
-			if ((tmp[i].textbox.area() > area*1.5f)){
-				tmp[i].IsAmbig = true;
-
-				std::vector<_EXTRACT_BOX> vecBox;
-				int detectSize = sqrt(area);
-				FineExtractTexts(img, tmp[i].textbox, vecBox, _torder, detectSize, detectSize);
-
-				for (int j = 0; j < vecBox.size(); j++){
-					_EXTRACT_BOX tmpbox = vecBox[j];
-					tmpbox.textbox.x += tmp[i].textbox.x;		// Translate position //
-					tmpbox.textbox.y += tmp[i].textbox.y;
-					tmpbox.detectArea = detectSize*detectSize;
-					m_exTextBox.push_back(tmpbox);
-				}
-				vecBox.clear();
-			}
-			else{
-				for (int j = 0; j < tmp.size(); j++){
-
-					if (tmp[j].IsMerged == true) continue;
-
-					if (j != i){
-						if (tmp[i].lineId == tmp[j].lineId){		// In case of Same line //
-							if (IsBoxToBoxIntersect(tmp[i].textbox, tmp[j].textbox) != 0){
-								// Fine Extraction //
-								tmp[i].IsAmbig = true;
-								tmp[j].IsAmbig = true;
-
-								tmp[i].IsMerged = true;
-								tmp[j].IsMerged = true;
-
-								std::vector<_EXTRACT_BOX> vecBox;
-								int detectSize = sqrt(area);  // littel smaller //
-								cv::Rect rect = GetBoundingBox(tmp[i].textbox, tmp[j].textbox);
-								
-								FineExtractTexts(img, rect, vecBox, _torder, detectSize, detectSize);
-
-								for (int j = 0; j < vecBox.size(); j++){
-									_EXTRACT_BOX tmpbox = vecBox[j];
-									tmpbox.textbox.x += rect.x;		// Translate position //
-									tmpbox.textbox.y += rect.y;
-									tmpbox.detectArea = detectSize*detectSize;
-									m_exTextBox.push_back(tmpbox);
-								}
-								vecBox.clear();
-
-								break;
-							}
-						}
-					}
-				}
-			}
-		}
-
-
-		if (tmp[i].IsAmbig == false){
-			m_exTextBox.push_back(tmp[i]);
-		}
-
-	}
-	tmp.clear();
-	
-	m_fineExtractCoff++;
-	if (m_fineExtractCoff > 5)
-		m_fineExtractCoff = 5;
-}
-
-
-void CExtractor::ProcExtractionLine(cv::Mat& img, _TEXT_ORDER _torder, int _w, int _h)
-{
+	m_exTextBox.clear();
 	vecLines.clear();
 // Detect Contours========================================================================//
 	adaptiveThreshold(img, img, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 75, 10);
@@ -995,70 +879,135 @@ void CExtractor::ProcExtractionLine(cv::Mat& img, _TEXT_ORDER _torder, int _w, i
 	std::vector<cv::Vec4i> hierarchy;
 	/// Find contours
 	cv::findContours(img, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE, cv::Point(0, 0));
+
 	/// Approximate contours to polygons + get bounding rects and circles
 	std::vector<std::vector<cv::Point> > contours_poly(contours.size());
-
+	//	std::vector<cv::Rect> boundRect(contours.size());
+	//std::vector<cv::Point2f>center(contours.size());
+	//std::vector<float>radius(contours.size());
+	
 	//Get poly contours
 	float aRatio = 0;
-	int minSize = 16;
+	int minSize = 64;
+	int maxwidth = 0, maxheight = 0;
 	for (int i = 0; i < contours.size(); i++)
 	{
 		approxPolyDP(cv::Mat(contours[i]), contours_poly[i], 1, true);
+		cv::Rect r = cv::boundingRect(cv::Mat(contours[i]));
+		if (r.area() < minSize) continue;
 
+		//bool inside = false;
+		//for (int j = 0; j < contours.size(); j++){
+		//	if (j == i)continue;
+		//	cv::Rect r2 = cv::boundingRect(cv::Mat(contours[j]));
+
+		//	if (r2.area() < minSize || r2.area() < r.area())continue;
+		//	if (r.x > r2.x&&r.x + r.width<r2.x + r2.width&&
+		//		r.y>r2.y&&r.y + r.height < r2.y + r2.height){
+		//		inside = true;
+		//	}
+		//}
+		//if (inside)continue;
+
+
+		aRatio = (float)r.width / (float)r.height;
+		if ((aRatio > 0.1f) && (aRatio < 10.0f)){
+			if (r.width > maxwidth){
+				maxwidth = r.width;
+			}
+			if (r.height > maxheight){
+				maxheight = r.height;
+			}
+		}
 	}
 
-	int maxwidth = _w;
-	int maxheight = _h;
 
+	//m_maxWidth *= 0.9f;
+	//m_maxHeight *= 0.9f;
+
+	//maxheight *= 0.9f;
+	//maxheight *= 0.9f;
+
+//========================================================================================//
+	maxwidth += m_xExpand;
+	maxheight += m_yExpand;
 	if (maxwidth < _MIN_BOX_SIZE)	maxwidth = _MIN_BOX_SIZE;
 	if (maxheight < _MIN_BOX_SIZE)  maxheight = _MIN_BOX_SIZE;
 
 // Detect Lines===========================================================================//	
 	if (_torder == V_ORDER){		// Vertical
 	//	maxheight = img.rows;
-		DetectLines(contours_poly, vecLines, maxwidth, img.rows, 0, maxwidth);		// 1.2f for rotation //
+		DetectLines(contours_poly, vecLines, maxwidth*1.2f, img.rows, 0, maxwidth*1.1f);		// 1.2f for rotation //
 	}
 	else{
 	//	maxwidth = img.cols;
-		DetectLines(contours_poly, vecLines, img.cols, maxheight, maxheight, 0);
+		DetectLines(contours_poly, vecLines, img.cols, maxheight*1.2f, maxheight*1.1f, 0);
 	}
 //=========================================================================================//
 	
 
-}
-
-
-
-void CExtractor::ProcExtractionText(cv::Mat& img, _TEXT_ORDER _torder, int _w, int _h)
-{
-	// ExtractTexts ===========================================================//
-	m_fineExtractCoff = 0;
-
-	adaptiveThreshold(img, img, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 75, 10);
-	cv::bitwise_not(img, img);
-
+// ExtractTexts ===========================================================//
 	for (int i = 0; i < m_exTextBox.size(); i++){
 		if (m_exTextBox[i].pcutImg != NULL){
 			cvReleaseImage(&m_exTextBox[i].pcutImg);
 		}
 	}
 	m_exTextBox.clear();
-
 	std::vector<_EXTRACT_BOX> vecBox;
 	for (int i = 0; i < vecLines.size(); i++){
 		vecBox.clear();
 		ExtractTexts(img, vecLines[i].textbox, vecBox, _torder);
 
-		for (int j = 0; j < vecBox.size(); j++){
+		for (int j = 0; j < vecBox.size(); j++){			
 			_EXTRACT_BOX tmp = vecBox[j];
-			tmp.textbox.x += vecLines[i].textbox.x;		// Translate position //
+			tmp.textbox.x += vecLines[i].textbox.x;
 			tmp.textbox.y += vecLines[i].textbox.y;
 			tmp.textSphere.setbyRect(tmp.textbox);
-			tmp.lineId = i;
-			m_exTextBox.push_back(tmp);
+			m_exTextBox.push_back(tmp);		
 		}
 	}
-	//	oImg.release();
+
+	m_maxWidth = maxwidth;
+	m_maxHeight = maxheight;
+
+
+//	Extraction(contours_poly, vecLines, maxwidth, img.rows, 0, maxwidth);
+
+
+
+// Checkl ambigous..................===================================//
+	float area = m_maxWidth*m_maxWidth;
+	if (m_maxWidth>m_maxHeight)
+		area = m_maxHeight*m_maxHeight;
+
+
+//	aRatio = (float)m_maxWidth / (float)m_maxHeight;
+
+	for (int i = 0; i < m_exTextBox.size(); i++){
+		float r = (float)m_exTextBox[i].textbox.width / (float)m_exTextBox[i].textbox.height;
+
+		if (m_exTextBox[i].IsAmbig == false){
+
+
+			//if ((m_exTextBox[i].textbox.area() < area*0.1f) ||
+			//	(m_exTextBox[i].textbox.area() > area*2.0f))
+			//{
+			//	m_exTextBox[i].IsAmbig = true;
+			//}
+			//else{
+				for (int j = 0; j < m_exTextBox.size(); j++){
+					if (j != i){
+						if (IsBoxToBoxIntersect(m_exTextBox[i].textbox, m_exTextBox[j].textbox) != 0){
+							m_exTextBox[i].IsAmbig = true;
+							m_exTextBox[j].IsAmbig = true;
+							break;
+						}
+					}
+				}
+		//	}
+		}
+	}
+//	oImg.release();
 }
 
 void CExtractor::ExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRACT_BOX>& vecBox, _TEXT_ORDER _torder)
@@ -1095,55 +1044,57 @@ void CExtractor::ExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRA
 	}
 
 
+// Define max width and height ===================================//
+	//if (cnt > 0){
+	//	maxwidth = maxwidth / cnt;
+	//	maxheight = maxheight / cnt;
+	//}
+
+
 	if (maxwidth < _MIN_BOX_SIZE)	maxwidth = _MIN_BOX_SIZE;
 	if (maxheight < _MIN_BOX_SIZE)  maxheight = _MIN_BOX_SIZE;
 
+//	int ex = 0, ey = 0;
 	if (_torder == V_ORDER){		// Vertical
-		DetectChars(contours_poly, vecBox, lineBox.width, maxheight, 3,2);
+		//maxwidth = lineBox.width;
+		//maxheight = lineBox.width;
+		//ex = maxwidth*0.1f;
+		//ey = maxheight*0.1f;	
+		//maxwidth = maxheight;
+		DetectChars(contours_poly, vecBox, lineBox.width, maxheight, 3, 1);
 	}
 	else{
-		DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, 2, 3);
+		//maxwidth = lineBox.height;
+	//	maxheight = lineBox.height;
+/*		ex = maxwidth*0.1f;
+		ey = maxheight*0.1f;	*/	
+		//maxheight = maxwidth;
+		DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, 1, 3);
 	}
 
+	//maxwidth *= 0.9f;
+	//maxheight *= 0.9f;
 
-	//std::vector<_EXTRACT_BOX> tmp = vecBox;
-	//vecBox = std::vector<_EXTRACT_BOX>();
+	//m_yExpand = 15;
+	//maxwidth += m_xExpand;
+	//maxheight += m_yExpand;
 
+	//maxwidth = 64;
+	//maxheight = 59;
 
-	// Checkl ambigous..................===================================//
-	float area = maxwidth*maxheight;
+	//m_maxWidth = maxwidth;
+	//m_maxHeight = maxheight;
 
-	//	aRatio = (float)m_maxWidth / (float)m_maxHeight;
-	for (int i = 0; i < vecBox.size(); i++){
-		float r = (float)vecBox[i].textbox.width / (float)vecBox[i].textbox.height;
-		vecBox[i].detectArea = area;
+	//if (maxwidth < maxheight){
+	//	DetectChars(contours_poly, vecBox, maxwidth, maxheight, 0, 0);
+	//}
 
-		if (vecBox[i].IsAmbig == false){
-			if ((vecBox[i].textbox.area() < area*0.2f) || (vecBox[i].textbox.area() > area*1.5f)){
-				vecBox[i].IsAmbig = true;
-				
-			}
-			else{
-				for (int j = 0; j < vecBox.size(); j++){
-					if (j != i){
-						if (IsBoxToBoxIntersect(vecBox[i].textbox, vecBox[j].textbox) != 0){
-							// Fine Extraction //
-							vecBox[i].IsAmbig = true;
-							vecBox[j].IsAmbig = true;
-						//	break;
-						}
-					}
-				}
-			}
-		}
+	//else{
+	////	DetectChars(contours_poly, vecBox, maxheight, maxwidth, 4, 2);
+	//	DetectChars(contours_poly, vecBox, maxwidth, maxheight, 0, 0);
+	//}
 
-		//if (vecBox[i].IsAmbig == false){
-		//	vecBox.push_back(tmp[i]);
-		//}
-
-	}
-
-//	vecBox.clear();
+	
 
 
 //=================================================================//
@@ -1166,18 +1117,18 @@ void CExtractor::DetectLines(std::vector<std::vector<cv::Point> >& contour, std:
 
 		if (textBox.textbox.area() < minSize) continue;
 
-		//bool inside = false;
-		//for (int j = 0; j < contour.size(); j++){
-		//	if (j == i)continue;
-		//	cv::Rect r2 = cv::boundingRect(cv::Mat(contour[j]));
+		bool inside = false;
+		for (int j = 0; j < contour.size(); j++){
+			if (j == i)continue;
+			cv::Rect r2 = cv::boundingRect(cv::Mat(contour[j]));
 
-		//	if (r2.area() < minSize || r2.area() < r.area())continue;
-		//	if (r.x > r2.x&&r.x + r.width<r2.x + r2.width&&
-		//		r.y>r2.y&&r.y + r.height < r2.y + r2.height){
-		//		inside = true;
-		//	}
-		//}
-		//if (inside)continue;
+			if (r2.area() < minSize || r2.area() < r.area())continue;
+			if (r.x > r2.x&&r.x + r.width<r2.x + r2.width&&
+				r.y>r2.y&&r.y + r.height < r2.y + r2.height){
+				inside = true;
+			}
+		}
+		if (inside)continue;
 
 
 
@@ -1249,6 +1200,13 @@ void CExtractor::DetectChars(std::vector<std::vector<cv::Point> >& contour, std:
 		if (textBox.textbox.height > 0){
 			aRatio = (float)textBox.textbox.width / (float)textBox.textbox.height;
 		}
+
+		//if (aRatio < 0.25f)
+		//	extX += 2;
+		//if (aRatio > 4){
+		//	extY += 2;
+		//}
+		
 
 		textBox.setExtendBox(extX, extY);
 		textBox.textSphere.setbyRect(textBox.textbox);
@@ -1402,7 +1360,7 @@ int CExtractor::FindOptimalBox(std::vector<_EXTRACT_BOX>& tmp, int i, int maxwid
 				width = x2 - x;
 				height = y2 - y;
 			
-				if ((width < (maxwidth*1.25f)) && (height < (maxheight*1.25f))){
+				if ((width < (maxwidth)) && (height < (maxheight*1.25f))){
 					// case of V_ORDER //
 				//	if (maxOveralp <  overlap){
 						selectdId = j;
@@ -1651,127 +1609,3 @@ void CExtractor::ShrinkCharacter(cv::Mat& img)
 //	cv::imshow("contour_after", img);
 }
 
-
-void CExtractor::FineExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRACT_BOX>& vecBox, _TEXT_ORDER _torder, int _w, int _h)
-{
-	cv::Mat imgCut;
-	img(lineBox).copyTo(imgCut);
-
-	// Find Contour //
-	std::vector<std::vector<cv::Point> > contours;
-	std::vector<cv::Vec4i> hierarchy;
-	/// Find contours
-	cv::findContours(imgCut, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE, cv::Point(0, 0));
-	std::vector<std::vector<cv::Point> > contours_poly(contours.size());
-
-	float aRatio = 0;
-	int minSize = 25;
-	int maxwidth = 0, maxheight = 0;
-	int cnt = 0;
-	for (int i = contours.size()-1; i >=0; i--)
-	{
-		approxPolyDP(cv::Mat(contours[i]), contours_poly[i], 1, true);
-		cv::Rect r = cv::boundingRect(cv::Mat(contours[i]));
-		aRatio = (float)r.width / (float)r.height;
-		if ((aRatio > 0.1f) && (aRatio < 10.0f)){
-			if (r.width > maxwidth){
-				maxwidth = r.width;
-			}
-			if (r.height > maxheight){
-				maxheight = r.height;
-			}
-		}
-	}
-
-	maxwidth -= m_fineExtractCoff;
-	maxheight -= m_fineExtractCoff;
-
-	
-	if (maxheight < maxwidth)
-		maxheight = maxwidth;
-	else
-		maxwidth = maxheight;
-
-
-
-
-
-
-	if (maxwidth < _MIN_BOX_SIZE)	maxwidth = _MIN_BOX_SIZE;
-	if (maxheight < _MIN_BOX_SIZE)  maxheight = _MIN_BOX_SIZE;
-
-	if (_torder == V_ORDER){		// Vertical
-		DetectChars(contours_poly, vecBox, maxwidth, maxheight, 3, 1);
-	}
-	else{
-		DetectChars(contours_poly, vecBox, maxwidth, maxheight, 1, 3);
-	}
-
-
-	// Checkl ambigous..................===================================//
-	float area = maxwidth*maxheight;
-
-	//	aRatio = (float)m_maxWidth / (float)m_maxHeight;
-	for (int i = 0; i < vecBox.size(); i++){
-		float r = (float)vecBox[i].textbox.width / (float)vecBox[i].textbox.height;
-
-		if (vecBox[i].IsAmbig == false){
-			if ((vecBox[i].textbox.area() < area*0.2f) || (vecBox[i].textbox.area() > area*1.5f)){
-				vecBox[i].IsAmbig = true;
-			}
-			else{
-				for (int j = 0; j < vecBox.size(); j++){
-					if (j != i){
-						if (IsBoxToBoxIntersect(vecBox[i].textbox, vecBox[j].textbox) != 0){
-							// Fine Extraction //
-							vecBox[i].IsAmbig = true;
-							vecBox[j].IsAmbig = true;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	//	vecBox.clear();
-
-
-	//=================================================================//
-	//	cv::imshow("cut", imgCut);
-	imgCut.release();
-}
-
-
-void CExtractor::ContractImage(cv::Mat& img)
-{
-	//	cv::imshow("Before-binaryMat", img);
-	for (int y = 1; y < img.rows - 1; y++){
-		for (int x = 1; x < img.cols - 1; x++){
-			int pId = (y - 1)*img.step + x;
-			int id = y*img.step + x;
-			int nId = (y + 1)*img.step + x;
-
-			if (img.data[id] < 128){		// black
-				if (img.data[nId] > 128){
-					img.data[id] = 255;
-				}
-			}
-			//if (img.data[id] > 128){		// black
-			//	if (img2.data[pId] < 128){
-			//		img2.data[pId] = 255;
-			//	}
-			//}
-
-			//pId = (y)*img.step + x - 1;
-			//id = y*img.step + x;
-			//nId = (y)*img.step + x + 1;
-
-			//if (img.data[id] < 128){		// black
-			//	if (img.data[nId] > 128){
-			//		img.data[id] = 255;
-			//	}
-			//}
-
-		}
-	}	//}	
-}

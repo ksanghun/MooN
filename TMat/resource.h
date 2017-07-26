@@ -94,11 +94,10 @@
 #define IDC_SLIDER_WIDTH                1011
 #define IDC_SLIDER_HEIGHT               1012
 #define IDC_BN_DETECT_LINES             1013
+#define IDC_BN_DETECT_LINES2            1014
 #define IDC_BN_EXTRACT_TEXT             1014
 #define IDC_CHECK_VORDER                1015
 #define IDC_CHECK_HORDER                1016
-#define IDC_BN_EXTRACT_TEXT2            1017
-#define IDC_BN_FINE_EXTRACT             1017
 #define ID_FILE_CONFIGURATION           32771
 #define IDR_TOOLBAR_24                  32772
 #define ID_BUTTON32773                  32773

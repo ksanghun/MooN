@@ -8,11 +8,6 @@ CExtractView::CExtractView()
 	m_pImg = NULL;
 	m_eTexId = 0;
 	m_MatImg = NULL;
-
-	m_selGuideLineId = -1;
-	m_bCameraMove = true;
-
-	
 }
 
 
@@ -29,61 +24,11 @@ void CExtractView::InitGLview(int _nWidth, int _nHeight)
 	m_cameraPri.InitializeCamera(45.0f, 0, 0, m_lookAt, _nWidth, _nHeight);
 
 	
-	
-
-	GLuint tid = Load4ChannelImage("./img/arrow_green.tiff");
-
-	m_guideLine[0].SetButtonTexId(tid);
-	m_guideLine[1].SetButtonTexId(tid);
-	m_guideLine[2].SetButtonTexId(tid);
-	m_guideLine[3].SetButtonTexId(tid);
 
 	glInitNames();
 
 //	SetTimer(200, 50, NULL);
 }
-
-
-GLuint CExtractView::Load4ChannelImage(char* sz)
-{
-	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
-	GLuint nTexId = 0;
-	//USES_CONVERSION;
-	//char* sz = T2A(strPath);
-
-	IplImage *pimg = cvLoadImage(sz, CV_LOAD_IMAGE_UNCHANGED);
-	if (pimg){
-		//	cvShowImage(sz, pimg);
-		cvCvtColor(pimg, pimg, CV_BGRA2RGBA);
-
-		// glupload Image - Thumnail image=======================================================//
-		glGenTextures(1, &nTexId);
-		glBindTexture(GL_TEXTURE_2D, nTexId);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
-		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		//glTexImage2D(GL_TEXTURE_2D, 0, 4, m_texture->sizeX,m_texture->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE,m_texture->data);
-		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, pimg->width, pimg->height, GL_RGBA, GL_UNSIGNED_BYTE, pimg->imageData);
-		//glTexImage2D(GL_TEXTURE_2D,
-		//	0,
-		//	GL_RGBA,
-		//	pimg->width,
-		//	pimg->height,
-		//	0,
-		//	GL_RGBA,
-		//	GL_UNSIGNED_BYTE,
-		//	pimg->imageData
-		//	);
-		//======================================================================================//
-		cvReleaseImage(&pimg);
-	}
-	return nTexId;
-}
-
-
 void CExtractView::MouseWheel(short zDelta)
 {
 	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
@@ -102,32 +47,6 @@ void CExtractView::MouseWheel(short zDelta)
 	m_posSearchBox = m_cameraPri.ScreenToWorld(0, m_rectHeight);
 	Render();
 }
-
-void CExtractView::DrawGuideLines()
-{
-	// Draw Guide Line=====================//
-	glPushMatrix();
-	glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
-	glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
-	glEnable(GL_TEXTURE_2D);
-	for (int i = 0; i < 4; i++){
-		m_guideLine[i].DrawButtions(1.0f, 1.0f, 1.0f);
-	}
-	glDisable(GL_TEXTURE_2D);
-
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glLineStipple(2, 0xAAAA);
-	glEnable(GL_LINE_STIPPLE);
-	glBegin(GL_LINES);
-	for (int i = 0; i < 4; i++){
-		m_guideLine[i].DrawLine();
-	}
-	glEnd();
-	glDisable(GL_LINE_STIPPLE);
-	glPopMatrix();
-	//====================================//
-}
-
 void CExtractView::Render()
 {
 	m_posSearchBox = m_cameraPri.ScreenToWorld(0, m_rectHeight);
@@ -145,14 +64,16 @@ void CExtractView::Render()
 		glDisable(GL_TEXTURE_2D);
 		
 		glLineWidth(1);
-		glPushMatrix();
-		glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
-		glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
-
 		std::vector<_EXTRACT_BOX>* pLine = m_Extractor.GetLineBoxes ();
 		if (pLine->size() > 0){
 			// Draw detected position //
-			for (int i = 0; i < pLine->size(); i++){	
+			glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
+			glPushMatrix();
+			glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
+			glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
+
+			for (int i = 0; i < pLine->size(); i++){			
+
 				RECT2D rect;
 				rect.set(pLine->at(i).textbox.x, pLine->at(i).textbox.x + pLine->at(i).textbox.width, pLine->at(i).textbox.y, pLine->at(i).textbox.y + pLine->at(i).textbox.height);
 
@@ -172,9 +93,9 @@ void CExtractView::Render()
 				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glEnd();
-			}				
+			}
+			glPopMatrix();
 		}
-		glPopMatrix();
 
 
 		glLineWidth(2);
@@ -210,7 +131,6 @@ void CExtractView::Render()
 		}
 	}
 
-	DrawGuideLines();
 	DrawSearchRect();
 	glLineWidth(1);
 	
@@ -405,26 +325,6 @@ void CExtractView::SetExtractImage(CZPageObject* _pImg, RECT2D cutRect)
 	cvReleaseImage(&pimg);
 	cvReleaseImage(&pCut);
 
-	
-	float fSize = 30.0f*((float)m_MatImg.cols / (float)m_rectWidth);
-
-	m_guideLine[0].Init(0.0f, 1.0f, 0.0f, fSize, 0);
-	m_guideLine[1].Init(0.0f, 1.0f, 0.0f, fSize, 0);
-	m_guideLine[2].Init(0.0f, 1.0f, 0.0f, fSize, 1);
-	m_guideLine[3].Init(1.0f, 0.0f, 0.0f, fSize, 1);
-
-	m_guideLine[0].SetStartPnt(0.0f, m_MatImg.rows, 0.0f);
-	m_guideLine[0].SetEndPnt(m_MatImg.cols, m_MatImg.rows, 0.0f);
-
-	m_guideLine[1].SetStartPnt(0.0f, 0.0f, 0.0f);
-	m_guideLine[1].SetEndPnt(m_MatImg.cols, 0.0f, 0.0f);
-
-	m_guideLine[2].SetStartPnt(0.0f, 0.0f, 0.0f);
-	m_guideLine[2].SetEndPnt(0.0f, m_MatImg.rows, 0.0f);
-
-	m_guideLine[3].SetStartPnt(0.0f, 0.0f, 0.0f);
-	m_guideLine[3].SetEndPnt(0.0f, m_MatImg.rows, 0.0f);
-
 
 //	ProcExtractTextBoundary();
 	Render();
@@ -461,7 +361,9 @@ void CExtractView::ContractImage(cv::Mat& img)
 			//}
 
 		}
-	}	//}	
+	}
+		//}
+	
 }
 
 void CExtractView::ProcExtractTextBoundary()
@@ -610,7 +512,7 @@ void CExtractView::CutNSearchExtractions()
 	pView->AddMatchResultList();
 }
 
-void CExtractView::DoFineExtractionText(_TEXT_ORDER order)
+void CExtractView::DoExtraction(_TEXT_ORDER order)
 {
 	std::vector<cv::Rect> textbox;
 	cv::Mat img2;
@@ -618,20 +520,8 @@ void CExtractView::DoFineExtractionText(_TEXT_ORDER order)
 
 	//m_Extractor.ShrinkCharacter(img2);
 	//ContractImage(img2);
-
-	if (order == V_ORDER){
-		int searchLength = m_guideLine[2].GetStartPnt().x - m_guideLine[3].GetStartPnt().x;
-		if (searchLength < 0)
-			searchLength *= -1;
-		m_Extractor.ProcFineExtraction(img2, order, searchLength, searchLength);
-	}
-	else{  // H_ORDER
-		int searchLength = m_guideLine[0].GetStartPnt().y - m_guideLine[1].GetStartPnt().y;
-		if (searchLength < 0)
-			searchLength *= -1;
-		m_Extractor.ProcFineExtraction(img2, order, searchLength, searchLength);
-
-	}
+	
+	m_Extractor.ProcExtraction(img2, order);
 	img2.release();
 
 
@@ -662,96 +552,7 @@ void CExtractView::DoFineExtractionText(_TEXT_ORDER order)
 		//break;
 	}
 
-	//	CutNSearchExtractions();
-
-
-
-	// 1. Set cutimage from extracted box for Matching between extracted chars //
-	//if (m_pImg){
-	//	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
-	//	std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
-	//	for (int i = 0; i < ptexBox.size(); i++){
-
-	//		if (ptexBox[i].pcutImg != NULL){
-	//			cvReleaseImage(&ptexBox[i].pcutImg);
-	//			ptexBox[i].pcutImg = NULL;
-	//		}
-
-	//		cv::Rect rect = ptexBox[i].textbox;
-	//		rect.x += m_cutRect.x1;
-	//		rect.y += m_cutRect.y1;
-
-	//		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
-	//		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
-	//		cvCopy(src, pCut);
-
-	//		ptexBox[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE, _NORMALIZE_SIZE), pCut->depth, pCut->nChannels);
-	//		cvResize(pCut, ptexBox[i].pcutImg);
-	//		cvReleaseImage(&pCut);
-
-	//		//cvShowImage("Cut", ptexBox[i].pcutImg);
-	//		//break;
-	//	}
-	//}
-
-	Render();
-}
-void CExtractView::DoExtractionText(_TEXT_ORDER order)
-{
-	std::vector<cv::Rect> textbox;
-	cv::Mat img2;
-	m_MatImg.copyTo(img2);
-
-	//m_Extractor.ShrinkCharacter(img2);
-	//ContractImage(img2);
-
-	if (order == V_ORDER){
-		int searchLength = m_guideLine[2].GetStartPnt().x - m_guideLine[3].GetStartPnt().x;
-		if (searchLength < 0)
-			searchLength *= -1;
-		m_Extractor.ProcExtractionText(img2, order, searchLength, searchLength);
-	}
-	else{  // H_ORDER
-		int searchLength = m_guideLine[0].GetStartPnt().y - m_guideLine[1].GetStartPnt().y;
-		if (searchLength < 0)
-			searchLength *= -1;
-		m_Extractor.ProcExtractionText(img2, order, searchLength, searchLength);
-
-	}
-	img2.release();
-
-
-
-
-	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
-	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
-	for (int i = 0; i < ptexBox->size(); i++){
-
-		if ((*ptexBox)[i].pcutImg != NULL){
-			cvReleaseImage(&(*ptexBox)[i].pcutImg);
-			(*ptexBox)[i].pcutImg = NULL;
-		}
-
-		cv::Rect rect = (*ptexBox)[i].textbox;
-		rect.x += m_cutRect.x1;
-		rect.y += m_cutRect.y1;
-
-		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
-		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
-		cvCopy(src, pCut);
-
-		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE, _NORMALIZE_SIZE), pCut->depth, pCut->nChannels);
-		cvResize(pCut, (*ptexBox)[i].pcutImg);
-		cvReleaseImage(&pCut);
-
-		//cvShowImage("Cut", ptexBox[i].pcutImg);
-		//break;
-	}
-
-	//	CutNSearchExtractions();
-
-
-
+	CutNSearchExtractions();
 	// 1. Set cutimage from extracted box for Matching between extracted chars //
 	//if (m_pImg){
 	//	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
@@ -784,32 +585,7 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 
 
 
-
-}
-void CExtractView::DoExtractionLine(_TEXT_ORDER order)
-{
-	std::vector<cv::Rect> textbox;
-	cv::Mat img2;
-	m_MatImg.copyTo(img2);
-
-	//m_Extractor.ShrinkCharacter(img2);
-	//ContractImage(img2);
-
-	if (order == V_ORDER){
-		int searchLength = m_guideLine[2].GetStartPnt().x - m_guideLine[3].GetStartPnt().x;
-		if (searchLength < 0)
-			searchLength *= -1;
-		m_Extractor.ProcExtractionLine(img2, order, searchLength, 0);
-	}
-	else{  // H_ORDER
-		int searchLength = m_guideLine[0].GetStartPnt().y - m_guideLine[1].GetStartPnt().y;
-		if (searchLength < 0)
-			searchLength *= -1;
-		m_Extractor.ProcExtractionLine(img2, order, 0, searchLength);
-
-	}		
-	img2.release();
-	Render();		
+	
 }
 
 void CExtractView::IDragMap(int x, int y, short sFlag)
@@ -861,44 +637,18 @@ void CExtractView::OnMouseMove(UINT nFlags, CPoint point)
 	// TODO: Add your message handler code here and/or call default
 	if (GetCapture()){
 		if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
-			
-			if (m_mouseMode == _CAM_MOVE){		// MOVE
-				int xDelta = point.x - m_stratPnt.x;
-				int yDelta = point.y - m_stratPnt.y;
+			int xDelta = point.x - m_stratPnt.x;
+			int yDelta = point.y - m_stratPnt.y;
 
-				if (xDelta*xDelta > yDelta*yDelta){
-					m_moveVec.x = 1.0f;			m_moveVec.y = 0;
-				}
-				else{
-					m_moveVec.y = 1.0f;			m_moveVec.x = 0;
-				}
+			if (xDelta*xDelta > yDelta*yDelta){
+				m_moveVec.x = 1.0f;			m_moveVec.y = 0;
+			}
+			else{
+				m_moveVec.y = 1.0f;			m_moveVec.x = 0;
+			}
+			if (m_mouseMode == 2){		// MOVE
 				if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
 					IDragMap(point.x, point.y, 1);
-				}
-			}
-			else if (m_mouseMode == _ARROW_MOVE){
-				if (m_pImg){
-					POINT3D currArrowPos = m_cameraPri.ScreenToWorld(point.x, point.y);
-					float xDelta = currArrowPos.x - m_startArrowPos.x;
-					float yDelta = currArrowPos.y - m_startArrowPos.y;
-
-					if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
-						switch (m_selGuideLineId)
-						{
-						case 0:
-						case 1:
-							m_guideLine[m_selGuideLineId].SetIncrement(0.0f, yDelta/m_pImg->GetfYScale()) ;
-							break;
-						case 2:
-						case 3:
-							m_guideLine[m_selGuideLineId].SetIncrement(xDelta/m_pImg->GetfXScale(), 0.0f);
-							break;
-						default:
-							break;
-						}
-					}
-
-					m_startArrowPos = currArrowPos;
 				}
 			}
 			Render();
@@ -912,21 +662,10 @@ void CExtractView::OnMouseMove(UINT nFlags, CPoint point)
 void CExtractView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
-	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
-	if (SelectObject3D(point.x, point.y, 2, 2, 0) == 0){
-		m_stratPnt = point;
-		m_mouseMode = _CAM_MOVE;
-	}
-	else{
-		m_startArrowPos = m_cameraPri.ScreenToWorld(point.x, point.y);
-		m_mouseMode = _ARROW_MOVE;
-	}
-
-	
-	
+	m_stratPnt = point;
+	m_mouseMode = 2;
 	IDragMap(point.x, point.y, 0);
 	SetCapture();
-
 
 	COGLWnd::OnLButtonDown(nFlags, point);
 }
@@ -935,7 +674,7 @@ void CExtractView::OnLButtonDown(UINT nFlags, CPoint point)
 void CExtractView::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
-	m_mouseMode = _CAM_MOVE;
+	m_mouseMode = 0;
 	IDragMap(point.x, point.y, 2);
 	ReleaseCapture();
 
@@ -1045,51 +784,4 @@ float CExtractView::MatchingCutImgs(IplImage* pCut, IplImage* dst)
 
 	return fAccur;
 
-}
-
-
-int CExtractView::SelectObject3D(int x, int y, int rect_width, int rect_height, int selmode)
-{
-	m_selGuideLineId = -1;
-
-	GLuint selectBuff[1024];
-	memset(&selectBuff, 0, sizeof(GLuint) * 1024);
-
-	GLint hits, viewport[4];
-	hits = 0;
-
-	glSelectBuffer(1024, selectBuff);
-	glGetIntegerv(GL_VIEWPORT, viewport);
-	glRenderMode(GL_SELECT);
-
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	gluPickMatrix(x, viewport[3] - y, 2, 2, viewport);
-	gluPerspective(m_cameraPri.m_Cntfovy, (float)viewport[2] / (float)viewport[3], m_cameraPri.GetNearPlane(), m_cameraPri.GetFarPlane());
-
-	//m_cameraPri.SetProjectionMatrix(45.0f, 0.0f, 0.0f, cx, cy);
-	glMatrixMode(GL_MODELVIEW);
-	
-	glPushMatrix();
-	glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
-	glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
-	for (int i = 0; i < 4; i++){
-		glPushName(i);
-		m_guideLine[i].DrawButtions(1.0f, 1.0f, 1.0f);
-		glPopName();
-	}
-	glPopMatrix();
-
-	hits = glRenderMode(GL_RENDER);
-	if (hits>0)
-	{
-		m_selGuideLineId = selectBuff[3];
-	}
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-
-	return hits;
 }
