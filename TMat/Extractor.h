@@ -27,7 +27,7 @@ typedef struct{
 
 }_MOONCircle;
 
-typedef struct{
+typedef struct _EXTRACT_BOX{
 	cv::Rect textbox;
 	cv::Rect textboxForCheck;
 //	cv::Rect textboxSmall;
@@ -40,9 +40,13 @@ typedef struct{
 	bool IsMerged;
 	bool IsAmbig;
 	bool IsMatched;
+	bool IsBig;
+	bool IsSmall;
 
 	int lineId;
 	int detectArea;
+
+	_EXTRACT_BOX* pNextBox;
 
 	void init()
 	{
@@ -50,10 +54,15 @@ typedef struct{
 		IsOk = false;
 		IsMerged = false;
 		IsAmbig = false;
-		IsMatched = false;
+		IsMatched = false; 
+		IsBig = false;
+		IsSmall = false;
+		
 		pcutImg = NULL;
 		lineId = 0;
 		detectArea = 0;
+
+		pNextBox = NULL;
 	};
 
 	void setExtendBox(int w, int h)
@@ -110,6 +119,7 @@ public:
 
 
 	// Extraction Functions //
+	void CheckAmbiguous();
 	void ContractImage(cv::Mat& img);
 	cv::Rect GetBoundingBox(cv::Rect r1, cv::Rect r2);
 	void ShrinkCharacter(cv::Mat& img);
@@ -120,7 +130,7 @@ public:
 	void DetectLines(std::vector<std::vector<cv::Point> >& contour, std::vector<_EXTRACT_BOX>& veclineBox, int maxWidth, int maxHeight, int extX, int extY);
 	void DetectChars(std::vector<std::vector<cv::Point> >& contour, std::vector<_EXTRACT_BOX>& veclineBox, int minsize, int maxSize, int extX, int extY);
 	void ExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRACT_BOX>& vecBox, _TEXT_ORDER _torder);
-	void FineExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRACT_BOX>& vecBox, _TEXT_ORDER _torder, int _w, int _h);
+	void FineExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRACT_BOX>& vecBox, _TEXT_ORDER _torder, int _w, int _h, int _incre, bool IsContract);
 	bool RcvMeargingBoundingBox(int maxwidth, int maxheight, std::vector<_EXTRACT_BOX>& veclineBox, int& depth, int extX, int extY, _MERGE_TYPE mergeType);
 	bool RcvMeargingBoundingCircle(int minsize, int maxSize, std::vector<_EXTRACT_BOX>& veclineBox, int& depth, int extX, int extY);
 	int FindOptimalBox(std::vector<_EXTRACT_BOX>& tmp, int cid, int maxwidth, int maxheight, _EXTRACT_BOX& resBox);

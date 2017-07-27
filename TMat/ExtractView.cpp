@@ -194,8 +194,14 @@ void CExtractView::Render()
 				rect.set((*ptexBox)[i].textbox.x, (*ptexBox)[i].textbox.x + (*ptexBox)[i].textbox.width,
 					(*ptexBox)[i].textbox.y, (*ptexBox)[i].textbox.y + (*ptexBox)[i].textbox.height);
 				
-				if ((*ptexBox)[i].IsAmbig)					glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
-				else									glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
+				glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
+				if ((*ptexBox)[i].pNextBox!=NULL){
+					glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
+				}
+
+				if ((*ptexBox)[i].IsBig){
+					glColor4f(0.0f, 0.0f, 1.0f, 0.99f);
+				}		
 
 				glBegin(GL_LINE_STRIP);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
@@ -422,8 +428,8 @@ void CExtractView::SetExtractImage(CZPageObject* _pImg, RECT2D cutRect)
 	m_guideLine[2].SetStartPnt(0.0f, 0.0f, 0.0f);
 	m_guideLine[2].SetEndPnt(0.0f, m_MatImg.rows, 0.0f);
 
-	m_guideLine[3].SetStartPnt(0.0f, 0.0f, 0.0f);
-	m_guideLine[3].SetEndPnt(0.0f, m_MatImg.rows, 0.0f);
+	m_guideLine[3].SetStartPnt(m_MatImg.cols, 0.0f, 0.0f);
+	m_guideLine[3].SetEndPnt(m_MatImg.cols, m_MatImg.rows, 0.0f);
 
 
 //	ProcExtractTextBoundary();
