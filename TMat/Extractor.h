@@ -8,6 +8,7 @@
 
 enum _TEXT_ORDER{ V_ORDER, H_ORDER};
 enum _MERGE_TYPE{ _MERGE_LINE, _MERGE_TEXT };
+enum _LANGUAGE_TYPE{ _ESTERN_LANGUAGE, _WESTERN_LANGUAGE };
 
 typedef struct{
 	cv::Point center;
@@ -44,7 +45,9 @@ typedef struct _EXTRACT_BOX{
 	bool IsSmall;
 
 	int lineId;
-	int detectArea;
+//	int detectArea;
+	int detectWidth;
+	int detectHeight;
 
 	_EXTRACT_BOX* pNextBox;
 
@@ -60,7 +63,9 @@ typedef struct _EXTRACT_BOX{
 		
 		pcutImg = NULL;
 		lineId = 0;
-		detectArea = 0;
+	//	detectArea = 0;
+		detectWidth = 0;
+		detectHeight = 0;
 
 		pNextBox = NULL;
 	};
@@ -135,11 +140,13 @@ public:
 	bool RcvMeargingBoundingCircle(int minsize, int maxSize, std::vector<_EXTRACT_BOX>& veclineBox, int& depth, int extX, int extY);
 	int FindOptimalBox(std::vector<_EXTRACT_BOX>& tmp, int cid, int maxwidth, int maxheight, _EXTRACT_BOX& resBox);
 	int FindOptimalCircle(std::vector<_EXTRACT_BOX>& tmp, int i, int minSize, int maxSize, _EXTRACT_BOX& resBox);
+	void SetLanguageType(_LANGUAGE_TYPE _type) { m_languageType = _type; }
 
 private:
 	std::vector<_EXTRACT_BOX> m_exTextBox;
 	std::vector<_EXTRACT_BOX> vecLines;
 
+	_LANGUAGE_TYPE m_languageType;
 
 
 	int m_xExpand;

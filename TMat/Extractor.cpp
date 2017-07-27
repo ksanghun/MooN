@@ -27,6 +27,8 @@ CExtractor::CExtractor()
 	m_maxHeight = 0;
 
 	m_fineExtractCoff = 0;
+//	m_languageType = _WESTERN_LANGUAGE;
+	m_languageType = _ESTERN_LANGUAGE;
 }
 
 
@@ -906,43 +908,47 @@ void CExtractor::ProcFineExtraction(cv::Mat& img, _TEXT_ORDER _torder, int _w, i
 	for (int i = 0; i < m_exTextBox.size(); i++){
 		if (m_exTextBox[i].IsMerged == true) continue;
 		
-		if ((m_exTextBox[i].IsBig || m_exTextBox[i].IsSmall)){
+		int width = m_exTextBox[i].detectWidth;
+		int height = m_exTextBox[i].detectHeight;
+
+		if ((m_exTextBox[i].IsBig)){
 			m_exTextBox[i].IsAmbig = true;
-			int area = m_exTextBox[i].detectArea;
-			int detectSize = sqrt(area);
+		//	int area = m_exTextBox[i].detectArea;
+		//	int detectSize = sqrt(area);
+			
 
 			std::vector<_EXTRACT_BOX> vecBox;
 
-			if (m_exTextBox[i].IsBig){				
-				FineExtractTexts(img, m_exTextBox[i].textbox, vecBox, _torder, detectSize, detectSize, 0, true);
+		//	if (m_exTextBox[i].IsBig){				
+				FineExtractTexts(img, m_exTextBox[i].textbox, vecBox, _torder, width, height, 0, true);
 				for (int j = 0; j < vecBox.size(); j++){
 					_EXTRACT_BOX tmpbox = vecBox[j];
 					tmpbox.textbox.x += m_exTextBox[i].textbox.x;		// Translate position //
 					tmpbox.textbox.y += m_exTextBox[i].textbox.y;
-					tmpbox.detectArea = detectSize*detectSize;
+				//	tmpbox.detectArea = detectSize*detectSize;
+					tmpbox.detectWidth = width;
+					tmpbox.detectHeight = height;
 
 					// recover contracted size to original size==========//
-					tmpbox.textbox.x--;
-					tmpbox.textbox.y--;
-					tmpbox.textbox.width += 2;
-					tmpbox.textbox.height += 2;
+					//tmpbox.textbox.x--;
+					//tmpbox.textbox.y--;
+					//tmpbox.textbox.width += 2;
+					//tmpbox.textbox.height += 2;
 					//======================================================//
 
 					tmp.push_back(tmpbox);
 				}
-			}
-			else{
-				FineExtractTexts(img, m_exTextBox[i].textbox, vecBox, _torder, detectSize, detectSize, -m_fineExtractCoff, false);
-				for (int j = 0; j < vecBox.size(); j++){
-					_EXTRACT_BOX tmpbox = vecBox[j];
-					tmpbox.textbox.x += m_exTextBox[i].textbox.x;		// Translate position //
-					tmpbox.textbox.y += m_exTextBox[i].textbox.y;
-					tmpbox.detectArea = detectSize*detectSize;
-					tmp.push_back(tmpbox);
-				}
-			}
-
-			
+		//	}
+			//else{
+			//	FineExtractTexts(img, m_exTextBox[i].textbox, vecBox, _torder, detectSize, detectSize, 0, false);
+			//	for (int j = 0; j < vecBox.size(); j++){
+			//		_EXTRACT_BOX tmpbox = vecBox[j];
+			//		tmpbox.textbox.x += m_exTextBox[i].textbox.x;		// Translate position //
+			//		tmpbox.textbox.y += m_exTextBox[i].textbox.y;
+			//		tmpbox.detectArea = detectSize*detectSize;
+			//		tmp.push_back(tmpbox);
+			//	}
+			//}			
 			vecBox.clear();
 		}
 
@@ -963,18 +969,29 @@ void CExtractor::ProcFineExtraction(cv::Mat& img, _TEXT_ORDER _torder, int _w, i
 				pBox->IsAmbig = true;
 			}
 
-			int area = m_exTextBox[i].detectArea;
+			int area = width*height;
 			std::vector<_EXTRACT_BOX> vecBox;
-			int detectSize = sqrt(area);  // littel smaller //
+		//	int detectSize = sqrt(area);  // littel smaller //
 
-			FineExtractTexts(img, rect, vecBox, _torder, detectSize, detectSize, m_fineExtractCoff, false);
+			if ((rect.width > 0) || (rect.height > 0)){
 
-			for (int j = 0; j < vecBox.size(); j++){
-				_EXTRACT_BOX tmpbox = vecBox[j];
-				tmpbox.textbox.x += rect.x;		// Translate position //
-				tmpbox.textbox.y += rect.y;
-				tmpbox.detectArea = detectSize*detectSize;
-				tmp.push_back(tmpbox);
+				if (rect.area() > area*1.25f){
+					FineExtractTexts(img, rect, vecBox, _torder, width, height, m_fineExtractCoff, false);
+				}
+				else{
+					FineExtractTexts(img, rect, vecBox, _torder, width, height, -m_fineExtractCoff, false);
+				}
+
+				for (int j = 0; j < vecBox.size(); j++){
+					_EXTRACT_BOX tmpbox = vecBox[j];
+					tmpbox.textbox.x += rect.x;		// Translate position //
+					tmpbox.textbox.y += rect.y;
+				//	tmpbox.detectArea = detectSize*detectSize;
+				//	tmpbox.detectArea = area;
+					tmpbox.detectWidth = width;
+					tmpbox.detectHeight = height;
+					tmp.push_back(tmpbox);
+				}
 			}
 			vecBox.clear();
 		}
@@ -1072,15 +1089,9 @@ void CExtractor::ProcFineExtraction(cv::Mat& img, _TEXT_ORDER _torder, int _w, i
 				}
 			}
 		}
-
-		
-
 		if (tmp[i].IsAmbig == false){
 			m_exTextBox.push_back(tmp[i]);
 		}
-
-		
-
 	}
 	tmp.clear();
 	
@@ -1090,8 +1101,8 @@ void CExtractor::ProcFineExtraction(cv::Mat& img, _TEXT_ORDER _torder, int _w, i
 	CheckAmbiguous();
 
 	m_fineExtractCoff++;
-	if (m_fineExtractCoff > 10)
-		m_fineExtractCoff = 10;
+	if (m_fineExtractCoff > 5)
+		m_fineExtractCoff = 1;
 }
 
 
@@ -1212,8 +1223,14 @@ void CExtractor::ExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRA
 	if (_torder == V_ORDER){		// Vertical
 		DetectChars(contours_poly, vecBox, lineBox.width, maxheight, 3,2);
 	}
-	else{
-		DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, 2, 3);
+	else{  // hori
+		if (m_languageType == _WESTERN_LANGUAGE){
+			maxwidth = lineBox.width;
+			DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, 0, 2);
+		}
+		else{
+			DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, 0, 2);
+		}
 	}
 
 
@@ -1223,20 +1240,30 @@ void CExtractor::ExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRA
 
 	// Checkl ambigous..................===================================//
 	float area = 0.0f;
-	if (maxwidth < maxheight){
-		area = maxwidth*maxwidth;
+
+	if (m_languageType == _WESTERN_LANGUAGE){
+		area = maxwidth*maxheight;
 	}
 	else{
-		area = maxheight*maxheight;
+		if (maxwidth < maxheight){
+			area = maxwidth*maxwidth;
+		}
+		else{
+			area = maxheight*maxheight;
+		}
 	}
+
+
 	
 	//	aRatio = (float)m_maxWidth / (float)m_maxHeight;
 	for (int i = 0; i < vecBox.size(); i++){
 		float r = (float)vecBox[i].textbox.width / (float)vecBox[i].textbox.height;
-		vecBox[i].detectArea = area;
+//		vecBox[i].detectArea = area;
+		vecBox[i].detectWidth = maxwidth;
+		vecBox[i].detectHeight = maxheight;
 
 		if (vecBox[i].IsAmbig == false){
-			if ((vecBox[i].textbox.area() < area*0.2f) || (vecBox[i].textbox.area() > area*1.5f)){
+			if ((vecBox[i].textbox.area() > area*1.5f)){
 			//	vecBox[i].IsAmbig = true;
 				vecBox[i].IsBig = true;
 				
@@ -1248,9 +1275,17 @@ void CExtractor::ExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRA
 							// Fine Extraction //
 							vecBox[i].IsAmbig = true;
 						//	vecBox[j].IsAmbig = true;
-							if (vecBox[i].pNextBox == NULL){
-								vecBox[i].pNextBox = &vecBox[j];
+							if (vecBox[i].pNextBox == NULL){								
+								if (vecBox[j].pNextBox != &vecBox[i]){
+									vecBox[i].pNextBox = &vecBox[j];
+								}
+								else{
+									TRACE("Dup");
+								}
 							}
+
+							
+
 							break;
 						}
 					}
@@ -1328,7 +1363,7 @@ void CExtractor::DetectLines(std::vector<std::vector<cv::Point> >& contour, std:
 
 }
 
-void CExtractor::DetectChars(std::vector<std::vector<cv::Point> >& contour, std::vector<_EXTRACT_BOX>& veclineBox, int minsize, int maxSize, int extX, int extY)
+void CExtractor::DetectChars(std::vector<std::vector<cv::Point> >& contour, std::vector<_EXTRACT_BOX>& veclineBox, int _width, int _height, int extX, int extY)
 {
 	//!! Next step: Convex Hull Check !!//
 	//Input: a list P of points in the plane.
@@ -1390,7 +1425,7 @@ void CExtractor::DetectChars(std::vector<std::vector<cv::Point> >& contour, std:
 		if (inside)continue;
 
 	//	if ((textBox.textbox.area() <= maxSize*maxSize)){
-		if ((textBox.textbox.width < minsize*2.0f) && (textBox.textbox.height < maxSize*2.0f)){
+		if ((textBox.textbox.width < _width*2.0f) && (textBox.textbox.height < _height*2.0f)){
 			veclineBox.push_back(textBox);
 		}
 	}
@@ -1416,7 +1451,10 @@ void CExtractor::DetectChars(std::vector<std::vector<cv::Point> >& contour, std:
 	// Initial extraction //
 	int depth = 0;
 //	RcvMeargingBoundingCircle(minsize, maxSize, veclineBox, depth, extX, extY);
-	RcvMeargingBoundingBox(minsize, maxSize, veclineBox, depth, extX, extY, _MERGE_TEXT);
+
+	
+	
+	RcvMeargingBoundingBox(_width, _height, veclineBox, depth, extX, extY, _MERGE_TEXT);
 }
 
 
@@ -1524,6 +1562,7 @@ int CExtractor::FindOptimalBox(std::vector<_EXTRACT_BOX>& tmp, int i, int maxwid
 				height = y2 - y;
 			
 				if ((width < (maxwidth*1.25f)) && (height < (maxheight*1.25f))){
+			//	if ((width < (maxwidth*1.05f)) && (height < (maxheight*1.05f))){
 					// case of V_ORDER //
 				//	if (maxOveralp <  overlap){
 						selectdId = j;
@@ -1535,7 +1574,7 @@ int CExtractor::FindOptimalBox(std::vector<_EXTRACT_BOX>& tmp, int i, int maxwid
 						resBox.textbox.height = height;
 						break;
 				//	}
-				}
+				}				
 			}
 		}
 	}
@@ -1618,6 +1657,8 @@ bool CExtractor::RcvMeargingBoundingCircle(int minSize, int maxSize, std::vector
 
 bool CExtractor::RcvMeargingBoundingBox(int maxwidth, int maxheight, std::vector<_EXTRACT_BOX>& veclineBox, int& depth, int extX, int extY, _MERGE_TYPE mergeType)
 {
+
+
 	int minArea = maxwidth*maxwidth;
 	if (maxheight < maxwidth)
 		minArea = maxheight*maxheight;
@@ -1675,12 +1716,18 @@ bool CExtractor::RcvMeargingBoundingBox(int maxwidth, int maxheight, std::vector
 			}
 
 // Adjust Size=====================================//  In case of Chinese, Korean
-			if (mergeType == _MERGE_TEXT){		// character detection
+			if ((mergeType == _MERGE_TEXT) && (m_languageType==_ESTERN_LANGUAGE)){		// character detection
 				if (arw > 3){  // " --- "
 					if (extY < 4){
 						tbox.textbox.y -= 2;
 						if (tbox.textbox.y < 0)	tbox.textbox.y = 0;
 						tbox.textbox.height += 4;
+
+						int yDiff = maxheight - tbox.textbox.height;
+						if (yDiff < 0){
+							tbox.textbox.height += yDiff;
+						}
+
 						tbox.setExtendBox(extX, extY);
 					}
 				}
@@ -1689,6 +1736,13 @@ bool CExtractor::RcvMeargingBoundingBox(int maxwidth, int maxheight, std::vector
 						tbox.textbox.x -= 2;
 						if (tbox.textbox.x < 0)	tbox.textbox.x = 0;
 						tbox.textbox.width += 4;
+						
+
+						int xDiff = maxwidth - tbox.textbox.width;
+						if (xDiff < 0){
+							tbox.textbox.height += xDiff;
+						}
+
 						tbox.setExtendBox(extX, extY);
 					}
 				}
@@ -1698,17 +1752,32 @@ bool CExtractor::RcvMeargingBoundingBox(int maxwidth, int maxheight, std::vector
 						tbox.textbox.y -= 1;
 						if (tbox.textbox.y < 0)	tbox.textbox.y = 0;
 						tbox.textbox.height += 2;
+
+						int yDiff = maxheight - tbox.textbox.height;
+						if (yDiff < 0){
+							tbox.textbox.height += yDiff;
+						}
+
+
 						tbox.setExtendBox(extX, extY);
 					}
 					if (extX < 4){
 						tbox.textbox.x -= 1;
 						if (tbox.textbox.x < 0)	tbox.textbox.x = 0;
 						tbox.textbox.width += 2;
+
+						int xDiff = maxwidth - tbox.textbox.width;
+						if (xDiff < 0){
+							tbox.textbox.height += xDiff;
+						}
+
+
 						tbox.setExtendBox(extX, extY);
 					}
 				}
 			}
 //=====================================================================//
+
 
 
 			veclineBox.push_back(tbox);
@@ -1728,6 +1797,14 @@ bool CExtractor::RcvMeargingBoundingBox(int maxwidth, int maxheight, std::vector
 
 	if ((depth < _MAX_EXTRACT_ITERATION) && (IsMerged)){
 		depth++;
+
+
+		for (int i = 0; i < veclineBox.size(); i++){
+			if (veclineBox[i].IsMerged == true){
+				int a = 0;
+			}
+		}
+
 		RcvMeargingBoundingBox(maxwidth, maxheight, veclineBox, depth, extX, extY, mergeType);
 		TRACE("Recursive: %d\n", depth);
 	}
@@ -1778,8 +1855,8 @@ void CExtractor::FineExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_E
 	cv::Mat imgCut;
 	img(lineBox).copyTo(imgCut);
 
-	if (IsContract)
-		ContractImage(imgCut);
+	//if (IsContract)
+	//	ContractImage(imgCut);
 
 	adaptiveThreshold(imgCut, imgCut, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 75, 10);
 	cv::bitwise_not(imgCut, imgCut);
@@ -1811,8 +1888,13 @@ void CExtractor::FineExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_E
 		}
 	}
 
-	maxwidth -= _incre;
-	maxheight -= _incre;
+	if (_torder == V_ORDER){
+		maxwidth -= _incre;
+		maxheight -= _incre;
+	}
+	else{
+		maxheight -= _incre;
+	}
 
 	
 	if (maxheight < maxwidth)
@@ -1910,14 +1992,14 @@ void CExtractor::CheckAmbiguous()
 		m_exTextBox[i].pNextBox = NULL;
 	}
 	for (int i = 0; i < m_exTextBox.size(); i++){	
-		int area = m_exTextBox[i].detectArea;
+		int area = m_exTextBox[i].detectWidth*m_exTextBox[i].detectHeight;
 
 		if (m_exTextBox[i].IsAmbig == false){
-			if ((m_exTextBox[i].textbox.area() < area*0.3f)){
-				m_exTextBox[i].IsAmbig = true;
-				m_exTextBox[i].IsSmall = true;
-			}
-			else if ((m_exTextBox[i].textbox.area() > area*1.25f)){
+			//if ((m_exTextBox[i].textbox.area() < area*0.3f)){
+			//	m_exTextBox[i].IsAmbig = true;
+			//	m_exTextBox[i].IsSmall = true;
+			//}
+			if ((m_exTextBox[i].textbox.area() > area*1.3f)){
 				m_exTextBox[i].IsAmbig = true;
 				m_exTextBox[i].IsBig = true;
 			}

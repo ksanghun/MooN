@@ -13,6 +13,8 @@ CExtractView::CExtractView()
 	m_bCameraMove = true;
 
 	
+
+	
 }
 
 
@@ -177,43 +179,45 @@ void CExtractView::Render()
 		glPopMatrix();
 
 
-		glLineWidth(2);
-		std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
-		if (ptexBox->size() > 0){
-			// Draw detected position //
-			glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
-			glPushMatrix();
-			glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
-			glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
+		DrawExtractions();
 
-			//if (m_bIsNear){		
-			
-			for (int i = 0; i < ptexBox->size(); i++){
+		//glLineWidth(2);
+		//std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
+		//if (ptexBox->size() > 0){
+		//	// Draw detected position //
+		//	glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
+		//	glPushMatrix();
+		//	glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
+		//	glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
 
-				RECT2D rect;
-				rect.set((*ptexBox)[i].textbox.x, (*ptexBox)[i].textbox.x + (*ptexBox)[i].textbox.width,
-					(*ptexBox)[i].textbox.y, (*ptexBox)[i].textbox.y + (*ptexBox)[i].textbox.height);
-				
-				glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
-				if ((*ptexBox)[i].pNextBox!=NULL){
-					glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
-				}
+		//	//if (m_bIsNear){		
+		//	
+		//	for (int i = 0; i < ptexBox->size(); i++){
 
-				if ((*ptexBox)[i].IsBig){
-					glColor4f(0.0f, 0.0f, 1.0f, 0.99f);
-				}		
+		//		RECT2D rect;
+		//		rect.set((*ptexBox)[i].textbox.x, (*ptexBox)[i].textbox.x + (*ptexBox)[i].textbox.width,
+		//			(*ptexBox)[i].textbox.y, (*ptexBox)[i].textbox.y + (*ptexBox)[i].textbox.height);
+		//		
+		//		glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
+		//		if ((*ptexBox)[i].pNextBox!=NULL){
+		//			glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
+		//		}
 
-				glBegin(GL_LINE_STRIP);
-				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
-				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
-				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
-				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
-				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
-				glEnd();
+		//		if ((*ptexBox)[i].IsBig){
+		//			glColor4f(0.0f, 0.0f, 1.0f, 0.99f);
+		//		}		
 
-			}			
-			glPopMatrix();
-		}
+		//		glBegin(GL_LINE_STRIP);
+		//		glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+		//		glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+		//		glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+		//		glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+		//		glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+		//		glEnd();
+
+		//	}			
+		//	glPopMatrix();
+		//}
 	}
 
 	DrawGuideLines();
@@ -221,6 +225,48 @@ void CExtractView::Render()
 	glLineWidth(1);
 	
 	SwapBuffers(m_CDCPtr->GetSafeHdc());
+}
+
+
+void CExtractView::DrawExtractions()
+{
+	glLineWidth(2);
+	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
+	if (ptexBox->size() > 0){
+		// Draw detected position //
+		glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
+		glPushMatrix();
+		glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
+		glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
+
+		//if (m_bIsNear){		
+
+		for (int i = 0; i < ptexBox->size(); i++){
+
+			RECT2D rect;
+			rect.set((*ptexBox)[i].textbox.x, (*ptexBox)[i].textbox.x + (*ptexBox)[i].textbox.width,
+				(*ptexBox)[i].textbox.y, (*ptexBox)[i].textbox.y + (*ptexBox)[i].textbox.height);
+
+			glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
+			if ((*ptexBox)[i].pNextBox != NULL){
+				glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
+			}
+
+			if ((*ptexBox)[i].IsBig){
+				glColor4f(0.0f, 0.0f, 1.0f, 0.99f);
+			}
+
+			glBegin(GL_LINE_STRIP);
+			glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+			glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+			glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+			glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+			glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+			glEnd();
+
+		}
+		glPopMatrix();
+	}
 }
 
 void CExtractView::DrawSearchRect()

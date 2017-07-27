@@ -19,6 +19,7 @@ public:
 	void Render();
 	void Render2D();
 	void DrawGuideLines();
+	void DrawExtractions();
 
 	//===========================//
 	void SetExtractImage(CZPageObject* _pImg, RECT2D cutRect);// { m_pImg = pImg; }
