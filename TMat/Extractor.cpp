@@ -27,10 +27,9 @@ CExtractor::CExtractor()
 	m_maxHeight = 0;
 
 	m_fineExtractCoff = 0;
-//	m_languageType = _WESTERN_LANGUAGE;
-	m_languageType = _ESTERN_LANGUAGE;
+	m_languageType = _WESTERN_LANGUAGE;
+//	m_languageType = _ESTERN_LANGUAGE;
 }
-
 
 CExtractor::~CExtractor()
 {
@@ -1226,10 +1225,10 @@ void CExtractor::ExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRA
 	else{  // hori
 		if (m_languageType == _WESTERN_LANGUAGE){
 			maxwidth = lineBox.width;
-			DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, 0, 2);
+			DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, 2, 2);
 		}
 		else{
-			DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, 0, 2);
+			DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, 2, 2);
 		}
 	}
 
