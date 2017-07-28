@@ -775,30 +775,30 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 
 
 
-	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
-	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
-	for (int i = 0; i < ptexBox->size(); i++){
+	//IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
+	//std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
+	//for (int i = 0; i < ptexBox->size(); i++){
 
-		if ((*ptexBox)[i].pcutImg != NULL){
-			cvReleaseImage(&(*ptexBox)[i].pcutImg);
-			(*ptexBox)[i].pcutImg = NULL;
-		}
+	//	if ((*ptexBox)[i].pcutImg != NULL){
+	//		cvReleaseImage(&(*ptexBox)[i].pcutImg);
+	//		(*ptexBox)[i].pcutImg = NULL;
+	//	}
 
-		cv::Rect rect = (*ptexBox)[i].textbox;
-		rect.x += m_cutRect.x1;
-		rect.y += m_cutRect.y1;
+	//	cv::Rect rect = (*ptexBox)[i].textbox;
+	//	rect.x += m_cutRect.x1;
+	//	rect.y += m_cutRect.y1;
 
-		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
-		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
-		cvCopy(src, pCut);
+	//	IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
+	//	cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
+	//	cvCopy(src, pCut);
 
-		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE, _NORMALIZE_SIZE), pCut->depth, pCut->nChannels);
-		cvResize(pCut, (*ptexBox)[i].pcutImg);
-		cvReleaseImage(&pCut);
+	//	(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE, _NORMALIZE_SIZE), pCut->depth, pCut->nChannels);
+	//	cvResize(pCut, (*ptexBox)[i].pcutImg);
+	//	cvReleaseImage(&pCut);
 
-		//cvShowImage("Cut", ptexBox[i].pcutImg);
-		//break;
-	}
+	//	//cvShowImage("Cut", ptexBox[i].pcutImg);
+	//	//break;
+	//}
 
 	//	CutNSearchExtractions();
 
