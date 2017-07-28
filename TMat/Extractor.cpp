@@ -27,8 +27,8 @@ CExtractor::CExtractor()
 	m_maxHeight = 0;
 
 	m_fineExtractCoff = 0;
-	m_languageType = _WESTERN_LANGUAGE;
-//	m_languageType = _ESTERN_LANGUAGE;
+//	m_languageType = _WESTERN_LANGUAGE;
+	m_languageType = _ESTERN_LANGUAGE;
 }
 
 CExtractor::~CExtractor()
