@@ -259,7 +259,7 @@ void CZMatching::PrepareCutNSearch(CZPageObject* pSelPage, RECT2D selRect)
 
 //		if (0){  // partial matching
 
-		FitCutImageRect(pSrc, selRect);
+	//	FitCutImageRect(pSrc, selRect);
 
 			m_pCut = cvCreateImage(cvSize(selRect.width, selRect.height), pSrc->depth, pSrc->nChannels);
 			cvSetImageROI(pSrc, cvRect(selRect.x1, selRect.y1, selRect.width, selRect.height));		// posx, posy = left - top
@@ -337,7 +337,7 @@ bool CZMatching::DoSearch(unsigned int& sCnt, unsigned int sId, CUT_INFO info)
 						//cvCopy(gray, mInfo.pImgCut);
 
 
-						FitCutImageRect(gray, mInfo.rect);
+					//	FitCutImageRect(gray, mInfo.rect);
 
 						//	mInfo.color = SINGLETON_TMat::GetInstance()->GetColor((fD)*1.1f);
 						m_resColor.a = ((fD)*m_colorAccScale)*0.5f;
