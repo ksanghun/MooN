@@ -28,7 +28,10 @@ CExtractor::CExtractor()
 
 	m_fineExtractCoff = 0;
 //	m_languageType = _WESTERN_LANGUAGE;
-	m_languageType = _ESTERN_LANGUAGE;
+//	m_languageType = _ESTERN_LANGUAGE;
+
+	m_vSpace = 0;
+	m_hSpace = 0;
 }
 
 CExtractor::~CExtractor()
@@ -50,6 +53,12 @@ void CExtractor::InitExtractor()
 	m_maxWidth = 0;
 	m_maxHeight = 0;
 
+	for (int i = 0; i < m_exTextBox.size(); i++){
+		if (m_exTextBox[i].pcutImg != NULL){
+			cvReleaseImage(&m_exTextBox[i].pcutImg);
+			m_exTextBox[i].pcutImg = NULL;
+		}
+	}
 	m_exTextBox.clear();
 	vecLines.clear();
 
@@ -1161,6 +1170,7 @@ void CExtractor::ProcExtractionText(cv::Mat& img, _TEXT_ORDER _torder, int _w, i
 	for (int i = 0; i < m_exTextBox.size(); i++){
 		if (m_exTextBox[i].pcutImg != NULL){
 			cvReleaseImage(&m_exTextBox[i].pcutImg);
+			m_exTextBox[i].pcutImg = NULL;
 		}
 	}
 	m_exTextBox.clear();
@@ -1220,15 +1230,15 @@ void CExtractor::ExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRA
 	if (maxheight < _MIN_BOX_SIZE)  maxheight = _MIN_BOX_SIZE;
 
 	if (_torder == V_ORDER){		// Vertical
-		DetectChars(contours_poly, vecBox, lineBox.width, maxheight, 3,2);
+		DetectChars(contours_poly, vecBox, lineBox.width, maxheight, m_hSpace, m_vSpace);
 	}
 	else{  // hori
-		if (m_languageType == _WESTERN_LANGUAGE){
+		if (m_languageType == _ALPHABETIC){
 			maxwidth = lineBox.width;
-			DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, 2, 2);
+			DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, m_hSpace, m_vSpace);
 		}
 		else{
-			DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, 2, 2);
+			DetectChars(contours_poly, vecBox, maxwidth, lineBox.height, m_hSpace, m_vSpace);
 		}
 	}
 
@@ -1240,7 +1250,7 @@ void CExtractor::ExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRA
 	// Checkl ambigous..................===================================//
 	float area = 0.0f;
 
-	if (m_languageType == _WESTERN_LANGUAGE){
+	if (m_languageType == _ALPHABETIC){
 		area = maxwidth*maxheight;
 	}
 	else{
@@ -1395,6 +1405,7 @@ void CExtractor::DetectChars(std::vector<std::vector<cv::Point> >& contour, std:
 	for (int i = 0; i < contour.size(); i++){
 		cv::Rect r = cv::boundingRect(cv::Mat(contour[i]));
 
+	//	r.width++;
 
 		_EXTRACT_BOX textBox;
 		textBox.init();
@@ -1715,7 +1726,7 @@ bool CExtractor::RcvMeargingBoundingBox(int maxwidth, int maxheight, std::vector
 			}
 
 // Adjust Size=====================================//  In case of Chinese, Korean
-			if ((mergeType == _MERGE_TEXT) && (m_languageType==_ESTERN_LANGUAGE)){		// character detection
+			if ((mergeType == _MERGE_TEXT) && (m_languageType==_NONALPHABETIC)){		// character detection
 				if (arw > 3){  // " --- "
 					if (extY < 4){
 						tbox.textbox.y -= 2;
@@ -1983,22 +1994,34 @@ void CExtractor::ContractImage(cv::Mat& img)
 
 void CExtractor::CheckAmbiguous()
 {
+	int averWidth = 0, averHeight = 0;
+	int cnt = 0;
 	for (int i = 0; i < m_exTextBox.size(); i++){
 		m_exTextBox[i].IsAmbig = false;
 		m_exTextBox[i].IsMerged = false;
 		m_exTextBox[i].IsBig = false;
 		m_exTextBox[i].IsSmall = false;
 		m_exTextBox[i].pNextBox = NULL;
+
+		averWidth += m_exTextBox[i].textbox.width;
+		averHeight += m_exTextBox[i].textbox.height;
+		cnt++;
 	}
+	if (cnt > 0){
+		averWidth /= cnt;
+		averHeight /= cnt;
+	}
+
+	int area = averWidth*averHeight;
 	for (int i = 0; i < m_exTextBox.size(); i++){	
-		int area = m_exTextBox[i].detectWidth*m_exTextBox[i].detectHeight;
+	//	int area = m_exTextBox[i].detectWidth*m_exTextBox[i].detectHeight;
 
 		if (m_exTextBox[i].IsAmbig == false){
 			//if ((m_exTextBox[i].textbox.area() < area*0.3f)){
 			//	m_exTextBox[i].IsAmbig = true;
 			//	m_exTextBox[i].IsSmall = true;
 			//}
-			if ((m_exTextBox[i].textbox.area() > area*1.3f)){
+			if ((m_exTextBox[i].textbox.area() > area*1.5f)){
 				m_exTextBox[i].IsAmbig = true;
 				m_exTextBox[i].IsBig = true;
 			}
@@ -2029,3 +2052,12 @@ void CExtractor::CheckAmbiguous()
 		}
 	}
 }
+
+//void CExtractor::InitSelectedRect()
+//{
+//	m_idSelectedRect.clear();
+//}
+//void CExtractor::PushSelectredRect(int id)
+//{
+//	m_idSelectedRect.push_back(id);
+//}

@@ -12,9 +12,12 @@ CExtractView::CExtractView()
 	m_selGuideLineId = -1;
 	m_bCameraMove = true;
 
-	
+	m_bUserEditMode = false;
 
-	
+	mtSetPoint3D(&m_PO, 0.0f, 0.0f, 0.0f);
+	mtSetPoint3D(&m_PN, 0.0f, 0.0f, 1.0f);
+	mtSetPoint3D(&m_CNSRectEnd, 0.0f, 0.0f, MAX_CAM_HIGHTLEVEL * 3);
+	m_CNSRectStart = m_CNSRectEnd;
 }
 
 
@@ -158,7 +161,7 @@ void CExtractView::Render()
 				RECT2D rect;
 				rect.set(pLine->at(i).textbox.x, pLine->at(i).textbox.x + pLine->at(i).textbox.width, pLine->at(i).textbox.y, pLine->at(i).textbox.y + pLine->at(i).textbox.height);
 
-				glColor4f(0.0f, 0.0f, 1.0f, 0.3f);
+				glColor4f(0.0f, 0.0f, 1.0f, 0.2f);
 				glBegin(GL_QUADS);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
@@ -166,7 +169,7 @@ void CExtractView::Render()
 				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glEnd();
 
-				glColor4f(0.0f, 0.0f, 1.0f, 0.99f);
+				glColor4f(0.0f, 0.0f, 1.0f, 0.7f);
 				glBegin(GL_LINE_STRIP);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
@@ -221,7 +224,10 @@ void CExtractView::Render()
 	}
 
 	DrawGuideLines();
-	DrawSearchRect();
+//	DrawSearchRect();
+
+	DrawCNSRect(1.0f, 0.0f, 0.0f, 1.0f);
+
 	glLineWidth(1);
 	
 	SwapBuffers(m_CDCPtr->GetSafeHdc());
@@ -230,7 +236,63 @@ void CExtractView::Render()
 
 void CExtractView::DrawExtractions()
 {
-	glLineWidth(2);
+	
+	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
+	if (ptexBox->size() > 0){
+		// Draw detected position //
+		glColor4f(1.0f, 0.2f, 0.1f, 0.7f);
+		glPushMatrix();
+		glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
+		glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
+
+		//if (m_bIsNear){		
+		glLineWidth(2);
+		for (int i = 0; i < ptexBox->size(); i++){
+
+			RECT2D rect;
+			rect.set((*ptexBox)[i].textbox.x, (*ptexBox)[i].textbox.x + (*ptexBox)[i].textbox.width,
+				(*ptexBox)[i].textbox.y, (*ptexBox)[i].textbox.y + (*ptexBox)[i].textbox.height);
+
+			if (IsSelectedRect(i) == false){
+				glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
+				if ((*ptexBox)[i].pNextBox != NULL)		glColor4f(1.0f, 0.0f, 0.0f, 0.99f);			
+
+				if ((*ptexBox)[i].IsBig)				glColor4f(0.0f, 0.0f, 1.0f, 0.99f);				
+
+				glBegin(GL_LINE_STRIP);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glEnd();
+			}
+			else{
+
+				glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
+				glLineStipple(2, 0xAAAA);
+				glEnable(GL_LINE_STIPPLE);
+
+				glBegin(GL_LINE_STRIP);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glEnd();
+
+				glDisable(GL_LINE_STIPPLE);
+
+			}
+		}
+		glLineWidth(1);
+		glPopMatrix();
+	}
+}
+
+
+void CExtractView::DrawExtractionsForPick()
+{
 	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
 	if (ptexBox->size() > 0){
 		// Draw detected position //
@@ -242,28 +304,19 @@ void CExtractView::DrawExtractions()
 		//if (m_bIsNear){		
 
 		for (int i = 0; i < ptexBox->size(); i++){
-
+			glPushName(i + 1000);
 			RECT2D rect;
 			rect.set((*ptexBox)[i].textbox.x, (*ptexBox)[i].textbox.x + (*ptexBox)[i].textbox.width,
 				(*ptexBox)[i].textbox.y, (*ptexBox)[i].textbox.y + (*ptexBox)[i].textbox.height);
 
-			glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
-			if ((*ptexBox)[i].pNextBox != NULL){
-				glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
-			}
-
-			if ((*ptexBox)[i].IsBig){
-				glColor4f(0.0f, 0.0f, 1.0f, 0.99f);
-			}
-
-			glBegin(GL_LINE_STRIP);
+			glBegin(GL_QUADS);
 			glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 			glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
 			glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
 			glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 			glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 			glEnd();
-
+			glPopName();
 		}
 		glPopMatrix();
 	}
@@ -597,7 +650,9 @@ void CExtractView::CutNSearchExtractions()
 	if (m_pImg){
 		std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
 
+		// Set by User !
 		float fTh = 0.7f;
+
 		for (int i = 0; i < (*ptexBox).size(); i++){
 			float fD = 0.0f;
 
@@ -605,7 +660,7 @@ void CExtractView::CutNSearchExtractions()
 			color.r = (float)(rand() % 100)*0.01f;
 			color.g = (float)(rand() % 100)*0.01f;
 			color.b = (float)(rand() % 100)*0.01f;
-			color.a = 0.3f;
+			color.a = 0.5f;
 
 
 			for (int j = 0; j < (*ptexBox).size(); j++){
@@ -648,7 +703,7 @@ void CExtractView::CutNSearchExtractions()
 					//	m_resColor.a = ((fD)*m_colorAccScale)*0.5f;
 					mInfo.color = color;
 					mInfo.IsAdded = false;
-					m_pSelectcImg->AddMatchedPoint(std::move(mInfo), 0);
+					m_pSelectcImg->AddMatchedPoint(mInfo, 0);
 
 					//cvShowImage("Cut01", ptexBox[i].pcutImg);
 					//cvShowImage("Cut02", ptexBox[j].pcutImg);
@@ -911,49 +966,57 @@ void CExtractView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
 	// TODO: Add your message handler code here and/or call default
-	if (GetCapture()){
-		if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
-			
-			if (m_mouseMode == _CAM_MOVE){		// MOVE
-				int xDelta = point.x - m_stratPnt.x;
-				int yDelta = point.y - m_stratPnt.y;
-
-				if (xDelta*xDelta > yDelta*yDelta){
-					m_moveVec.x = 1.0f;			m_moveVec.y = 0;
-				}
-				else{
-					m_moveVec.y = 1.0f;			m_moveVec.x = 0;
-				}
-				if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
-					IDragMap(point.x, point.y, 1);
-				}
-			}
-			else if (m_mouseMode == _ARROW_MOVE){
-				if (m_pImg){
-					POINT3D currArrowPos = m_cameraPri.ScreenToWorld(point.x, point.y);
-					float xDelta = currArrowPos.x - m_startArrowPos.x;
-					float yDelta = currArrowPos.y - m_startArrowPos.y;
-
-					if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
-						switch (m_selGuideLineId)
-						{
-						case 0:
-						case 1:
-							m_guideLine[m_selGuideLineId].SetIncrement(0.0f, yDelta/m_pImg->GetfYScale()) ;
-							break;
-						case 2:
-						case 3:
-							m_guideLine[m_selGuideLineId].SetIncrement(xDelta/m_pImg->GetfXScale(), 0.0f);
-							break;
-						default:
-							break;
-						}
-					}
-
-					m_startArrowPos = currArrowPos;
-				}
-			}
+	if (m_bUserEditMode){
+		if (GetCapture()){
+			m_cameraPri.InsetsectRayToPlane(m_PN, m_PO, point.x, point.y, m_CNSRectEnd);
 			Render();
+		}
+	}
+	else{
+		if (GetCapture()){
+			if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
+
+				if (m_mouseMode == _CAM_MOVE){		// MOVE
+					int xDelta = point.x - m_stratPnt.x;
+					int yDelta = point.y - m_stratPnt.y;
+
+					if (xDelta*xDelta > yDelta*yDelta){
+						m_moveVec.x = 1.0f;			m_moveVec.y = 0;
+					}
+					else{
+						m_moveVec.y = 1.0f;			m_moveVec.x = 0;
+					}
+					if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
+						IDragMap(point.x, point.y, 1);
+					}
+				}
+				else if (m_mouseMode == _ARROW_MOVE){
+					if (m_pImg){
+						POINT3D currArrowPos = m_cameraPri.ScreenToWorld(point.x, point.y);
+						float xDelta = currArrowPos.x - m_startArrowPos.x;
+						float yDelta = currArrowPos.y - m_startArrowPos.y;
+
+						if ((point.x > 0) && (point.x < m_rectWidth) && (point.y > 0) && (point.y < m_rectHeight)){
+							switch (m_selGuideLineId)
+							{
+							case 0:
+							case 1:
+								m_guideLine[m_selGuideLineId].SetIncrement(0.0f, yDelta / m_pImg->GetfYScale());
+								break;
+							case 2:
+							case 3:
+								m_guideLine[m_selGuideLineId].SetIncrement(xDelta / m_pImg->GetfXScale(), 0.0f);
+								break;
+							default:
+								break;
+							}
+						}
+
+						m_startArrowPos = currArrowPos;
+					}
+				}
+				Render();
+			}
 		}
 	}
 
@@ -965,20 +1028,30 @@ void CExtractView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
-	if (SelectObject3D(point.x, point.y, 2, 2, 0) == 0){
+
+	mtSetPoint3D(&m_CNSRectEnd, 0.0f, 0.0f, MAX_CAM_HIGHTLEVEL * 3);
+	m_CNSRectStart = m_CNSRectEnd;
+	if (m_bUserEditMode){		
 		m_stratPnt = point;
-		m_mouseMode = _CAM_MOVE;
+		m_cameraPri.InsetsectRayToPlane(m_PN, m_PO, point.x, point.y, m_CNSRectStart);
+		m_CNSRectEnd = m_CNSRectStart;
+		SetCapture();
 	}
 	else{
-		m_startArrowPos = m_cameraPri.ScreenToWorld(point.x, point.y);
-		m_mouseMode = _ARROW_MOVE;
-	}
-
+		if (SelectObject3D(point.x, point.y, 1, 1, 0) == 0){
+			m_stratPnt = point;
+			m_mouseMode = _CAM_MOVE;
+		}
+		else{
+			m_startArrowPos = m_cameraPri.ScreenToWorld(point.x, point.y);
+			m_mouseMode = _ARROW_MOVE;
+		}
+		IDragMap(point.x, point.y, 0);
+		SetCapture();
+	}	
 	
-	
-	IDragMap(point.x, point.y, 0);
-	SetCapture();
 
+	Render();
 
 	COGLWnd::OnLButtonDown(nFlags, point);
 }
@@ -987,9 +1060,41 @@ void CExtractView::OnLButtonDown(UINT nFlags, CPoint point)
 void CExtractView::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
-	m_mouseMode = _CAM_MOVE;
-	IDragMap(point.x, point.y, 2);
+	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
+	mtSetPoint3D(&m_CNSRectEnd, 0.0f, 0.0f, MAX_CAM_HIGHTLEVEL * 3);
+	m_CNSRectStart = m_CNSRectEnd;
+
+	if (m_bUserEditMode){
+		int x, y, width, height;
+				
+		width = point.x - m_stratPnt.x;
+		x = m_stratPnt.x + width*0.5f;
+		if (m_stratPnt.x > point.x){			
+			width = m_stratPnt.x - point.x;
+			x = point.x + width*0.5f;
+		}
+		
+		height = point.y - m_stratPnt.y;
+		y = m_stratPnt.y + height*0.5f;
+		if (m_stratPnt.y > point.y){
+			height = m_stratPnt.y - point.y;
+			y = point.y + height*0.5f;
+		}		
+
+		if (width == 0)	width = 1;
+		if (height == 0)	height = 1;
+
+		SelectObject3D(x,y, width, height,1);
+		
+	}
+	else{
+		m_mouseMode = _CAM_MOVE;
+		IDragMap(point.x, point.y, 2);
+		
+	}
+
 	ReleaseCapture();
+	Render();
 
 	COGLWnd::OnLButtonUp(nFlags, point);
 }
@@ -1103,6 +1208,7 @@ float CExtractView::MatchingCutImgs(IplImage* pCut, IplImage* dst)
 int CExtractView::SelectObject3D(int x, int y, int rect_width, int rect_height, int selmode)
 {
 	m_selGuideLineId = -1;
+	m_idSelectedRect.clear();
 
 	GLuint selectBuff[1024];
 	memset(&selectBuff, 0, sizeof(GLuint) * 1024);
@@ -1118,30 +1224,90 @@ int CExtractView::SelectObject3D(int x, int y, int rect_width, int rect_height, 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluPickMatrix(x, viewport[3] - y, 2, 2, viewport);
+	gluPickMatrix(x, viewport[3] - y, rect_width, rect_height, viewport);
 	gluPerspective(m_cameraPri.m_Cntfovy, (float)viewport[2] / (float)viewport[3], m_cameraPri.GetNearPlane(), m_cameraPri.GetFarPlane());
 
 	//m_cameraPri.SetProjectionMatrix(45.0f, 0.0f, 0.0f, cx, cy);
 	glMatrixMode(GL_MODELVIEW);
 	
-	glPushMatrix();
-	glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
-	glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
-	for (int i = 0; i < 4; i++){
-		glPushName(i);
-		m_guideLine[i].DrawButtions(1.0f, 1.0f, 1.0f);
-		glPopName();
-	}
-	glPopMatrix();
 
-	hits = glRenderMode(GL_RENDER);
-	if (hits>0)
-	{
-		m_selGuideLineId = selectBuff[3];
+	if (selmode == 0){
+		glPushMatrix();
+		glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
+		glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
+		for (int i = 0; i < 4; i++){
+			glPushName(i);
+			m_guideLine[i].DrawButtions(1.0f, 1.0f, 1.0f);
+			glPopName();
+		}
+		glPopMatrix();
+
+		hits = glRenderMode(GL_RENDER);
+		if (hits > 0)
+		{
+			m_selGuideLineId = selectBuff[3];
+		}
 	}
+	else if (selmode == 1){
+		DrawExtractionsForPick();
+		hits = glRenderMode(GL_RENDER);
+		if (hits > 0)
+		{
+			int selid = 0;
+			for (int i = 0; i < hits; i++){
+				selid = (int)selectBuff[i * 4 + 3];
+				if (selid >= 1000){
+					m_idSelectedRect.push_back(selid - 1000);
+				}
+			}
+		}
+	}
+
+
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 
 	return hits;
+}
+
+void CExtractView::SetLanguageType(_LANGUAGE_TYPE ltype)
+{
+	m_Extractor.SetLanguageType(ltype);
+}
+
+void CExtractView::SetVertiCharSpace(int _v)
+{
+	m_Extractor.SetVertiCharSpace(_v);
+}
+void CExtractView::SetHoriCharSpze(int _h)
+{
+	m_Extractor.SetHoriCharSpze(_h);
+}
+
+bool CExtractView::IsSelectedRect(int _id)
+{
+	for (int i = 0; i < m_idSelectedRect.size(); i++){
+		if (_id == m_idSelectedRect[i]){
+			return true;
+		}
+	}
+	return false;
+}
+
+
+void CExtractView::DrawCNSRect(float r, float g, float b, float a)
+{
+	glLineWidth(2);
+	glDisable(GL_DEPTH_TEST);
+	glColor4f(r, g, b, a);
+	glBegin(GL_LINE_STRIP);
+	glVertex3f(m_CNSRectStart.x, m_CNSRectStart.y, m_CNSRectStart.z);
+	glVertex3f(m_CNSRectStart.x, m_CNSRectEnd.y, m_CNSRectEnd.z);
+	glVertex3f(m_CNSRectEnd.x, m_CNSRectEnd.y, m_CNSRectEnd.z);
+	glVertex3f(m_CNSRectEnd.x, m_CNSRectStart.y, m_CNSRectStart.z);
+	glVertex3f(m_CNSRectStart.x, m_CNSRectStart.y, m_CNSRectStart.z);
+	glEnd();
+	glEnable(GL_DEPTH_TEST);
+	glLineWidth(1);
 }

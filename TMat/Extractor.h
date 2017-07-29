@@ -8,7 +8,7 @@
 
 enum _TEXT_ORDER{ V_ORDER, H_ORDER};
 enum _MERGE_TYPE{ _MERGE_LINE, _MERGE_TEXT };
-enum _LANGUAGE_TYPE{ _ESTERN_LANGUAGE, _WESTERN_LANGUAGE };
+enum _LANGUAGE_TYPE{ _ALPHABETIC, _NONALPHABETIC };
 
 typedef struct{
 	cv::Point center;
@@ -122,6 +122,9 @@ public:
 	RECT2D GetAverRect() { return m_averTextSize; }
 	void InitExtractor();
 
+	//void InitSelectedRect();
+	//void PushSelectredRect(int id);
+
 
 	// Extraction Functions //
 	void CheckAmbiguous();
@@ -140,9 +143,13 @@ public:
 	bool RcvMeargingBoundingCircle(int minsize, int maxSize, std::vector<_EXTRACT_BOX>& veclineBox, int& depth, int extX, int extY);
 	int FindOptimalBox(std::vector<_EXTRACT_BOX>& tmp, int cid, int maxwidth, int maxheight, _EXTRACT_BOX& resBox);
 	int FindOptimalCircle(std::vector<_EXTRACT_BOX>& tmp, int i, int minSize, int maxSize, _EXTRACT_BOX& resBox);
+
 	void SetLanguageType(_LANGUAGE_TYPE _type) { m_languageType = _type; }
+	void SetVertiCharSpace(int _v) { m_vSpace = _v; }
+	void SetHoriCharSpze(int _h) { m_hSpace = _h; }
 
 private:
+//	std::vector<int> m_idSelectedRect;
 	std::vector<_EXTRACT_BOX> m_exTextBox;
 	std::vector<_EXTRACT_BOX> vecLines;
 
@@ -163,6 +170,9 @@ private:
 	int IsBoxToBoxIntersect(cv::Rect b1, cv::Rect b2);
 	bool IsSphereToSphereIntersect(_MOONCircle c1, _MOONCircle c2);
 
+
+	int m_vSpace;
+	int m_hSpace;
 	
 
 };

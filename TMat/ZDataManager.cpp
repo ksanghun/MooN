@@ -641,12 +641,12 @@ void CZDataManager::ResetMatchingResult()
 	std::map<unsigned long, MATCHGROUP>::iterator iter_gr = m_matchResGroup.begin();
 
 	for (; iter_gr != m_matchResGroup.end(); iter_gr++){
-		//for (int j = 0; j < iter_gr->second.matche.size(); j++){
-		//	if (iter_gr->second.matche[j].pImgCut != NULL){
-		//		cvReleaseImage(&iter_gr->second.matche[j].pImgCut);
-		//		iter_gr->second.matche[j].pImgCut = NULL;
-		//	}
-		//}
+		for (int j = 0; j < iter_gr->second.matche.size(); j++){
+			if (iter_gr->second.matche[j].pImgCut != NULL){
+				cvReleaseImage(&iter_gr->second.matche[j].pImgCut);
+				iter_gr->second.matche[j].pImgCut = NULL;
+			}
+		}
 		iter_gr->second.matche.clear();
 	}
 
@@ -704,13 +704,13 @@ void CZDataManager::SetMatchingResults(IplImage* pCut)
 								
 
 
-				int w = 64, h = 64;
-				if (matches[j].rect.width > pCut->width * 2.0f){
-					w = 128;
-				}
-				if (matches[j].rect.height > pCut->height * 2.0f){
-					h = 128;
-				}
+				int w = _NORMALIZE_SIZE, h = _NORMALIZE_SIZE;
+				//if (matches[j].rect.width > pCut->width * 2.0f){
+				//	w = 128;
+				//}
+				//if (matches[j].rect.height > pCut->height * 2.0f){
+				//	h = 128;
+				//}
 
 				matchRes.pImgCut = cvCreateImage(cvSize(w, h), pTmp->depth, pTmp->nChannels);
 				cvResize(pTmp, matchRes.pImgCut);
@@ -907,10 +907,25 @@ CBitmap* CZDataManager::GetLogCBitmap(IplImage* pImg)
 			BYTE* pDst = pBmpBits + nWidth * 4 * h;
 			for (w = 0; w < nWidth; ++w)
 			{
-				*(pDst++) = *(pSrc++);
-				*(pDst++) = *(pSrc++);
-				*(pDst++) = *(pSrc++);
-				*(pDst++) = 0;
+				if (pImg->nChannels == 1){
+					*(pDst++) = *(pSrc);
+					*(pDst++) = *(pSrc);
+					*(pDst++) = *(pSrc++);
+					*(pDst++) = 0;
+				}
+				else if (pImg->nChannels==3){
+					*(pDst++) = *(pSrc++);
+					*(pDst++) = *(pSrc++);
+					*(pDst++) = *(pSrc++);
+					*(pDst++) = 0;
+				}
+				else if (pImg->nChannels == 4){
+					*(pDst++) = *(pSrc++);
+					*(pDst++) = *(pSrc++);
+					*(pDst++) = *(pSrc++);
+					*(pDst++) = *(pSrc++);;
+				}
+				
 			}
 		}
 		//		memDC.CreateCompatibleDC(pDC);

@@ -31,7 +31,7 @@ END_MESSAGE_MAP()
 // CZViewLog message handlers
 void CZViewLog::InitView(int width, int height)
 {	
-	m_List.Create(WS_CHILD | WS_VISIBLE | WS_BORDER | LVS_REPORT | LVS_EDITLABELS, CRect(0, 0, width, height), this, NULL);
+	m_List.Create(WS_CHILD | WS_VISIBLE | WS_BORDER | LVS_REPORT , CRect(0, 0, width, height), this, NULL);
 	m_List.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
 
@@ -40,6 +40,8 @@ void CZViewLog::InitView(int width, int height)
 	m_List.SetScrollRange(SB_HORZ, 0, 2000);
 
 	m_List.InitListCtrl();
+	m_List.AddUserColumn(L"CUT", _NORMALIZE_SIZE+5);
+	m_List.AddUserColumn(L"CODE", 100);
 	m_List.AddUserColumn(L"SEARCH ID", 120);
 	m_List.AddUserColumn(L"CUT ID", 100);
 	m_List.AddUserColumn(L"CUT FILE ID", 100);
@@ -48,8 +50,7 @@ void CZViewLog::InitView(int width, int height)
 	m_List.AddUserColumn(L"MATCH FILE ID", 100);
 	m_List.AddUserColumn(L"MATCH POSITION", 100);
 	m_List.AddUserColumn(L"Threshold", 100);
-	m_List.AddUserColumn(L"Accuracy", 100);
-	m_List.AddUserColumn(L"CODE", 100);
+	m_List.AddUserColumn(L"Accuracy", 100);	
 	m_List.AddUserColumn(L"BASE64", 1000);
 
 
@@ -78,11 +79,15 @@ void CZViewLog::InitView(int width, int height)
 void CZViewLog::ResetLogList()
 {	
 	m_imgList.DeleteImageList();
+
+	UINT nFlags = ILC_MASK;
+	m_imgList.Create(_NORMALIZE_SIZE, _NORMALIZE_SIZE, nFlags, 0, 0);
+
 	m_List.ResetListCtrl();
 }
 void CZViewLog::AddRecord()
 {
-	m_List.ResetListCtrl();
+//	m_List.ResetListCtrl();
 	m_nRecordNum = 0;
 	int imgId = 0;
 
@@ -100,37 +105,44 @@ void CZViewLog::AddRecord()
 			delete pbmp;
 
 
+			m_List.InsertItem(m_nRecordNum, L"", imgId);
 
-			strItem.Format(L"%d", iter_gr->second.searchId);
-			m_List.InsertItem(m_nRecordNum, strItem, imgId);
+			//strItem.Format(L"%d", iter_gr->second.searchId);
+			//m_List.InsertItem(m_nRecordNum, strItem, imgId);
 
-			strItem.Format(L"%u", iter_gr->second.matche[i].cutId);
-			m_List.SetItem(m_nRecordNum, 1, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
+			m_List.SetItem(m_nRecordNum, 1, LVIF_TEXT, L"-", imgId, 0, 0, NULL);	// CODE //
 
-			strItem.Format(L"%u", iter_gr->second.matche[i].fileId);
+			strItem.Format(L"%u", iter_gr->second.matche[i].searchId);
 			m_List.SetItem(m_nRecordNum, 2, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
 
-			strItem.Format(L"%u", iter_gr->second.matche[i].posId);
+
+			strItem.Format(L"%u", iter_gr->second.matche[i].cutId);
 			m_List.SetItem(m_nRecordNum, 3, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
 
-			strItem.Format(L"%d%u", (int)(iter_gr->second.matche[i].accuracy * 100), iter_gr->second.matche[i].matchId);
+			strItem.Format(L"%u", iter_gr->second.matche[i].fileId);
 			m_List.SetItem(m_nRecordNum, 4, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
 
-			strItem.Format(L"%u", iter_gr->second.matche[i].matchFile);
+			strItem.Format(L"%u", iter_gr->second.matche[i].posId);
 			m_List.SetItem(m_nRecordNum, 5, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
 
-			strItem.Format(L"%u", iter_gr->second.matche[i].matchPos);
+			strItem.Format(L"%d%u", (int)(iter_gr->second.matche[i].accuracy * 100), iter_gr->second.matche[i].matchId);
 			m_List.SetItem(m_nRecordNum, 6, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
 
-			strItem.Format(L"%3.2f", iter_gr->second.matche[i].fTh);
+			strItem.Format(L"%u", iter_gr->second.matche[i].matchFile);
 			m_List.SetItem(m_nRecordNum, 7, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
 
-			strItem.Format(L"%3.2f", iter_gr->second.matche[i].accuracy);
+			strItem.Format(L"%u", iter_gr->second.matche[i].matchPos);
 			m_List.SetItem(m_nRecordNum, 8, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
 
-			m_List.SetItem(m_nRecordNum, 9, LVIF_TEXT, L"-", imgId, 0, 0, NULL);
+			strItem.Format(L"%3.2f", iter_gr->second.matche[i].fTh);
+			m_List.SetItem(m_nRecordNum, 9, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
 
-			m_List.SetItem(m_nRecordNum, 10, LVIF_TEXT, iter_gr->second.matche[i].strBase64, imgId, 0, 0, NULL);
+			strItem.Format(L"%3.2f", iter_gr->second.matche[i].accuracy);
+			m_List.SetItem(m_nRecordNum, 10, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
+
+//			m_List.SetItem(m_nRecordNum, 9, LVIF_TEXT, L"-", imgId, 0, 0, NULL);
+
+			m_List.SetItem(m_nRecordNum, 11, LVIF_TEXT, iter_gr->second.matche[i].strBase64, imgId, 0, 0, NULL);
 
 			m_nRecordNum++;
 			imgId++;

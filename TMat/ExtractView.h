@@ -20,6 +20,7 @@ public:
 	void Render2D();
 	void DrawGuideLines();
 	void DrawExtractions();
+	void DrawExtractionsForPick();
 
 	//===========================//
 	void SetExtractImage(CZPageObject* _pImg, RECT2D cutRect);// { m_pImg = pImg; }
@@ -30,6 +31,7 @@ public:
 	void ChangeYExpand(int _d);// { m_Extractor.ChangeYExpand(_d); }
 
 	void DrawSearchRect();
+	void DrawCNSRect(float r, float g, float b, float a);
 
 	void IDragMap(int x, int y, short sFlag);
 
@@ -40,12 +42,19 @@ public:
 	float MatchingCutImgs(IplImage* pCut, IplImage* dst);
 	void InsertExtrationIntoDB();
 
+	void SetLanguageType(_LANGUAGE_TYPE ltype);
+	void SetVertiCharSpace(int _v);
+	void SetHoriCharSpze(int _h);
+
+
 
 	void GroupingExtractions();
 	void CutNSearchExtractions();
 	GLuint Load4ChannelImage(char* sz);
 	int SelectObject3D(int x, int y, int rect_width, int rect_height, int selmode);
 
+	bool IsSelectedRect(int _id);
+	void SetUserEditMode(bool _bMode) { m_bUserEditMode = _bMode; }
 
 private:
 	POINT3D m_lookAt;
@@ -74,6 +83,11 @@ private:
 	int m_selGuideLineId;
 	bool m_bCameraMove;
 	POINT3D m_startArrowPos;
+	bool m_bUserEditMode;
+
+	std::vector<int> m_idSelectedRect;
+	POINT3D m_PN, m_PO, m_CNSRectStart, m_CNSRectEnd;
+
 
 public:
 	DECLARE_MESSAGE_MAP()
