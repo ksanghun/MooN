@@ -526,21 +526,62 @@ BOOL CDlgExtractTool::PreTranslateMessage(MSG* pMsg)
 	// TODO: Add your specialized code here and/or call the base class
 	if (pMsg->message == WM_KEYDOWN){
 		int nChar = (int)pMsg->wParam;
-		if (nChar == 90){  // Z key
+		if (nChar == 83){  // s key
 			if (m_pExtView){
-				m_pExtView->SetUserEditMode(true);
+				m_pExtView->SetUserEditMode(__EDIT_SELECTION);
+				m_pExtView->SendMessage(WM_SETCURSOR);
 			}
 		}
+
+		else if(nChar == 65){		// A
+			if (m_pExtView){
+				m_pExtView->SetUserEditMode(__EDIT_ADDCHAR);
+				m_pExtView->SendMessage(WM_SETCURSOR);
+			}
+		}
+
+		else if (nChar == 68){		// D
+			if (m_pExtView){
+				m_pExtView->SetUserEditMode(__EDIT_ADDLINE);
+				m_pExtView->SendMessage(WM_SETCURSOR);
+			}
+		}
+
+		else if (nChar == 46){  // delete key
+			if (m_pExtView){
+				m_pExtView->DeleteExtSelections();
+			}
+		}
+
+
+
+
 	}
 
 	if (pMsg->message == WM_KEYUP){
 		int nChar = (int)pMsg->wParam;
-		if (nChar == 90){  // Z key
+		if (nChar == 83){  // s key
 			if (m_pExtView){
-				m_pExtView->SetUserEditMode(false);
+				m_pExtView->SetUserEditMode(__EDIT_NONE);
+				m_pExtView->SendMessage(WM_SETCURSOR);
+			}
+		}
+		else if (nChar == 65){		// A
+			if (m_pExtView){
+				m_pExtView->SetUserEditMode(__EDIT_NONE);
+				m_pExtView->SendMessage(WM_SETCURSOR);
+			}
+		}
+
+		else if (nChar == 68){		// D
+			if (m_pExtView){
+				m_pExtView->SetUserEditMode(__EDIT_NONE);
+				m_pExtView->SendMessage(WM_SETCURSOR);
 			}
 		}
 	}
 
 	return CDialog::PreTranslateMessage(pMsg);
 }
+
+

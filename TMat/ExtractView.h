@@ -6,6 +6,7 @@
 #include "GuideLine.h"
 
 enum _MOVE_TYPE {_CAM_MOVE, _ARROW_MOVE, _OBJ_MOVE };
+enum _USER_EDIT_MODE{ __EDIT_NONE=0, __EDIT_SELECTION, __EDIT_ADDCHAR, __EDIT_ADDLINE};
 
 class CExtractView :
 	public COGLWnd
@@ -21,6 +22,8 @@ public:
 	void DrawGuideLines();
 	void DrawExtractions();
 	void DrawExtractionsForPick();
+	void DrawExtractedLine();
+	void DrawExtractedLineForPick();
 
 	//===========================//
 	void SetExtractImage(CZPageObject* _pImg, RECT2D cutRect);// { m_pImg = pImg; }
@@ -54,8 +57,8 @@ public:
 	int SelectObject3D(int x, int y, int rect_width, int rect_height, int selmode);
 
 	bool IsSelectedRect(int _id);
-	void SetUserEditMode(bool _bMode) { m_bUserEditMode = _bMode; }
-
+	void SetUserEditMode(_USER_EDIT_MODE _bMode) { m_bUserEditMode = _bMode; }
+	void DeleteExtSelections();
 private:
 	POINT3D m_lookAt;
 	unsigned short m_rectWidth, m_rectHeight;
@@ -83,9 +86,8 @@ private:
 	int m_selGuideLineId;
 	bool m_bCameraMove;
 	POINT3D m_startArrowPos;
-	bool m_bUserEditMode;
+	_USER_EDIT_MODE m_bUserEditMode;
 
-	std::vector<int> m_idSelectedRect;
 	POINT3D m_PN, m_PO, m_CNSRectStart, m_CNSRectEnd;
 
 
@@ -96,5 +98,6 @@ public:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 };
 

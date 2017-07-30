@@ -113,6 +113,9 @@ public:
 	float GetfXScale() { return m_fXScale; }
 	float GetfYScale() { return m_fYScale; }
 	
+	float m_fImgCols;
+	float m_fImgRows;
+
 private:
 	CString strPath;
 	CString strPName;
@@ -131,8 +134,7 @@ private:
 	POINT3D m_pos;
 	POINT3D m_targetPos;
 
-	float m_fImgCols;
-	float m_fImgRows;
+	
 
 	POINT3D m_vertex[4];
 	POINT3D m_vertexBg[4];

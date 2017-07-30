@@ -51,6 +51,8 @@ typedef struct _EXTRACT_BOX{
 
 	_EXTRACT_BOX* pNextBox;
 
+	bool IsSelected;
+
 	void init()
 	{
 		refCnt = 0;
@@ -68,6 +70,8 @@ typedef struct _EXTRACT_BOX{
 		detectHeight = 0;
 
 		pNextBox = NULL;
+
+		IsSelected = false;
 	};
 
 	void setExtendBox(int w, int h)
@@ -112,7 +116,7 @@ public:
 
 	void extractWithOCR(cv::Mat image, std::vector<cv::Rect>& boundRect);
 	std::vector<_EXTRACT_BOX>* GetTextBoxes() { return &m_exTextBox; }
-	std::vector<_EXTRACT_BOX>* GetLineBoxes() { return &vecLines; }
+	std::vector<_EXTRACT_BOX>* GetLineBoxes() { return &m_vecLines; }
 
 	
 	void ChangeXExpand(int _d);// { m_xExpand += _d; }
@@ -125,6 +129,15 @@ public:
 	//void InitSelectedRect();
 	//void PushSelectredRect(int id);
 
+	void InitSelectionOfExtractBoxs();
+	void InitSelectionOfExtractLines();
+	void AddSelectionOfExtractBoxs(int _id);
+	void AddSelectionOfExtractLines(int _id);
+	void DelSelectionOfExtractBoxs();
+	void DelSelectionOfExtractLines();
+
+	void AddExtLine(cv::Rect rect);
+	void AddExtBox(cv::Rect rect);
 
 	// Extraction Functions //
 	void CheckAmbiguous();
@@ -148,10 +161,13 @@ public:
 	void SetVertiCharSpace(int _v) { m_vSpace = _v; }
 	void SetHoriCharSpze(int _h) { m_hSpace = _h; }
 
+	void verifyCutSize(cv::Rect& rect, int imgwidth, int imgheight);
+
+
 private:
 //	std::vector<int> m_idSelectedRect;
 	std::vector<_EXTRACT_BOX> m_exTextBox;
-	std::vector<_EXTRACT_BOX> vecLines;
+	std::vector<_EXTRACT_BOX> m_vecLines;
 
 	_LANGUAGE_TYPE m_languageType;
 

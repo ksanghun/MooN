@@ -641,12 +641,12 @@ void CZDataManager::ResetMatchingResult()
 	std::map<unsigned long, MATCHGROUP>::iterator iter_gr = m_matchResGroup.begin();
 
 	for (; iter_gr != m_matchResGroup.end(); iter_gr++){
-		for (int j = 0; j < iter_gr->second.matche.size(); j++){
-			if (iter_gr->second.matche[j].pImgCut != NULL){
-				cvReleaseImage(&iter_gr->second.matche[j].pImgCut);
-				iter_gr->second.matche[j].pImgCut = NULL;
-			}
-		}
+		//for (int j = 0; j < iter_gr->second.matche.size(); j++){
+		//	if (iter_gr->second.matche[j].pImgCut != NULL){
+		//		cvReleaseImage(&iter_gr->second.matche[j].pImgCut);
+		//		iter_gr->second.matche[j].pImgCut = NULL;
+		//	}
+		//}
 		iter_gr->second.matche.clear();
 	}
 

@@ -12,7 +12,7 @@ CExtractView::CExtractView()
 	m_selGuideLineId = -1;
 	m_bCameraMove = true;
 
-	m_bUserEditMode = false;
+	m_bUserEditMode = __EDIT_NONE;
 
 	mtSetPoint3D(&m_PO, 0.0f, 0.0f, 0.0f);
 	mtSetPoint3D(&m_PN, 0.0f, 0.0f, 1.0f);
@@ -24,7 +24,16 @@ CExtractView::CExtractView()
 CExtractView::~CExtractView()
 {
 	m_MatImg.release();
+	m_MatOImg.release();
+	if (m_pImg){
+		delete m_pImg;
+		m_pImg = NULL;
+	}
+	//if (m_pSelectcImg){
+	//	delete m_pSelectcImg;
+	//}
 }
+
 
 
 void CExtractView::InitGLview(int _nWidth, int _nHeight)
@@ -148,40 +157,8 @@ void CExtractView::Render()
 		glBindTexture(GL_TEXTURE_2D, m_eTexId);
 		m_pImg->DrawWithoutTexID(1.0f);
 		glDisable(GL_TEXTURE_2D);
-		
-		glLineWidth(1);
-		glPushMatrix();
-		glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
-		glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
 
-		std::vector<_EXTRACT_BOX>* pLine = m_Extractor.GetLineBoxes ();
-		if (pLine->size() > 0){
-			// Draw detected position //
-			for (int i = 0; i < pLine->size(); i++){	
-				RECT2D rect;
-				rect.set(pLine->at(i).textbox.x, pLine->at(i).textbox.x + pLine->at(i).textbox.width, pLine->at(i).textbox.y, pLine->at(i).textbox.y + pLine->at(i).textbox.height);
-
-				glColor4f(0.0f, 0.0f, 1.0f, 0.2f);
-				glBegin(GL_QUADS);
-				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
-				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
-				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
-				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
-				glEnd();
-
-				glColor4f(0.0f, 0.0f, 1.0f, 0.7f);
-				glBegin(GL_LINE_STRIP);
-				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
-				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
-				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
-				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
-				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
-				glEnd();
-			}				
-		}
-		glPopMatrix();
-
-
+		DrawExtractedLine();
 		DrawExtractions();
 
 		//glLineWidth(2);
@@ -237,6 +214,7 @@ void CExtractView::Render()
 void CExtractView::DrawExtractions()
 {
 	
+	
 	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
 	if (ptexBox->size() > 0){
 		// Draw detected position //
@@ -253,7 +231,7 @@ void CExtractView::DrawExtractions()
 			rect.set((*ptexBox)[i].textbox.x, (*ptexBox)[i].textbox.x + (*ptexBox)[i].textbox.width,
 				(*ptexBox)[i].textbox.y, (*ptexBox)[i].textbox.y + (*ptexBox)[i].textbox.height);
 
-			if (IsSelectedRect(i) == false){
+			if ((*ptexBox)[i].IsSelected==false){
 				glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
 				if ((*ptexBox)[i].pNextBox != NULL)		glColor4f(1.0f, 0.0f, 0.0f, 0.99f);			
 
@@ -268,6 +246,14 @@ void CExtractView::DrawExtractions()
 				glEnd();
 			}
 			else{
+
+				glColor4f(1.0f, 0.0f, 0.0f, 0.2f);
+				glBegin(GL_QUADS);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glEnd();
 
 				glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
 				glLineStipple(2, 0xAAAA);
@@ -319,6 +305,10 @@ void CExtractView::DrawExtractionsForPick()
 			glPopName();
 		}
 		glPopMatrix();
+	}
+
+	else{
+		DrawExtractedLineForPick();
 	}
 }
 
@@ -376,6 +366,7 @@ ON_WM_TIMER()
 ON_WM_MOUSEMOVE()
 ON_WM_LBUTTONDOWN()
 ON_WM_LBUTTONUP()
+ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
 
@@ -495,8 +486,8 @@ void CExtractView::SetExtractImage(CZPageObject* _pImg, RECT2D cutRect)
 		}
 	}
 
-	//m_pImg->m_fImgCols = pCut->width;
-	//m_pImg->m_fImgRows = pCut->height;
+	m_pImg->m_fImgCols = pCut->width;
+	m_pImg->m_fImgRows = pCut->height;
 	
 	m_MatImg.release();
 	m_MatOImg.release();
@@ -511,7 +502,7 @@ void CExtractView::SetExtractImage(CZPageObject* _pImg, RECT2D cutRect)
 	cvReleaseImage(&pCut);
 
 	
-	float fSize = 30.0f*((float)m_MatImg.cols / (float)m_rectWidth);
+	float fSize = 25.0f/m_pImg->GetfXScale();
 
 	m_guideLine[0].Init(0.0f, 1.0f, 0.0f, fSize, 0);
 	m_guideLine[1].Init(0.0f, 1.0f, 0.0f, fSize, 0);
@@ -757,7 +748,12 @@ void CExtractView::DoFineExtractionText(_TEXT_ORDER order)
 		rect.x += m_cutRect.x1;
 		rect.y += m_cutRect.y1;
 
-		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
+
+// Need to Check!!!!!!!!!!!!!!!
+		m_Extractor.verifyCutSize(rect, src->width, src->height);
+//==============================
+		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);		
+
 		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
 		cvCopy(src, pCut);
 
@@ -829,33 +825,35 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 
 
 
+	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
+	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
+	for (int i = 0; i < ptexBox->size(); i++){
 
-	//IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
-	//std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
-	//for (int i = 0; i < ptexBox->size(); i++){
+		if ((*ptexBox)[i].pcutImg != NULL){
+			cvReleaseImage(&(*ptexBox)[i].pcutImg);
+			(*ptexBox)[i].pcutImg = NULL;
+		}
 
-	//	if ((*ptexBox)[i].pcutImg != NULL){
-	//		cvReleaseImage(&(*ptexBox)[i].pcutImg);
-	//		(*ptexBox)[i].pcutImg = NULL;
-	//	}
+		cv::Rect rect = (*ptexBox)[i].textbox;
+		rect.x += m_cutRect.x1;
+		rect.y += m_cutRect.y1;
 
-	//	cv::Rect rect = (*ptexBox)[i].textbox;
-	//	rect.x += m_cutRect.x1;
-	//	rect.y += m_cutRect.y1;
 
-	//	IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
-	//	cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
-	//	cvCopy(src, pCut);
+		// Need to Check!!!!!!!!!!!!!!!
+		m_Extractor.verifyCutSize(rect, src->width, src->height);
+		//==============================
+		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
 
-	//	(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE, _NORMALIZE_SIZE), pCut->depth, pCut->nChannels);
-	//	cvResize(pCut, (*ptexBox)[i].pcutImg);
-	//	cvReleaseImage(&pCut);
+		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
+		cvCopy(src, pCut);
 
-	//	//cvShowImage("Cut", ptexBox[i].pcutImg);
-	//	//break;
-	//}
+		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE, _NORMALIZE_SIZE), pCut->depth, pCut->nChannels);
+		cvResize(pCut, (*ptexBox)[i].pcutImg);
+		cvReleaseImage(&pCut);
 
-	//	CutNSearchExtractions();
+		//cvShowImage("Cut", ptexBox[i].pcutImg);
+		//break;
+	}
 
 
 
@@ -966,7 +964,7 @@ void CExtractView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
 	// TODO: Add your message handler code here and/or call default
-	if (m_bUserEditMode){
+	if (m_bUserEditMode != __EDIT_NONE){
 		if (GetCapture()){
 			m_cameraPri.InsetsectRayToPlane(m_PN, m_PO, point.x, point.y, m_CNSRectEnd);
 			Render();
@@ -1031,7 +1029,7 @@ void CExtractView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	mtSetPoint3D(&m_CNSRectEnd, 0.0f, 0.0f, MAX_CAM_HIGHTLEVEL * 3);
 	m_CNSRectStart = m_CNSRectEnd;
-	if (m_bUserEditMode){		
+	if (m_bUserEditMode != __EDIT_NONE){		
 		m_stratPnt = point;
 		m_cameraPri.InsetsectRayToPlane(m_PN, m_PO, point.x, point.y, m_CNSRectStart);
 		m_CNSRectEnd = m_CNSRectStart;
@@ -1061,10 +1059,9 @@ void CExtractView::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
-	mtSetPoint3D(&m_CNSRectEnd, 0.0f, 0.0f, MAX_CAM_HIGHTLEVEL * 3);
-	m_CNSRectStart = m_CNSRectEnd;
+	
 
-	if (m_bUserEditMode){
+	if (m_bUserEditMode != __EDIT_NONE){
 		int x, y, width, height;
 				
 		width = point.x - m_stratPnt.x;
@@ -1084,7 +1081,37 @@ void CExtractView::OnLButtonUp(UINT nFlags, CPoint point)
 		if (width == 0)	width = 1;
 		if (height == 0)	height = 1;
 
-		SelectObject3D(x,y, width, height,1);
+		if (m_bUserEditMode == __EDIT_SELECTION){
+			m_Extractor.InitSelectionOfExtractBoxs();
+			m_Extractor.InitSelectionOfExtractLines();
+			SelectObject3D(x, y, width, height, 1);
+		}
+
+		else if (m_bUserEditMode == __EDIT_ADDLINE){
+			RECT2D selRect = m_pImg->ConvertVec3DtoImgateCoord(m_CNSRectStart, m_CNSRectEnd);
+
+			cv::Rect rect;
+			rect.x = selRect.x1;
+			rect.y = selRect.y1;
+			rect.width = selRect.width;
+			rect.height = selRect.height;
+
+			m_Extractor.AddExtLine(rect);
+		}
+
+		else if (m_bUserEditMode == __EDIT_ADDCHAR){
+			RECT2D selRect = m_pImg->ConvertVec3DtoImgateCoord(m_CNSRectStart, m_CNSRectEnd);
+
+			cv::Rect rect;
+			rect.x = selRect.x1;
+			rect.y = selRect.y1;
+			rect.width = selRect.width;
+			rect.height = selRect.height;
+
+			m_Extractor.AddExtBox (rect);
+		}
+
+
 		
 	}
 	else{
@@ -1092,6 +1119,10 @@ void CExtractView::OnLButtonUp(UINT nFlags, CPoint point)
 		IDragMap(point.x, point.y, 2);
 		
 	}
+
+
+	mtSetPoint3D(&m_CNSRectEnd, 0.0f, 0.0f, MAX_CAM_HIGHTLEVEL * 3);
+	m_CNSRectStart = m_CNSRectEnd;
 
 	ReleaseCapture();
 	Render();
@@ -1208,7 +1239,6 @@ float CExtractView::MatchingCutImgs(IplImage* pCut, IplImage* dst)
 int CExtractView::SelectObject3D(int x, int y, int rect_width, int rect_height, int selmode)
 {
 	m_selGuideLineId = -1;
-	m_idSelectedRect.clear();
 
 	GLuint selectBuff[1024];
 	memset(&selectBuff, 0, sizeof(GLuint) * 1024);
@@ -1248,7 +1278,7 @@ int CExtractView::SelectObject3D(int x, int y, int rect_width, int rect_height, 
 			m_selGuideLineId = selectBuff[3];
 		}
 	}
-	else if (selmode == 1){
+	else if (selmode == 1){		// Extracted Item selection //
 		DrawExtractionsForPick();
 		hits = glRenderMode(GL_RENDER);
 		if (hits > 0)
@@ -1256,9 +1286,15 @@ int CExtractView::SelectObject3D(int x, int y, int rect_width, int rect_height, 
 			int selid = 0;
 			for (int i = 0; i < hits; i++){
 				selid = (int)selectBuff[i * 4 + 3];
-				if (selid >= 1000){
-					m_idSelectedRect.push_back(selid - 1000);
+
+				if (selid >= 1000){		// Text				
+					m_Extractor.AddSelectionOfExtractBoxs(selid - 1000);
 				}
+
+				if (selid >= 10000){		// Line
+					m_Extractor.AddSelectionOfExtractLines(selid - 10000);
+				}
+
 			}
 		}
 	}
@@ -1287,11 +1323,6 @@ void CExtractView::SetHoriCharSpze(int _h)
 
 bool CExtractView::IsSelectedRect(int _id)
 {
-	for (int i = 0; i < m_idSelectedRect.size(); i++){
-		if (_id == m_idSelectedRect[i]){
-			return true;
-		}
-	}
 	return false;
 }
 
@@ -1310,4 +1341,124 @@ void CExtractView::DrawCNSRect(float r, float g, float b, float a)
 	glEnd();
 	glEnable(GL_DEPTH_TEST);
 	glLineWidth(1);
+}
+
+void CExtractView::DrawExtractedLine()
+{
+
+	glLineWidth(2);
+	glPushMatrix();
+	glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
+	glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
+
+	std::vector<_EXTRACT_BOX>* pLine = m_Extractor.GetLineBoxes();
+	if (pLine->size() > 0){
+		// Draw detected position //
+		for (int i = 0; i < pLine->size(); i++){
+			RECT2D rect;
+			rect.set(pLine->at(i).textbox.x, pLine->at(i).textbox.x + pLine->at(i).textbox.width, pLine->at(i).textbox.y, pLine->at(i).textbox.y + pLine->at(i).textbox.height);
+
+			if ((*pLine)[i].IsSelected == false){
+				glColor4f(0.0f, 0.0f, 1.0f, 0.2f);
+				glBegin(GL_QUADS);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glEnd();
+
+				glColor4f(0.0f, 0.0f, 1.0f, 0.7f);
+				glBegin(GL_LINE_STRIP);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glEnd();
+			}
+			else{
+				glColor4f(1.0f, 0.0f, 0.0f, 0.2f);
+				glBegin(GL_QUADS);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glEnd();
+
+
+				glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
+				glLineStipple(2, 0xAAAA);
+				glEnable(GL_LINE_STIPPLE);
+
+				glBegin(GL_LINE_STRIP);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glEnd();
+
+				glDisable(GL_LINE_STIPPLE);
+			}
+		}
+	}
+	glPopMatrix();
+
+	glLineWidth(1);
+}
+
+
+void CExtractView::DrawExtractedLineForPick()
+{
+
+
+		glPushMatrix();
+		glScalef(m_pImg->GetfXScale(), m_pImg->GetfYScale(), 1.0f);
+		glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
+
+		std::vector<_EXTRACT_BOX>* pLine = m_Extractor.GetLineBoxes();
+		if (pLine->size() > 0){
+			// Draw detected position //
+			for (int i = 0; i < pLine->size(); i++){
+				RECT2D rect;
+				rect.set(pLine->at(i).textbox.x, pLine->at(i).textbox.x + pLine->at(i).textbox.width, pLine->at(i).textbox.y, pLine->at(i).textbox.y + pLine->at(i).textbox.height);
+
+				glPushName(i + 10000);
+				glColor4f(0.0f, 0.0f, 1.0f, 0.2f);
+				glBegin(GL_QUADS);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y2, 0.0f);
+				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
+				glEnd();
+				glPopName();
+			}
+		}
+		glPopMatrix();
+
+}
+
+
+void CExtractView::DeleteExtSelections()
+{
+	m_Extractor.DelSelectionOfExtractLines();
+	m_Extractor.DelSelectionOfExtractBoxs();
+
+	Render();
+}
+
+BOOL CExtractView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	// TODO: Add your message handler code here and/or call default
+	if ((m_bUserEditMode==__EDIT_NONE) || (m_bUserEditMode==__EDIT_SELECTION)){
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+		//	mtSetPoint3D(&m_CNSRectEnd, 0.0f, 0.0f, MAX_CAM_HIGHTLEVEL * 3);
+		//	m_CNSRectStart = m_CNSRectEnd;
+		return TRUE;
+	}
+	else{		
+		SetCursor(LoadCursor(NULL, IDC_CROSS));
+		return TRUE;
+	}
+	return COGLWnd::OnSetCursor(pWnd, nHitTest, message);
 }
