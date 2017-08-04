@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_VIEW_OUTPUTVIEW_MOON, &CMainFrame::OnViewOutputviewMoon)
 	ON_COMMAND(ID_LIST_ADDCOL, &CMainFrame::OnListAddcol)
 	ON_COMMAND(ID_LIST_SAVETOCSV, &CMainFrame::OnListSavetocsv)
+	ON_COMMAND(ID_LIST_SAVETOTEXT, &CMainFrame::OnListSavetotext)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -898,5 +899,14 @@ void CMainFrame::OnListSavetocsv()
 	// TODO: Add your command handler code here
 	if (pView){
 		pView->SaveLogFile();
+	}
+}
+
+
+void CMainFrame::OnListSavetotext()
+{
+	// TODO: Add your command handler code here
+	if (pView){
+		pView->SaveTextFile();
 	}
 }

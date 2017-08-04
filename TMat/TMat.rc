@@ -627,6 +627,8 @@ BEGIN
     BEGIN
         MENUITEM "Add Column",                  ID_LIST_ADDCOL
         MENUITEM "Save to CSV",                 ID_LIST_SAVETOCSV
+        MENUITEM SEPARATOR
+        MENUITEM "Save to Text",                ID_LIST_SAVETOTEXT
     END
 END
 

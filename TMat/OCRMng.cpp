@@ -90,7 +90,10 @@ float COCRMng::extractWithOCR(cv::Mat image, std::vector<_OCR_RES>& boundRect, t
 						res.strCode = tword;
 						boundRect.push_back(res);
 
+						delete [] tword;
 					}
+
+					
 
 			} while (ri->Next(level));
 

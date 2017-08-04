@@ -261,7 +261,7 @@ void CExtractView::DrawExtractions()
 			// Draw Text //
 			glColor4f(0.0f, 0.0f, 1.0f, 0.99f);
 			if ((*ptexBox)[i].textType==1)
-				glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
+				glColor4f(1.0f, 0.0f, 1.0f, 0.99f);
 			mtSetPoint3D(&tPos, (rect.x1 + rect.x2)*0.5f, m_pImg->GetImgHeight() - rect.y1 + 5, 1.0f);
 			gl_DrawText(tPos, (*ptexBox)[i].strCode, m_LogFont, 1, m_pBmpInfo, m_CDCPtr);
 
@@ -685,6 +685,52 @@ void CExtractView::GroupingExtractions()
 
 void CExtractView::CutNSearchExtractions()
 {
+
+	// Make Cut image for List Ctrl ===================================//
+	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
+	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
+	//	ptexBox = m_Extractor.GetTextBoxes();
+	for (int i = 0; i < ptexBox->size(); i++){
+
+		if ((*ptexBox)[i].pcutImg != NULL){
+			cvReleaseImage(&(*ptexBox)[i].pcutImg);
+			(*ptexBox)[i].pcutImg = NULL;
+		}
+
+		cv::Rect rect = (*ptexBox)[i].textbox;
+		rect.x += m_cutRect.x1;
+		rect.y += m_cutRect.y1;
+
+		if ((rect.width < 3) || (rect.height < 3)) continue;
+
+		// Need to Check!!!!!!!!!!!!!!!
+		m_Extractor.verifyCutSize(rect, src->width, src->height);
+		//==============================
+		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
+
+		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
+		cvCopy(src, pCut);
+
+
+		// Normalize //
+		//	cv::Rect nRect = GetNomalizedSize(averArea, (*ptexBox)[i].textbox);
+		cv::Rect nRect = GetNomalizedWordSize((*ptexBox)[i].textbox);
+
+
+		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H), pCut->depth, pCut->nChannels);
+		cvSetImageROI((*ptexBox)[i].pcutImg, nRect);
+		cvResize(pCut, (*ptexBox)[i].pcutImg);
+		cvReleaseImage(&pCut);
+
+		//cvShowImage("Cut", ptexBox[i].pcutImg);
+		//break;
+	}
+
+
+	//===========================================//
+
+
+
 	if (m_pImg){
 		std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
 
@@ -711,7 +757,8 @@ void CExtractView::CutNSearchExtractions()
 				CString strId;
 				strId.Format(L"%u%u", cutInfo.fileid, cutInfo.posid);
 				cutInfo.id = getHashCode((CStringA)strId);
-				cutInfo.th = fTh;
+			//	cutInfo.th = fTh;
+				cutInfo.th = 0;
 
 
 				//		if (i == j) continue;
@@ -1586,7 +1633,7 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_WORD);
 		for (int i = 0; i < boundRect.size(); i++){
 
-			if (boundRect[i].fConfidence > 60){
+			if (boundRect[i].fConfidence > 75){
 				// remove extreacted characters //
 				m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
 				imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
@@ -1606,7 +1653,7 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 		boundRect.clear();
 		fChi = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetChiTess(), tesseract::RIL_SYMBOL);
 		for (int i = 0; i < boundRect.size(); i++){
-			if (boundRect[i].fConfidence > 50){
+			if (boundRect[i].fConfidence > 60){
 
 				m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
 				imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
@@ -1729,43 +1776,43 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 
 	// Make Cut image for List Ctrl ===================================//
 
-	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
-//	ptexBox = m_Extractor.GetTextBoxes();
-	for (int i = 0; i < ptexBox->size(); i++){
-
-		if ((*ptexBox)[i].pcutImg != NULL){
-			cvReleaseImage(&(*ptexBox)[i].pcutImg);
-			(*ptexBox)[i].pcutImg = NULL;
-		}
-		
-		cv::Rect rect = (*ptexBox)[i].textbox;
-		rect.x += m_cutRect.x1;
-		rect.y += m_cutRect.y1;
-
-		if ((rect.width < 3 ) || (rect.height < 3)) continue;
-
-		// Need to Check!!!!!!!!!!!!!!!
-		m_Extractor.verifyCutSize(rect, src->width, src->height);
-		//==============================
-		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
-
-		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
-		cvCopy(src, pCut);
-			
-
-		// Normalize //
-	//	cv::Rect nRect = GetNomalizedSize(averArea, (*ptexBox)[i].textbox);
-		cv::Rect nRect = GetNomalizedWordSize((*ptexBox)[i].textbox);
-
-		
-		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H), pCut->depth, pCut->nChannels);
-		cvSetImageROI((*ptexBox)[i].pcutImg, nRect);
-		cvResize(pCut, (*ptexBox)[i].pcutImg);
-		cvReleaseImage(&pCut);
-
-		//cvShowImage("Cut", ptexBox[i].pcutImg);
-		//break;
-	}
+//	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
+////	ptexBox = m_Extractor.GetTextBoxes();
+//	for (int i = 0; i < ptexBox->size(); i++){
+//
+//		if ((*ptexBox)[i].pcutImg != NULL){
+//			cvReleaseImage(&(*ptexBox)[i].pcutImg);
+//			(*ptexBox)[i].pcutImg = NULL;
+//		}
+//		
+//		cv::Rect rect = (*ptexBox)[i].textbox;
+//		rect.x += m_cutRect.x1;
+//		rect.y += m_cutRect.y1;
+//
+//		if ((rect.width < 3 ) || (rect.height < 3)) continue;
+//
+//		// Need to Check!!!!!!!!!!!!!!!
+//		m_Extractor.verifyCutSize(rect, src->width, src->height);
+//		//==============================
+//		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
+//
+//		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
+//		cvCopy(src, pCut);
+//			
+//
+//		// Normalize //
+//	//	cv::Rect nRect = GetNomalizedSize(averArea, (*ptexBox)[i].textbox);
+//		cv::Rect nRect = GetNomalizedWordSize((*ptexBox)[i].textbox);
+//
+//		
+//		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H), pCut->depth, pCut->nChannels);
+//		cvSetImageROI((*ptexBox)[i].pcutImg, nRect);
+//		cvResize(pCut, (*ptexBox)[i].pcutImg);
+//		cvReleaseImage(&pCut);
+//
+//		//cvShowImage("Cut", ptexBox[i].pcutImg);
+//		//break;
+//	}
 
 
 

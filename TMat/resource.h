@@ -95,7 +95,6 @@
 #define IDC_CHECK_ALPHABET              1019
 #define IDC_CHECK_NON_ALPHABET          1020
 #define IDC_SLIDER_CHAR_SPACE_H         1021
-#define IDC_BN_FINE_EXTRACT2            1022
 #define IDC_BN__EXT_TEXTOCR             1022
 #define ID_FILE_CONFIGURATION           32771
 #define IDR_TOOLBAR_24                  32772
@@ -138,13 +137,14 @@
 #define ID_LIST_ADDCOLUMN32810          32810
 #define ID_LIST_ADDCOL                  32811
 #define ID_LIST_SAVETOCSV               32812
+#define ID_LIST_SAVETOTEXT              32813
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        321
-#define _APS_NEXT_COMMAND_VALUE         32813
+#define _APS_NEXT_COMMAND_VALUE         32814
 #define _APS_NEXT_CONTROL_VALUE         1022
 #define _APS_NEXT_SYMED_VALUE           315
 #endif

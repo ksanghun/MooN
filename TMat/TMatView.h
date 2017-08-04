@@ -42,6 +42,7 @@ public:
 
 	void AddNewColumn();
 	void SaveLogFile();
+	void SaveTextFile();
 
 	void ResetLogList();
 	void DrawGLText(CString str, POINT3D pos);

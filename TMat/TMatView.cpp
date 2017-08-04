@@ -718,6 +718,13 @@ void CTMatView::SaveLogFile()
 	}
 }
 
+void CTMatView::SaveTextFile()
+{
+	if (m_pViewLog){
+		m_pViewLog->SaveEncodingFile();
+	}
+}
+
 void CTMatView::DrawGLText(CString str, POINT3D pos)
 {
 	if (m_pViewImage){

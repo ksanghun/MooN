@@ -48,6 +48,10 @@ typedef struct _MATCHResults
 	unsigned long matchId;
 	unsigned long matchFile;
 	unsigned long matchPos;
+
+	RECT2D rect;
+
+
 	float fTh;
 	float accuracy;
 

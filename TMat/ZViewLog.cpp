@@ -39,6 +39,14 @@ void CZViewLog::InitView(int width, int height)
 	m_List.ShowScrollBar(SB_HORZ);
 	m_List.SetScrollRange(SB_HORZ, 0, 2000);
 
+
+	CFont font;
+	font.CreatePointFont(14, L"Courier New");
+	m_List.SetFont(&font);
+
+
+
+
 	m_List.InitListCtrl();
 	m_List.AddUserColumn(L"CUT", _NORMALIZE_SIZE_W+10);
 	m_List.AddUserColumn(L"CODE", 100);
@@ -52,6 +60,7 @@ void CZViewLog::InitView(int width, int height)
 	m_List.AddUserColumn(L"Threshold", 100);
 	m_List.AddUserColumn(L"Accuracy", 100);	
 	m_List.AddUserColumn(L"BASE64", 1000);
+	m_List.AddUserColumn(L"ID", 0);
 
 
 	//CString strItem[10];
@@ -94,6 +103,8 @@ void CZViewLog::AddRecord()
 	CString strItem;
 	std::map<unsigned long, MATCHGROUP>& matches = SINGLETON_TMat::GetInstance()->GetMatchResults();
 	std::map<unsigned long, MATCHGROUP>::iterator iter_gr = matches.begin();
+
+
 	for (; iter_gr != matches.end(); iter_gr++){
 
 		for (int i = 0; i < iter_gr->second.matche.size(); i++){
@@ -147,11 +158,11 @@ void CZViewLog::AddRecord()
 
 			m_List.SetItem(m_nRecordNum, 11, LVIF_TEXT, iter_gr->second.matche[i].strBase64, imgId, 0, 0, NULL);
 
+			strItem.Format(L"%d", i);
+			m_List.SetItem(m_nRecordNum, 12, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
+
 			m_nRecordNum++;
 			imgId++;
-
-
-
 		}
 	}
 
@@ -230,6 +241,60 @@ void CZViewLog::SaveLogFile()
 
 		int a = 0;
 	}
+}
+
+
+
+
+void CZViewLog::SaveEncodingFile()
+{
+	// Update User input =======//
+	std::map<unsigned long, MATCHGROUP>& matches = SINGLETON_TMat::GetInstance()->GetMatchResults();
+	std::map<unsigned long, MATCHGROUP>::iterator iter_gr = matches.begin();
+
+	CString strItem, strId;
+	for (int i = 0; i < m_List.GetItemCount(); i++){
+		strItem = m_List.GetItemText(i, 1);	// Get Text //
+		strId = m_List.GetItemText(i, 12);	// Get Text //
+		int id = _wtoi(strId);
+		if (id < iter_gr->second.matche.size()){
+			iter_gr->second.matche[id].strCode = strItem;
+		}
+	}
+
+
+	// Sorting by x, y pos //
+
+	FILE* fp = 0;
+	CString strPath = SINGLETON_TMat::GetInstance()->GetLogPath();
+	strPath += L"/encoding.txt";
+
+	fopen_s(&fp, (CStringA)strPath, "w");
+	if (fp){
+
+		wchar_t *wchar_str;
+		char *char_str;
+		int char_str_len;
+
+		for (int i = 0; i < iter_gr->second.matche.size(); i++){
+			CString strCode = iter_gr->second.matche[i].strCode;
+
+			// 1. CString to wchar * conversion
+			wchar_str = strCode.GetBuffer(strCode.GetLength());
+			char_str_len = WideCharToMultiByte(CP_ACP, 0, wchar_str, -1, NULL, 0, NULL, NULL);
+			char_str = new char[char_str_len];
+
+			// 2. wchar_t* to char* conversion
+			WideCharToMultiByte(CP_ACP, 0, wchar_str, -1, char_str, char_str_len, 0, 0);
+
+			int len = strlen(char_str) + 1;
+			fwrite(char_str, len, 1, fp);
+
+			delete[] char_str;
+		}
+		fclose(fp);
+	}
+	::ShellExecute(NULL, L"open", L"notepad", strPath, NULL, SW_SHOW);
 }
 
 

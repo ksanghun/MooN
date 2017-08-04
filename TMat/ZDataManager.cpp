@@ -694,6 +694,8 @@ void CZDataManager::SetMatchingResults(IplImage* pCut)
 			matchRes.matchPos = matchPos;
 			matchRes.accuracy = matches[j].accuracy;
 			matchRes.fTh = matches[j].cInfo.th;
+			matchRes.rect = matches[j].rect;
+
 
 
 			if (pSrc != NULL){
@@ -780,6 +782,7 @@ void CZDataManager::SetMatchingResultsExtraction()
 			matchRes.fTh = matches[j].cInfo.th;
 			matchRes.pImgCut = matches[j].pImg;
 			matchRes.strCode = matches[j].strCode;
+			matchRes.rect = matches[j].rect;
 
 
 			m_matchResGroup[matchRes.searchId].matche.push_back(matchRes);
