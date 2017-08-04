@@ -4,6 +4,8 @@
 #include "Extractor.h"
 #include "ZDataManager.h"
 #include "GuideLine.h"
+#include "OCRMng.h"
+
 
 enum _MOVE_TYPE {_CAM_MOVE, _ARROW_MOVE, _OBJ_MOVE };
 enum _USER_EDIT_MODE{ __EDIT_NONE=0, __EDIT_SELECTION, __EDIT_ADDCHAR, __EDIT_ADDLINE};
@@ -16,6 +18,7 @@ public:
 	~CExtractView();
 
 	void InitGLview(int _nWidth, int _nHeight);
+	void InitCamera();
 	void MouseWheel(short zDelta);
 	void Render();
 	void Render2D();
@@ -39,8 +42,9 @@ public:
 	void IDragMap(int x, int y, short sFlag);
 
 	void DoFineExtractionText(_TEXT_ORDER order);
-	void DoExtractionText(_TEXT_ORDER order);
+	void DoExtractionWord(_TEXT_ORDER order);
 	void DoExtractionLine(_TEXT_ORDER order);
+	void DoExtractionText(_TEXT_ORDER order);
 	
 	float MatchingCutImgs(IplImage* pCut, IplImage* dst);
 	void InsertExtrationIntoDB();
@@ -59,6 +63,7 @@ public:
 	bool IsSelectedRect(int _id);
 	void SetUserEditMode(_USER_EDIT_MODE _bMode) { m_bUserEditMode = _bMode; }
 	void DeleteExtSelections();
+	cv::Rect GetNomalizedSize(int averArea, cv::Rect rect);
 private:
 	POINT3D m_lookAt;
 	unsigned short m_rectWidth, m_rectHeight;
@@ -73,6 +78,9 @@ private:
 
 	cv::Mat m_MatImg;
 	cv::Mat m_MatOImg;
+
+//===OCR Manager=============//
+	COCRMng m_OCRMng;
 
 	CExtractor m_Extractor;
 	CString m_strImgPath;
@@ -90,6 +98,9 @@ private:
 
 	POINT3D m_PN, m_PO, m_CNSRectStart, m_CNSRectEnd;
 
+
+	LOGFONT		m_LogFont;
+	BITMAPINFO* m_pBmpInfo;
 
 public:
 	DECLARE_MESSAGE_MAP()

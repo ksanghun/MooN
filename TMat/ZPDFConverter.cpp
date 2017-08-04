@@ -40,6 +40,7 @@ IplImage* CZPDFConverter::LoadPDF(CString strpath, unsigned short nChannel)
 	//fz_scale(&page_ctm, 1.337f, 1.337f);
 	fz_scale(&page_ctm, 2.5, 2.5);
 	//fz_scale(&page_ctm, 2, 2);
+
 	page = fz_load_page(ctx, doc, currentpage);
 	pix = fz_new_pixmap_from_page_contents(ctx, page, &page_ctm, fz_device_rgb(ctx));
 

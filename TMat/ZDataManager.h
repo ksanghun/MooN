@@ -7,7 +7,12 @@
 
 
 
-#define _NORMALIZE_SIZE 32
+//#define _NORMALIZE_SIZE 32
+
+
+#define _NORMALIZE_SIZE_H 32
+#define _NORMALIZE_SIZE_W 32
+
 #define ANI_FRAME_CNT 10
 
 typedef std::vector<CZPageObject*> _vecPageObj;
@@ -47,6 +52,7 @@ typedef struct _MATCHResults
 	float accuracy;
 
 	CString strBase64;
+	CString strCode;
 
 }_MATCHResults;
 

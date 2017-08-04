@@ -94,8 +94,9 @@
 #define IDC_SLIDER_CHAR_SPACE           1018
 #define IDC_CHECK_ALPHABET              1019
 #define IDC_CHECK_NON_ALPHABET          1020
-#define IDC_SLIDER2                     1021
 #define IDC_SLIDER_CHAR_SPACE_H         1021
+#define IDC_BN_FINE_EXTRACT2            1022
+#define IDC_BN__EXT_TEXTOCR             1022
 #define ID_FILE_CONFIGURATION           32771
 #define IDR_TOOLBAR_24                  32772
 #define ID_BUTTON32773                  32773

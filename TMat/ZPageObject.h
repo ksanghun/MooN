@@ -26,6 +26,7 @@ typedef struct _MATCHInfo
 	COLORf color;
 	RECT2D rect;
 	CString strAccracy;
+	CString strCode;
 
 	unsigned int searchId;
 	float accuracy;

@@ -40,7 +40,7 @@ void CZViewLog::InitView(int width, int height)
 	m_List.SetScrollRange(SB_HORZ, 0, 2000);
 
 	m_List.InitListCtrl();
-	m_List.AddUserColumn(L"CUT", _NORMALIZE_SIZE+5);
+	m_List.AddUserColumn(L"CUT", _NORMALIZE_SIZE_W);
 	m_List.AddUserColumn(L"CODE", 100);
 	m_List.AddUserColumn(L"SEARCH ID", 120);
 	m_List.AddUserColumn(L"CUT ID", 100);
@@ -72,7 +72,7 @@ void CZViewLog::InitView(int width, int height)
 	UINT nFlags = ILC_MASK;
 	nFlags |= (theApp.m_bHiColorIcons) ? ILC_COLOR24 : ILC_COLOR4;
 
-	m_imgList.Create(_NORMALIZE_SIZE, _NORMALIZE_SIZE, nFlags, 0, 0);
+	m_imgList.Create(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H, nFlags, 0, 0);
 	m_List.SetImageList(&m_imgList, LVSIL_SMALL);
 }
 
@@ -81,7 +81,7 @@ void CZViewLog::ResetLogList()
 	m_imgList.DeleteImageList();
 
 	UINT nFlags = ILC_MASK;
-	m_imgList.Create(_NORMALIZE_SIZE, _NORMALIZE_SIZE, nFlags, 0, 0);
+	m_imgList.Create(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H, nFlags, 0, 0);
 
 	m_List.ResetListCtrl();
 }
@@ -97,7 +97,10 @@ void CZViewLog::AddRecord()
 	for (; iter_gr != matches.end(); iter_gr++){
 
 		for (int i = 0; i < iter_gr->second.matche.size(); i++){
-			CBitmap* pbmp = SINGLETON_TMat::GetInstance()->GetLogCBitmap(iter_gr->second.matche[i].pImgCut);;
+			CBitmap* pbmp = SINGLETON_TMat::GetInstance()->GetLogCBitmap(iter_gr->second.matche[i].pImgCut);
+
+			if (pbmp == NULL) continue;
+
 			BITMAP bmpObj;
 			pbmp->GetBitmap(&bmpObj);
 
@@ -110,7 +113,7 @@ void CZViewLog::AddRecord()
 			//strItem.Format(L"%d", iter_gr->second.searchId);
 			//m_List.InsertItem(m_nRecordNum, strItem, imgId);
 
-			m_List.SetItem(m_nRecordNum, 1, LVIF_TEXT, L"-", imgId, 0, 0, NULL);	// CODE //
+			m_List.SetItem(m_nRecordNum, 1, LVIF_TEXT, iter_gr->second.matche[i].strCode, imgId, 0, 0, NULL);	// CODE //
 
 			strItem.Format(L"%u", iter_gr->second.matche[i].searchId);
 			m_List.SetItem(m_nRecordNum, 2, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
@@ -125,7 +128,7 @@ void CZViewLog::AddRecord()
 			strItem.Format(L"%u", iter_gr->second.matche[i].posId);
 			m_List.SetItem(m_nRecordNum, 5, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
 
-			strItem.Format(L"%d%u", (int)(iter_gr->second.matche[i].accuracy * 100), iter_gr->second.matche[i].matchId);
+			strItem.Format(L"%d%u", (int)(iter_gr->second.matche[i].accuracy), iter_gr->second.matche[i].matchId);
 			m_List.SetItem(m_nRecordNum, 6, LVIF_TEXT, strItem, imgId, 0, 0, NULL);
 
 			strItem.Format(L"%u", iter_gr->second.matche[i].matchFile);

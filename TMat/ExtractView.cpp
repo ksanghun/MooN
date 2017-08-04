@@ -5,6 +5,15 @@
 
 CExtractView::CExtractView()
 {
+	memset(&m_LogFont, 0, sizeof(m_LogFont));
+	m_LogFont.lfCharSet = ANSI_CHARSET;
+	m_LogFont.lfHeight = -20;
+	m_LogFont.lfWidth = 0;
+//	m_LogFont.lfWeight = FW_BOLD;
+
+	m_pBmpInfo = (BITMAPINFO *)malloc(sizeof(BITMAPINFOHEADER) + (sizeof(RGBQUAD) * 256));
+
+
 	m_pImg = NULL;
 	m_eTexId = 0;
 	m_MatImg = NULL;
@@ -35,6 +44,13 @@ CExtractView::~CExtractView()
 }
 
 
+void CExtractView::InitCamera()
+{
+	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
+	mtSetPoint3D(&m_lookAt, 0, 0, 0);
+	m_cameraPri.SetInitLevelHeight(5000 * 2);
+	m_cameraPri.InitializeCamera(45.0f, 0, 0, m_lookAt, m_rectWidth, m_rectHeight);
+}
 
 void CExtractView::InitGLview(int _nWidth, int _nHeight)
 {
@@ -42,7 +58,8 @@ void CExtractView::InitGLview(int _nWidth, int _nHeight)
 	m_cameraPri.SetInitLevelHeight(5000 * 2);
 	m_cameraPri.InitializeCamera(45.0f, 0, 0, m_lookAt, _nWidth, _nHeight);
 
-	
+	m_rectWidth = _nWidth;
+	m_rectHeight = _nHeight;
 	
 
 	GLuint tid = Load4ChannelImage("./img/arrow_green.tiff");
@@ -55,6 +72,11 @@ void CExtractView::InitGLview(int _nWidth, int _nHeight)
 	glInitNames();
 
 //	SetTimer(200, 50, NULL);
+
+	if (m_OCRMng.InitOCRMng() == false){
+		TRACE("OCR Error");
+	}
+
 }
 
 
@@ -149,7 +171,8 @@ void CExtractView::Render()
 
 	wglMakeCurrent(m_CDCPtr->GetSafeHdc(), m_hRC);
 
-	glClearColor(0.1f, 0.2f, 0.0f, 1.0f);
+//	glClearColor(0.1f, 0.2f, 0.0f, 1.0f);
+	glClearColor(0.99f, 0.99f, 0.99f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (m_pImg){
@@ -158,8 +181,10 @@ void CExtractView::Render()
 		m_pImg->DrawWithoutTexID(1.0f);
 		glDisable(GL_TEXTURE_2D);
 
-		DrawExtractedLine();
+
 		DrawExtractions();
+		
+		
 
 		//glLineWidth(2);
 		//std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
@@ -214,7 +239,6 @@ void CExtractView::Render()
 void CExtractView::DrawExtractions()
 {
 	
-	
 	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
 	if (ptexBox->size() > 0){
 		// Draw detected position //
@@ -224,18 +248,32 @@ void CExtractView::DrawExtractions()
 		glTranslatef(-m_pImg->GetImgWidth()*0.5f, -m_pImg->GetImgHeight()*0.5f, 0.0f);
 
 		//if (m_bIsNear){		
-		glLineWidth(2);
+		glLineWidth(1);
+		POINT3D tPos;
+		RECT2D rect;
 		for (int i = 0; i < ptexBox->size(); i++){
 
-			RECT2D rect;
+			
 			rect.set((*ptexBox)[i].textbox.x, (*ptexBox)[i].textbox.x + (*ptexBox)[i].textbox.width,
 				(*ptexBox)[i].textbox.y, (*ptexBox)[i].textbox.y + (*ptexBox)[i].textbox.height);
 
+
+			// Draw Text //
+			glColor4f(0.0f, 0.0f, 1.0f, 0.99f);
+			mtSetPoint3D(&tPos, (rect.x1 + rect.x2)*0.5f, m_pImg->GetImgHeight() - rect.y1 + 5, 1.0f);
+			gl_DrawText(tPos, (*ptexBox)[i].strCode, m_LogFont, 1, m_pBmpInfo, m_CDCPtr);
+
+
+
 			if ((*ptexBox)[i].IsSelected==false){
 				glColor4f(0.0f, 1.0f, 0.0f, 0.99f);
-				if ((*ptexBox)[i].pNextBox != NULL)		glColor4f(1.0f, 0.0f, 0.0f, 0.99f);			
+			//	if ((*ptexBox)[i].pNextBox != NULL)		glColor4f(1.0f, 0.0f, 0.0f, 0.99f);			
 
-				if ((*ptexBox)[i].IsBig)				glColor4f(0.0f, 0.0f, 1.0f, 0.99f);				
+				//if ((*ptexBox)[i].IsBig)				glColor4f(0.0f, 0.0f, 1.0f, 0.99f);				
+
+				//if ((*ptexBox)[i].IsAmbig)				glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
+
+				if ((*ptexBox)[i].fConfi < 70)		glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
 
 				glBegin(GL_LINE_STRIP);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
@@ -244,6 +282,9 @@ void CExtractView::DrawExtractions()
 				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glEnd();
+
+				
+				
 			}
 			else{
 
@@ -273,6 +314,10 @@ void CExtractView::DrawExtractions()
 		}
 		glLineWidth(1);
 		glPopMatrix();
+	}
+
+	else{
+		DrawExtractedLine();
 	}
 }
 
@@ -680,7 +725,11 @@ void CExtractView::CutNSearchExtractions()
 					mInfo.pos.x = rect.x + rect.width*0.5f;
 					mInfo.pos.y = rect.y + rect.height*0.5f;
 					mInfo.pos.z = 0;
-					mInfo.accuracy = fD;
+					
+					
+				//	mInfo.accuracy = fD;
+					mInfo.accuracy = (*ptexBox)[j].fConfi;
+					mInfo.strCode = (*ptexBox)[j].strCode;
 					//mInfo.strAccracy.Format(L"%d", (int)(fD * 100));
 
 					mInfo.strAccracy.Format(L"%d", i);
@@ -733,6 +782,8 @@ void CExtractView::DoFineExtractionText(_TEXT_ORDER order)
 	img2.release();
 
 
+	Render();
+	return;
 
 
 	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
@@ -757,13 +808,27 @@ void CExtractView::DoFineExtractionText(_TEXT_ORDER order)
 		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
 		cvCopy(src, pCut);
 
-		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE, _NORMALIZE_SIZE), pCut->depth, pCut->nChannels);
+		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H), pCut->depth, pCut->nChannels);
 		cvResize(pCut, (*ptexBox)[i].pcutImg);
 		cvReleaseImage(&pCut);
 
 		//cvShowImage("Cut", ptexBox[i].pcutImg);
 		//break;
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	//	CutNSearchExtractions();
 
@@ -799,11 +864,13 @@ void CExtractView::DoFineExtractionText(_TEXT_ORDER order)
 
 	Render();
 }
-void CExtractView::DoExtractionText(_TEXT_ORDER order)
+void CExtractView::DoExtractionWord(_TEXT_ORDER order)
 {
 	std::vector<cv::Rect> textbox;
 	cv::Mat img2;
 	m_MatImg.copyTo(img2);
+
+
 
 	//m_Extractor.ShrinkCharacter(img2);
 	//ContractImage(img2);
@@ -823,44 +890,57 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 	}
 	img2.release();
 
+	
+
+	//IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
+	//std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
+	//for (int i = 0; i < ptexBox->size(); i++){
+
+	//	if ((*ptexBox)[i].pcutImg != NULL){
+	//		cvReleaseImage(&(*ptexBox)[i].pcutImg);
+	//		(*ptexBox)[i].pcutImg = NULL;
+	//	}
+
+	//	cv::Rect rect = (*ptexBox)[i].textbox;
+	//	rect.x += m_cutRect.x1;
+	//	rect.y += m_cutRect.y1;
 
 
-	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
-	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
-	for (int i = 0; i < ptexBox->size(); i++){
+	//	// Need to Check!!!!!!!!!!!!!!!
+	//	m_Extractor.verifyCutSize(rect, src->width, src->height);
+	//	//==============================
+	//	IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
 
-		if ((*ptexBox)[i].pcutImg != NULL){
-			cvReleaseImage(&(*ptexBox)[i].pcutImg);
-			(*ptexBox)[i].pcutImg = NULL;
-		}
-
-		cv::Rect rect = (*ptexBox)[i].textbox;
-		rect.x += m_cutRect.x1;
-		rect.y += m_cutRect.y1;
+	//	cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
+	//	cvCopy(src, pCut);
 
 
-		// Need to Check!!!!!!!!!!!!!!!
-		m_Extractor.verifyCutSize(rect, src->width, src->height);
-		//==============================
-		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
 
-		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
-		cvCopy(src, pCut);
+	//	//m_pCropImg = cvCreateImage(cvSize(CANADA_SIZEW, CANADA_SIZEH), m_pSrcImg->depth, m_pSrcImg->nChannels);
+	//	//cvSetImageROI(m_pSrcImg, cvRect(m_rectCrop.x1, m_rectCrop.y1, m_rectCrop.width, m_rectCrop.height));		// posx, posy = left - top
+	//	////	cvCopy(m_pSrcImg, m_pCropImg);
+	//	//cvResize(m_pSrcImg, m_pCropImg);
+	//	//cvResetImageROI(m_pSrcImg);
 
-		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE, _NORMALIZE_SIZE), pCut->depth, pCut->nChannels);
-		cvResize(pCut, (*ptexBox)[i].pcutImg);
-		cvReleaseImage(&pCut);
+	//	float fRatio = (float)(*ptexBox)[i].textbox.width / (float)(*ptexBox)[i].textbox.height;
+	//	if (fRatio > 1.0f)
+	//		fRatio = 1.0f;
 
-		//cvShowImage("Cut", ptexBox[i].pcutImg);
-		//break;
-	}
+	//	(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H), pCut->depth, pCut->nChannels);
+	//	cvSetImageROI((*ptexBox)[i].pcutImg, cvRect(0, 0, _NORMALIZE_SIZE_H*fRatio, _NORMALIZE_SIZE_H));
+	//	cvResize(pCut, (*ptexBox)[i].pcutImg);
+	//	cvReleaseImage(&pCut);
 
+	//	//cvShowImage("Cut", ptexBox[i].pcutImg);
+	//	//break;
+	//}
 
+	
 
 	// 1. Set cutimage from extracted box for Matching between extracted chars //
 	//if (m_pImg){
 	//	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
-	//	std::vector<_EXTRACT_BOX> ptexBox = m_Extractor.GetTextBoxes();
+	//	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
 	//	for (int i = 0; i < ptexBox.size(); i++){
 
 	//		if (ptexBox[i].pcutImg != NULL){
@@ -886,11 +966,9 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 	//}
 
 	Render();
-
-
-
-
 }
+
+
 void CExtractView::DoExtractionLine(_TEXT_ORDER order)
 {
 	std::vector<cv::Rect> textbox;
@@ -1185,53 +1263,53 @@ float CExtractView::MatchingCutImgs(IplImage* pCut, IplImage* dst)
 	float fAccur = 0.0f;
 	bool IsOk = true;
 
-	if ((pCut->width != _NORMALIZE_SIZE) || (pCut->height != _NORMALIZE_SIZE) || (dst->width != _NORMALIZE_SIZE) || (dst->height != _NORMALIZE_SIZE)){
-		IsOk = false;
-	}
+	//if ((pCut->width != _NORMALIZE_SIZE) || (pCut->height != _NORMALIZE_SIZE) || (dst->width != _NORMALIZE_SIZE) || (dst->height != _NORMALIZE_SIZE)){
+	//	IsOk = false;
+	//}
 
 	
-	if (IsOk){
+	//if (IsOk){
+	//	short newWidth = dst->width + _NORMALIZE_SIZE_W;
+	//	short newHeight = dst->height + _NORMALIZE_SIZE_H;
+	//	IplImage* src = cvCreateImage(cvSize(newWidth, newHeight), dst->depth, dst->nChannels);
+	//	cvSet(src, cvScalar(255));
 
+	//	CvRect rect;
+	//	rect.x = newWidth / 2 - dst->width / 2;
+	//	rect.y = newHeight / 2 - dst->height / 2;
+	//	rect.width = dst->width;
+	//	rect.height = dst->height;
 
-		short newWidth = dst->width + _NORMALIZE_SIZE;
-		short newHeight = dst->height + _NORMALIZE_SIZE;
-		IplImage* src = cvCreateImage(cvSize(newWidth, newHeight), dst->depth, dst->nChannels);
-		cvSet(src, cvScalar(255));
-
-		CvRect rect;
-		rect.x = newWidth / 2 - dst->width / 2;
-		rect.y = newHeight / 2 - dst->height / 2;
-		rect.width = dst->width;
-		rect.height = dst->height;
-
-		cvSetImageROI(src, rect);
-		cvResize(dst, src);
-		cvResetImageROI(src);
+	//	cvSetImageROI(src, rect);
+	//	cvResize(dst, src);
+	//	cvResetImageROI(src);
 
 
 
-		IplImage *result_img = 0;
-		result_img = cvCreateImage(cvSize(src->width - pCut->width + 1, src->height - pCut->height + 1), IPL_DEPTH_32F, 1);
-	//	result_img = cvCreateImage(cvSize(1,1), IPL_DEPTH_32F, 1);
-		cvMatchTemplate(src, pCut, result_img, CV_TM_CCOEFF_NORMED);
+	//	IplImage *result_img = 0;
+	//	result_img = cvCreateImage(cvSize(src->width - pCut->width + 1, src->height - pCut->height + 1), IPL_DEPTH_32F, 1);
+	////	result_img = cvCreateImage(cvSize(1,1), IPL_DEPTH_32F, 1);
+	//	cvMatchTemplate(src, pCut, result_img, CV_TM_CCOEFF_NORMED);
 
-		float sTh = 0.0f;
-		float* d = (float*)result_img->imageData;
-		for (int y = 0; y < result_img->height; y++){
-			for (int x = 0; x < result_img->width; x++){
-				float fD = *(d + y*result_img->width + x);
-				if (fD > sTh)	{
-					sTh = fD;
-					fAccur = fD;
-				}
-			}
-		}
+	//	float sTh = 0.0f;
+	//	float* d = (float*)result_img->imageData;
+	//	for (int y = 0; y < result_img->height; y++){
+	//		for (int x = 0; x < result_img->width; x++){
+	//			float fD = *(d + y*result_img->width + x);
+	//			if (fD > sTh)	{
+	//				sTh = fD;
+	//				fAccur = fD;
+	//			}
+	//		}
+	//	}
 
-		cvReleaseImage(&src);
-		cvReleaseImage(&result_img);
-	}
+	//	cvReleaseImage(&src);
+	//	cvReleaseImage(&result_img);
+	//}
 
-	return fAccur;
+
+	return 1.0f;
+//	return fAccur;
 
 }
 
@@ -1359,7 +1437,7 @@ void CExtractView::DrawExtractedLine()
 			rect.set(pLine->at(i).textbox.x, pLine->at(i).textbox.x + pLine->at(i).textbox.width, pLine->at(i).textbox.y, pLine->at(i).textbox.y + pLine->at(i).textbox.height);
 
 			if ((*pLine)[i].IsSelected == false){
-				glColor4f(0.0f, 0.0f, 1.0f, 0.2f);
+				glColor4f(1.0f, 0.5f, 0.0f, 0.2f);
 				glBegin(GL_QUADS);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
@@ -1367,7 +1445,7 @@ void CExtractView::DrawExtractedLine()
 				glVertex3f(rect.x2, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glEnd();
 
-				glColor4f(0.0f, 0.0f, 1.0f, 0.7f);
+				glColor4f(1.0f, 0.5f, 0.0f, 0.9f);
 				glBegin(GL_LINE_STRIP);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y2, 0.0f);
@@ -1461,4 +1539,265 @@ BOOL CExtractView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		return TRUE;
 	}
 	return COGLWnd::OnSetCursor(pWnd, nHitTest, message);
+}
+
+
+
+
+
+void CExtractView::DoExtractionText(_TEXT_ORDER order)
+{
+	cv::Mat img2(m_MatImg.size(), m_MatImg.type());
+	//Apply thresholding
+	cv::threshold(m_MatImg, img2, 200, 255, cv::THRESH_BINARY);
+//	cv::imshow("BeforeBinary1", img2);
+
+
+	int averArea = 0;
+	int areaCnt = 0;
+	float fEng = 0, fChi = 0;
+	
+	std::vector<_OCR_RES> boundRect;
+	std::vector<_EXTRACT_BOX>* vecLine = m_Extractor.GetLineBoxes();
+
+	for (int j = 0; j < vecLine->size(); j++){
+		
+
+		cv::Rect lineRect = (*vecLine)[j].textbox;
+
+		int nWidth = (*vecLine)[j].textbox.width;
+		int nHeight = (*vecLine)[j].textbox.height * 3;
+
+		cv::Rect imgRect;
+		imgRect.x = 0;
+		imgRect.y = (*vecLine)[j].textbox.height;
+		imgRect.width = (*vecLine)[j].textbox.width;
+		imgRect.height = (*vecLine)[j].textbox.height;
+
+
+		cv::Mat imgLine(nHeight, nWidth, img2.type(), cvScalar(255));
+		img2(lineRect).copyTo(imgLine(imgRect));
+
+
+		//1.  English extraction //
+		boundRect.clear();
+		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess());
+		for (int i = 0; i < boundRect.size(); i++){
+
+			if (boundRect[i].fConfidence > 70){
+				// remove extreacted characters //
+			//	m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
+				imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
+
+
+
+				boundRect[i].rect.x += lineRect.x;
+				boundRect[i].rect.y += (lineRect.y - lineRect.height);				
+				m_Extractor.AddExtBox(boundRect[i]);
+				averArea += (boundRect[i].rect.area());
+				areaCnt++;
+			}
+		}
+
+		//	cv::imshow("AfterBinary2", img2);
+		//2. Chinese Charactes ============//
+		boundRect.clear();
+		fChi = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetChiTess());
+		for (int i = 0; i < boundRect.size(); i++){
+			if (boundRect[i].fConfidence > 60){
+
+			//	m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
+				imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
+
+				boundRect[i].rect.x += lineRect.x;
+				boundRect[i].rect.y += (lineRect.y - lineRect.height);
+				m_Extractor.AddExtBox(boundRect[i]);
+				averArea += (boundRect[i].rect.area());
+				areaCnt++;
+			}
+		}
+
+		//	cv::imshow("AfterBinary3", img2);
+		boundRect.clear();
+		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess());
+		for (int i = 0; i < boundRect.size(); i++){
+
+			boundRect[i].rect.x += lineRect.x;
+			boundRect[i].rect.y += (lineRect.y - lineRect.height);
+			m_Extractor.AddExtBox(boundRect[i]);
+			averArea += (boundRect[i].rect.area());
+			areaCnt++;
+		}
+
+
+		imgLine.release();
+	}
+	
+
+
+	/*
+	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
+	std::vector<_OCR_RES> ocrTextBox;
+//	for (int i = 0; i < ptexBox->size(); i++){
+//	for (int i = ptexBox->size()-1 ; i >=0; i--){
+
+//		cv::Rect rect = (*ptexBox)[i].textbox;
+		//rect.x += m_cutRect.x1;
+		//rect.y += m_cutRect.y1;
+		
+		// Need to Check!!!!!!!!!!!!!!!
+		//cv::Mat imgCut;
+
+		//rect.x -= 2;
+		//rect.width += 4;
+		//rect.y -= 4;
+		//rect.height += 4;
+
+
+		//m_Extractor.verifyCutSize(rect, m_MatImg.cols, m_MatImg.rows);
+		//m_MatImg(rect).copyTo(imgCut);
+
+				
+		float fEng = 0, fChi = 0;
+		std::vector<_OCR_RES> boundRectEng;
+		fEng = m_OCRMng.extractWithOCR(img2, boundRectEng, m_OCRMng.GetEngTess());
+		//std::vector<_OCR_RES> boundRectChi;
+		//fChi = m_OCRMng.extractWithOCR(imgCut, boundRectChi, m_OCRMng.GetChiTess());
+
+		bool IsAdd = false;
+		if (fEng > fChi){
+			for (int i = 0; i < boundRectEng.size(); i++){
+
+				//boundRectEng[i].rect.x += rect.x;
+				//boundRectEng[i].rect.y += rect.y;
+
+				ocrTextBox.push_back(boundRectEng[i]);
+				IsAdd = true;
+			}
+		}
+
+		else{
+			//for (int i = 0; i < boundRectChi.size(); i++){
+
+			//	boundRectChi[i].rect.x += rect.x;
+			//	boundRectChi[i].rect.y += rect.y;
+			//	ocrTextBox.push_back(boundRectChi[i]);
+
+			//	IsAdd = true;
+			//}
+		}
+	//	imgCut.release();
+
+
+		//if (IsAdd == false){
+		//	_OCR_RES tmp;
+		//	tmp.rect = (*ptexBox)[i].textbox;
+		//	tmp.fConfidence = 0.0f;
+		//	tmp.strCode = "";
+		//	ocrTextBox.push_back(tmp);
+		//}
+//	}
+*/
+
+
+//	m_Extractor.ClearExtractResult();
+	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
+	if (areaCnt>0){
+		averArea /= areaCnt;
+	}
+
+	// Make Cut image for List Ctrl ===================================//
+
+	IplImage *src = SINGLETON_TMat::GetInstance()->LoadIplImage(m_pImg->GetPath(), 0);
+//	ptexBox = m_Extractor.GetTextBoxes();
+	for (int i = 0; i < ptexBox->size(); i++){
+
+		if ((*ptexBox)[i].pcutImg != NULL){
+			cvReleaseImage(&(*ptexBox)[i].pcutImg);
+			(*ptexBox)[i].pcutImg = NULL;
+		}
+		
+		cv::Rect rect = (*ptexBox)[i].textbox;
+		rect.x += m_cutRect.x1;
+		rect.y += m_cutRect.y1;
+
+		if ((rect.width < 3 ) || (rect.height < 3)) continue;
+
+		// Need to Check!!!!!!!!!!!!!!!
+		m_Extractor.verifyCutSize(rect, src->width, src->height);
+		//==============================
+		IplImage* pCut = cvCreateImage(cvSize(rect.width, rect.height), src->depth, src->nChannels);
+
+		cvSetImageROI(src, cvRect(rect.x, rect.y, rect.width, rect.height));		// posx, posy = left - top
+		cvCopy(src, pCut);
+			
+
+		// Normalize //
+		cv::Rect nRect = GetNomalizedSize(averArea, (*ptexBox)[i].textbox);
+
+		
+		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H), pCut->depth, pCut->nChannels);
+		cvSetImageROI((*ptexBox)[i].pcutImg, nRect);
+		cvResize(pCut, (*ptexBox)[i].pcutImg);
+		cvReleaseImage(&pCut);
+
+		//cvShowImage("Cut", ptexBox[i].pcutImg);
+		//break;
+	}
+
+	Render();
+}
+
+
+cv::Rect CExtractView::GetNomalizedSize(int averArea, cv::Rect rect)
+{
+	cv::Rect norRect;
+
+	float fRatio = (float)rect.width / (float)rect.height;
+	float fArea = (float)rect.width * (float)rect.height;
+
+	if (rect.width > _NORMALIZE_SIZE_W){
+		norRect.width = _NORMALIZE_SIZE_W;
+		norRect.x = 0;
+	}
+	else{
+		if (fArea > averArea*0.2f){
+			if (fRatio > 1.0f){
+				norRect.width = _NORMALIZE_SIZE_W;
+				norRect.x = 0;
+			}
+			else{
+				norRect.width = (float)_NORMALIZE_SIZE_W*fRatio;
+				norRect.x = (_NORMALIZE_SIZE_W - norRect.width) / 2;
+			}
+		}
+		else{
+			norRect.width = _NORMALIZE_SIZE_W/2;
+			norRect.x = (_NORMALIZE_SIZE_W - norRect.width) / 2;
+		}
+	}
+
+
+	if (rect.height > _NORMALIZE_SIZE_H){
+		norRect.height = _NORMALIZE_SIZE_W;
+		norRect.y = 0;
+	}
+	else{
+		if (fArea > averArea*0.2f){
+			if (fRatio < 1.0f){
+				norRect.height = _NORMALIZE_SIZE_H;
+				norRect.y = 0;
+			}
+			else{
+				norRect.height = (float)_NORMALIZE_SIZE_H/fRatio;
+				norRect.y = (_NORMALIZE_SIZE_H - norRect.width) / 2;
+			}
+		}
+		else{
+			norRect.height = _NORMALIZE_SIZE_H / 2;
+			norRect.y = (_NORMALIZE_SIZE_H - norRect.height) / 2;
+		}
+	}
+
+	return norRect;
 }

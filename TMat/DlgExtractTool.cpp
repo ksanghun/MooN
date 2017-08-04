@@ -83,6 +83,7 @@ BEGIN_MESSAGE_MAP(CDlgExtractTool, CDialog)
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_SLIDER_CHAR_SPACE, &CDlgExtractTool::OnNMReleasedcaptureSliderCharSpace)
 	ON_NOTIFY(NM_CUSTOMDRAW, IDC_SLIDER_CHAR_SPACE_H, &CDlgExtractTool::OnNMCustomdrawSliderCharSpaceH)
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_SLIDER_CHAR_SPACE_H, &CDlgExtractTool::OnNMReleasedcaptureSliderCharSpaceH)
+	ON_BN_CLICKED(IDC_BN__EXT_TEXTOCR, &CDlgExtractTool::OnBnClickedBn)
 END_MESSAGE_MAP()
 
 
@@ -145,6 +146,7 @@ void CDlgExtractTool::OnSize(UINT nType, int cx, int cy)
 	// TODO: Add your message handler code here
 	if (m_pExtView){
 
+		m_pExtView->InitCamera();
 		m_pExtView->MoveWindow(0, 0, cx, cy - 100);
 
 	}
@@ -229,6 +231,7 @@ void CDlgExtractTool::OnPaint()
 void CDlgExtractTool::SetExtractImage(CZPageObject* pImg, RECT2D rect)
 {
 	if (m_pExtView){
+		m_pExtView->InitCamera();
 		m_pExtView->SetExtractImage(pImg, rect);
 	}
 }
@@ -432,10 +435,10 @@ void CDlgExtractTool::OnBnClickedBnExtractText()
 	// TODO: Add your control notification handler code here
 	if (m_pExtView){
 		if (m_bVertical){
-			m_pExtView->DoExtractionText(V_ORDER);
+			m_pExtView->DoExtractionWord(V_ORDER);
 		}
 		else{
-			m_pExtView->DoExtractionText(H_ORDER);
+			m_pExtView->DoExtractionWord(H_ORDER);
 		}
 	}
 }
@@ -444,6 +447,9 @@ void CDlgExtractTool::OnBnClickedBnExtractText()
 void CDlgExtractTool::OnBnClickedBnFineExtract()
 {
 	// TODO: Add your control notification handler code here
+
+	return;
+
 	if (m_pExtView){
 		if (m_bVertical){
 			m_pExtView->DoFineExtractionText(V_ORDER);
@@ -585,3 +591,17 @@ BOOL CDlgExtractTool::PreTranslateMessage(MSG* pMsg)
 }
 
 
+
+
+void CDlgExtractTool::OnBnClickedBn()
+{
+	// TODO: Add your control notification handler code here
+	if (m_pExtView){
+		if (m_bVertical){
+			m_pExtView->DoExtractionText(V_ORDER);
+		}
+		else{
+			m_pExtView->DoExtractionText(H_ORDER);
+		}
+	}
+}

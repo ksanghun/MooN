@@ -704,7 +704,7 @@ void CZDataManager::SetMatchingResults(IplImage* pCut)
 								
 
 
-				int w = _NORMALIZE_SIZE, h = _NORMALIZE_SIZE;
+				int w = _NORMALIZE_SIZE_W, h = _NORMALIZE_SIZE_H;
 				//if (matches[j].rect.width > pCut->width * 2.0f){
 				//	w = 128;
 				//}
@@ -779,6 +779,7 @@ void CZDataManager::SetMatchingResultsExtraction()
 			matchRes.accuracy = matches[j].accuracy;
 			matchRes.fTh = matches[j].cInfo.th;
 			matchRes.pImgCut = matches[j].pImg;
+			matchRes.strCode = matches[j].strCode;
 
 
 			m_matchResGroup[matchRes.searchId].matche.push_back(matchRes);

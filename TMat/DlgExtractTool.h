@@ -84,4 +84,5 @@ public:
 	int m_nHoriCharSpace;
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnBnClickedBn();
 };

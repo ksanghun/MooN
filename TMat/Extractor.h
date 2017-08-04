@@ -1,6 +1,7 @@
 #pragma once
 #include "opencv2/opencv.hpp"
 #include "data_type.h"
+#include "OCRMng.h"
 
 // tessract library //
 //#include <baseapi.h>
@@ -31,11 +32,9 @@ typedef struct{
 typedef struct _EXTRACT_BOX{
 	cv::Rect textbox;
 	cv::Rect textboxForCheck;
-//	cv::Rect textboxSmall;
 	IplImage* pcutImg;
 
-	_MOONCircle textSphere;
-
+	float fConfi;
 	int refCnt;
 	bool IsOk;
 	bool IsMerged;
@@ -45,16 +44,16 @@ typedef struct _EXTRACT_BOX{
 	bool IsSmall;
 
 	int lineId;
-//	int detectArea;
 	int detectWidth;
 	int detectHeight;
 
-	_EXTRACT_BOX* pNextBox;
-
+	int nNextId;
 	bool IsSelected;
 
+	CString strCode;
 	void init()
 	{
+		fConfi = 0.0f;
 		refCnt = 0;
 		IsOk = false;
 		IsMerged = false;
@@ -65,20 +64,17 @@ typedef struct _EXTRACT_BOX{
 		
 		pcutImg = NULL;
 		lineId = 0;
-	//	detectArea = 0;
 		detectWidth = 0;
 		detectHeight = 0;
 
-		pNextBox = NULL;
-
+		nNextId = -1;
 		IsSelected = false;
+		strCode = "";
 	};
 
 	void setExtendBox(int w, int h)
 	{
 		textboxForCheck = textbox;
-//		textboxSmall = textbox;
-
 		textboxForCheck.x -= w;
 		if (textboxForCheck.x < 0)	textboxForCheck.x = 0;
 		textboxForCheck.width += w*2;
@@ -86,13 +82,6 @@ typedef struct _EXTRACT_BOX{
 		textboxForCheck.y -= h;
 		if (textboxForCheck.y < 0)	textboxForCheck.y = 0;
 		textboxForCheck.height += h*2;
-
-
-		//textboxSmall.x += 2;
-		//textboxForCheck.width -= w * 2;
-
-		//textboxSmall.y +=2;
-		//textboxForCheck.height -= h * 2;
 	};
 
 }_EXTRACT_BOX;
@@ -103,6 +92,7 @@ public:
 	CExtractor();
 	~CExtractor();
 
+	void ClearExtractResult();
 	void extractContours(cv::Mat img, std::vector<cv::Rect>& boundRect);
 	void DeSkewImg();
 	void detectLetters(cv::Mat& image, std::vector< std::vector<cv::Point> > contours_poly, std::vector<cv::Rect>& boundRect);
@@ -154,6 +144,7 @@ public:
 	void FineExtractTexts(cv::Mat& img, cv::Rect lineBox, std::vector<_EXTRACT_BOX>& vecBox, _TEXT_ORDER _torder, int _w, int _h, int _incre, bool IsContract);
 	bool RcvMeargingBoundingBox(int maxwidth, int maxheight, std::vector<_EXTRACT_BOX>& veclineBox, int& depth, int extX, int extY, _MERGE_TYPE mergeType);
 	bool RcvMeargingBoundingCircle(int minsize, int maxSize, std::vector<_EXTRACT_BOX>& veclineBox, int& depth, int extX, int extY);
+	bool RcvMeargingOverlapBoxs(std::vector<_EXTRACT_BOX>& veclineBox, int& depth);
 	int FindOptimalBox(std::vector<_EXTRACT_BOX>& tmp, int cid, int maxwidth, int maxheight, _EXTRACT_BOX& resBox);
 	int FindOptimalCircle(std::vector<_EXTRACT_BOX>& tmp, int i, int minSize, int maxSize, _EXTRACT_BOX& resBox);
 
@@ -163,6 +154,8 @@ public:
 
 	void verifyCutSize(cv::Rect& rect, int imgwidth, int imgheight);
 
+
+	void AddExtBox(_OCR_RES res);
 
 private:
 //	std::vector<int> m_idSelectedRect;
@@ -189,6 +182,8 @@ private:
 
 	int m_vSpace;
 	int m_hSpace;
+
+	int m_ambArea;
 	
 
 };
