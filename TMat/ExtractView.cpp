@@ -718,6 +718,9 @@ void CExtractView::CutNSearchExtractions()
 
 
 		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H), pCut->depth, pCut->nChannels);
+		cvSet((*ptexBox)[i].pcutImg, cvScalar(255));
+
+
 		cvSetImageROI((*ptexBox)[i].pcutImg, nRect);
 		cvResize(pCut, (*ptexBox)[i].pcutImg);
 		cvReleaseImage(&pCut);

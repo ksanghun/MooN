@@ -308,8 +308,11 @@ void CZViewLog::SaveEncodingFile()
 			{
 				if (vecEncode[j].rect.x1 > vecEncode[j + 1].rect.x1) /* For decreasing order use < */
 				{
-					int my1 = vecEncode[j].rect.y1 + vecEncode[j].rect.height*0.5f;
-					int my2 = vecEncode[j + 1].rect.y1 + vecEncode[j + 1].rect.height*0.5f;
+					//int my1 = vecEncode[j].rect.y1 + vecEncode[j].rect.height*0.5f;
+					//int my2 = vecEncode[j + 1].rect.y1 + vecEncode[j + 1].rect.height*0.5f;
+
+					int my1 = vecEncode[j].rect.y2;
+					int my2 = vecEncode[j + 1].rect.y2;
 
 					if (abs(my1 - my2) < (vecEncode[j].rect.height*0.5)){
 						_EWORDINFO swap = vecEncode[j];
