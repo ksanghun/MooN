@@ -11,7 +11,7 @@
 
 
 #define _NORMALIZE_SIZE_H 32
-#define _NORMALIZE_SIZE_W 32
+#define _NORMALIZE_SIZE_W 32*5
 
 #define ANI_FRAME_CNT 10
 

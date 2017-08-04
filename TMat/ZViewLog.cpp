@@ -40,7 +40,7 @@ void CZViewLog::InitView(int width, int height)
 	m_List.SetScrollRange(SB_HORZ, 0, 2000);
 
 	m_List.InitListCtrl();
-	m_List.AddUserColumn(L"CUT", _NORMALIZE_SIZE_W);
+	m_List.AddUserColumn(L"CUT", _NORMALIZE_SIZE_W+10);
 	m_List.AddUserColumn(L"CODE", 100);
 	m_List.AddUserColumn(L"SEARCH ID", 120);
 	m_List.AddUserColumn(L"CUT ID", 100);

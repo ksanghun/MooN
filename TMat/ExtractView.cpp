@@ -7,7 +7,7 @@ CExtractView::CExtractView()
 {
 	memset(&m_LogFont, 0, sizeof(m_LogFont));
 	m_LogFont.lfCharSet = ANSI_CHARSET;
-	m_LogFont.lfHeight = -20;
+	m_LogFont.lfHeight = -18;
 	m_LogFont.lfWidth = 0;
 //	m_LogFont.lfWeight = FW_BOLD;
 
@@ -260,6 +260,8 @@ void CExtractView::DrawExtractions()
 
 			// Draw Text //
 			glColor4f(0.0f, 0.0f, 1.0f, 0.99f);
+			if ((*ptexBox)[i].textType==1)
+				glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
 			mtSetPoint3D(&tPos, (rect.x1 + rect.x2)*0.5f, m_pImg->GetImgHeight() - rect.y1 + 5, 1.0f);
 			gl_DrawText(tPos, (*ptexBox)[i].strCode, m_LogFont, 1, m_pBmpInfo, m_CDCPtr);
 
@@ -1581,18 +1583,18 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 
 		//1.  English extraction //
 		boundRect.clear();
-		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess());
+		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_WORD);
 		for (int i = 0; i < boundRect.size(); i++){
 
-			if (boundRect[i].fConfidence > 70){
+			if (boundRect[i].fConfidence > 60){
 				// remove extreacted characters //
-			//	m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
+				m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
 				imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
 
 
-
 				boundRect[i].rect.x += lineRect.x;
-				boundRect[i].rect.y += (lineRect.y - lineRect.height);				
+				boundRect[i].rect.y += (lineRect.y - lineRect.height);			
+				boundRect[i].type = 0;
 				m_Extractor.AddExtBox(boundRect[i]);
 				averArea += (boundRect[i].rect.area());
 				areaCnt++;
@@ -1602,15 +1604,16 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 		//	cv::imshow("AfterBinary2", img2);
 		//2. Chinese Charactes ============//
 		boundRect.clear();
-		fChi = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetChiTess());
+		fChi = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetChiTess(), tesseract::RIL_SYMBOL);
 		for (int i = 0; i < boundRect.size(); i++){
-			if (boundRect[i].fConfidence > 60){
+			if (boundRect[i].fConfidence > 50){
 
-			//	m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
+				m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
 				imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
-
 				boundRect[i].rect.x += lineRect.x;
 				boundRect[i].rect.y += (lineRect.y - lineRect.height);
+
+				boundRect[i].type = 1;
 				m_Extractor.AddExtBox(boundRect[i]);
 				averArea += (boundRect[i].rect.area());
 				areaCnt++;
@@ -1618,16 +1621,34 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 		}
 
 		//	cv::imshow("AfterBinary3", img2);
-		boundRect.clear();
-		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess());
-		for (int i = 0; i < boundRect.size(); i++){
+		//boundRect.clear();
+		//fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_SYMBOL);
+		//for (int i = 0; i < boundRect.size(); i++){
 
-			boundRect[i].rect.x += lineRect.x;
-			boundRect[i].rect.y += (lineRect.y - lineRect.height);
-			m_Extractor.AddExtBox(boundRect[i]);
-			averArea += (boundRect[i].rect.area());
-			areaCnt++;
+		//	if (boundRect[i].fConfidence > 60){
+		//		imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
+
+		//		boundRect[i].rect.x += lineRect.x;
+		//		boundRect[i].rect.y += (lineRect.y - lineRect.height);
+		//		m_Extractor.AddExtBox(boundRect[i]);
+		//		averArea += (boundRect[i].rect.area());
+		//		areaCnt++;
+		//	}
+		//}
+
+		// Error tests==========================get word box================================//
+		boundRect.clear();
+		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_WORD);
+		for (int i = 0; i < boundRect.size(); i++){
+				boundRect[i].rect.x += lineRect.x;
+				boundRect[i].rect.y += (lineRect.y - lineRect.height);
+
+				boundRect[i].type = 0;
+				m_Extractor.AddExtBox(boundRect[i]);
+				averArea += (boundRect[i].rect.area());
+				areaCnt++;
 		}
+		//===============================================================================//
 
 
 		imgLine.release();
@@ -1733,7 +1754,8 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 			
 
 		// Normalize //
-		cv::Rect nRect = GetNomalizedSize(averArea, (*ptexBox)[i].textbox);
+	//	cv::Rect nRect = GetNomalizedSize(averArea, (*ptexBox)[i].textbox);
+		cv::Rect nRect = GetNomalizedWordSize((*ptexBox)[i].textbox);
 
 		
 		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H), pCut->depth, pCut->nChannels);
@@ -1745,9 +1767,65 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 		//break;
 	}
 
+
+
+
+
+	// For Test //
+
+
+	//FILE* fp = 0;
+	//fopen_s(&fp, "D:/temp.txt", "w");
+	//if (fp){
+	//	for (int i = 0; i < ptexBox->size(); i++){
+
+	//		wchar_t *wchar_str;
+	//		char *char_str;
+	//		int char_str_len;
+
+	//		// 1. CString to wchar * conversion
+	//		wchar_str = (*ptexBox)[i].strCode.GetBuffer((*ptexBox)[i].strCode.GetLength());
+	//		char_str_len = WideCharToMultiByte(CP_ACP, 0, wchar_str, -1, NULL, 0, NULL, NULL);
+	//		char_str = new char[char_str_len];
+
+	//		// 2. wchar_t* to char* conversion
+	//		WideCharToMultiByte(CP_ACP, 0, wchar_str, -1, char_str, char_str_len, 0, 0);
+
+	//		int len = strlen(char_str) + 1;
+	//		fwrite(char_str, len, 1, fp);
+
+	//		delete[] char_str;
+	//	}
+	//	fclose(fp);
+	//}
+
+	//::ShellExecute(NULL, L"open", L"notepad", L"D:/temp.txt", NULL, SW_SHOW);
+
 	Render();
 }
 
+
+cv::Rect CExtractView::GetNomalizedWordSize(cv::Rect rect)
+{
+	cv::Rect norRect;
+	norRect.x = 0;
+	norRect.y = 0;
+
+	float fScale = (float)_NORMALIZE_SIZE_H / (float)rect.height;
+	norRect.width = rect.width*fScale;
+	norRect.height = rect.width*fScale;
+
+
+	if (rect.width > _NORMALIZE_SIZE_W){
+		norRect.width = _NORMALIZE_SIZE_W;
+	}
+
+	if (rect.height > _NORMALIZE_SIZE_H){
+		norRect.height = _NORMALIZE_SIZE_H;
+	}
+
+	return norRect;
+}
 
 cv::Rect CExtractView::GetNomalizedSize(int averArea, cv::Rect rect)
 {

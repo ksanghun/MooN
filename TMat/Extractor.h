@@ -49,10 +49,12 @@ typedef struct _EXTRACT_BOX{
 
 	int nNextId;
 	bool IsSelected;
+	int textType;
 
 	CString strCode;
 	void init()
 	{
+		textType = 0;
 		fConfi = 0.0f;
 		refCnt = 0;
 		IsOk = false;

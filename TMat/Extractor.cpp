@@ -2426,6 +2426,7 @@ void CExtractor::AddExtBox(_OCR_RES res)
 	tmp.textbox = res.rect;
 	tmp.fConfi = res.fConfidence;
 	tmp.strCode = res.strCode;
+	tmp.textType = res.type;
 
 	m_exTextBox.push_back(tmp);
 }

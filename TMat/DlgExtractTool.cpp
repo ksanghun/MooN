@@ -18,8 +18,8 @@ CDlgExtractTool::CDlgExtractTool(CWnd* pParent /*=NULL*/)
 	, m_textOrder(0)
 	, m_bVertical(FALSE)
 	, m_bHorizontal(FALSE)
-	, m_bAlphabetic(FALSE)
-	, m_bNonAlphabetic(TRUE)
+	, m_bAlphabetic(TRUE)
+	, m_bNonAlphabetic(FALSE)
 	, m_nVertCharSpace(2)
 	, m_nHoriCharSpace(2)
 {
@@ -115,8 +115,8 @@ BOOL CDlgExtractTool::OnInitDialog()
 	m_sliderVertiSpace.SetTicFreq(1);
 
 
-	m_bVertical = true;
-	m_bHorizontal = false;
+	m_bVertical = false;
+	m_bHorizontal = true;
 	UpdateData(FALSE);
 
 

@@ -64,6 +64,7 @@ public:
 	void SetUserEditMode(_USER_EDIT_MODE _bMode) { m_bUserEditMode = _bMode; }
 	void DeleteExtSelections();
 	cv::Rect GetNomalizedSize(int averArea, cv::Rect rect);
+	cv::Rect GetNomalizedWordSize(cv::Rect rect);
 private:
 	POINT3D m_lookAt;
 	unsigned short m_rectWidth, m_rectHeight;
