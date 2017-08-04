@@ -8,7 +8,6 @@
 
 
 // CZViewLog
-
 IMPLEMENT_DYNAMIC(CZViewLog, CWnd)
 
 CZViewLog::CZViewLog()
@@ -265,10 +264,97 @@ void CZViewLog::SaveEncodingFile()
 
 	// Sorting by x, y pos //
 
+	//=For Encoding======================//
+	typedef struct _EWORDINFO{
+		CString str;
+		RECT2D rect;
+	}_EWORDINFO;
+
+	std::vector<_EWORDINFO> vecEncode;
+	for (int i = 0; i < iter_gr->second.matche.size(); i++){
+		_EWORDINFO tmp;
+		tmp.rect = iter_gr->second.matche[i].rect;	
+		tmp.str =  iter_gr->second.matche[i].strCode;
+		vecEncode.push_back(tmp);
+	}
+
+	                                     
+	//std::vector<_ENCODETEXT> encodeWord;
+	////==================================//
+	int minY = 10000, minX = 0;
+	RECT2D r1, r2;
+	int y1, y2, x1, x2;
+
+	int numItem = vecEncode.size();
+	if (numItem > 1){
+
+		for (int i = 0; i < numItem - 1; i++)
+		{
+			for (int j = 0; j < numItem - i - 1; j++)
+			{
+				if (vecEncode[j].rect.y2 > vecEncode[j + 1].rect.y2) /* For decreasing order use < */
+				{
+					_EWORDINFO swap = vecEncode[j];
+					vecEncode[j] = vecEncode[j + 1];
+					vecEncode[j + 1] = swap;
+				}
+			}
+		}
+
+
+		for (int i = 0; i < numItem - 1; i++)
+		{
+			for (int j = 0; j < numItem - i - 1; j++)
+			{
+				if (vecEncode[j].rect.x1 > vecEncode[j + 1].rect.x1) /* For decreasing order use < */
+				{
+					int my1 = vecEncode[j].rect.y1 + vecEncode[j].rect.height*0.5f;
+					int my2 = vecEncode[j + 1].rect.y1 + vecEncode[j + 1].rect.height*0.5f;
+
+					if (abs(my1 - my2) < (vecEncode[j].rect.height*0.5)){
+						_EWORDINFO swap = vecEncode[j];
+						vecEncode[j] = vecEncode[j + 1];
+						vecEncode[j + 1] = swap;
+					}
+				}
+			}
+		}
+
+		
+	}
+
+
+
+
+	//for (int i = 0; i < iter_gr->second.matche.size(); i++){
+	////	CString strCode = iter_gr->second.matche[i].strCode;
+	//	r1 = iter_gr->second.matche[i].rect;
+	//	y1 = r1.y1;
+
+	//	for (int j = 0; j < iter_gr->second.matche.size(); j++){
+	//		if (i == j) continue;
+	//		r2 = iter_gr->second.matche[j].rect;
+	//		y2 = r2.y1;
+
+	//		if (y1 > y2){
+	//			// swap //
+	//			tmp = iter_gr->second.matche[j];
+	//			iter_gr->second.matche[j] = iter_gr->second.matche[i];
+	//			iter_gr->second.matche[i] = tmp;
+	//		}
+	//	}
+	//}
+
+
+
+
+
+
 	FILE* fp = 0;
 	CString strPath = SINGLETON_TMat::GetInstance()->GetLogPath();
 	strPath += L"/encoding.txt";
 
+	
 	fopen_s(&fp, (CStringA)strPath, "w");
 	if (fp){
 
@@ -276,19 +362,38 @@ void CZViewLog::SaveEncodingFile()
 		char *char_str;
 		int char_str_len;
 
-		for (int i = 0; i < iter_gr->second.matche.size(); i++){
-			CString strCode = iter_gr->second.matche[i].strCode;
+		int preYPos = 0, yPos = 0;
+		bool Isfirst = true;
+
+		for (int i = 0; i < vecEncode.size(); i++){
+			
+			yPos = vecEncode[i].rect.y1 + vecEncode[i].rect.height*0.5f;
 
 			// 1. CString to wchar * conversion
-			wchar_str = strCode.GetBuffer(strCode.GetLength());
+			wchar_str = vecEncode[i].str.GetBuffer(vecEncode[i].str.GetLength());
 			char_str_len = WideCharToMultiByte(CP_ACP, 0, wchar_str, -1, NULL, 0, NULL, NULL);
 			char_str = new char[char_str_len];
 
 			// 2. wchar_t* to char* conversion
 			WideCharToMultiByte(CP_ACP, 0, wchar_str, -1, char_str, char_str_len, 0, 0);
 
+			int diff = abs(preYPos - yPos);
+			if (diff > (iter_gr->second.matche[i].rect.height*0.75)){
+				fwrite("\n", 1, 1, fp);
+
+				//if ((diff > (iter_gr->second.matche[i].rect.height * 2)) &&  (Isfirst==false)){
+				//	int space = diff / (iter_gr->second.matche[i].rect.height*2.0f);
+				//	for (int k = 0; k < space; k++){
+				//		fwrite("\n", 1, 1, fp);
+				//	}
+				//}
+				preYPos = yPos;
+				Isfirst = false;
+			}
+
 			int len = strlen(char_str) + 1;
 			fwrite(char_str, len, 1, fp);
+			
 
 			delete[] char_str;
 		}

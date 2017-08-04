@@ -199,15 +199,38 @@ void CZListCtrlLog::OnNMCustomdraw(NMHDR *pNMHDR, LRESULT *pResult)
 		//if (sub)item is of interest, set custom text/background color
 		int itemid = (pNMCD->nmcd).dwItemSpec; //this is item id
 		int sid = _wtoi(GetItemText(itemid, 2));
+		int confi = _wtoi(GetItemText(itemid, 10));
 
-		if (sid % 2 == 0){
+
+		if (confi > 80){
 			pNMCD->clrText = RGB(0, 0, 0);
-			pNMCD->clrTextBk = RGB(210, 210, 210);
+			pNMCD->clrTextBk = RGB(200, 255, 200);
 		}
+		else if ((confi > 70) && (confi <=80))
+		{
+			pNMCD->clrText = RGB(0, 0, 0);
+			pNMCD->clrTextBk = RGB(255, 255, 200);
+		}
+
+		else if ((confi > 60) && (confi <=70))
+		{
+			pNMCD->clrText = RGB(0, 0, 0);
+			pNMCD->clrTextBk = RGB(255, 200, 200);
+		}
+
 		else{
 			pNMCD->clrText = RGB(0, 0, 0);
-			pNMCD->clrTextBk = RGB(250, 250, 250);
+			pNMCD->clrTextBk = RGB(255, 150, 150);
 		}
+
+		//if (sid % 2 == 0){
+		//	pNMCD->clrText = RGB(0, 0, 0);
+		//	pNMCD->clrTextBk = RGB(210, 210, 210);
+		//}
+		//else{
+		//	pNMCD->clrText = RGB(0, 0, 0);
+		//	pNMCD->clrTextBk = RGB(250, 250, 250);
+		//}
 
 
 
