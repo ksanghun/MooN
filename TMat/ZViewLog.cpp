@@ -308,11 +308,11 @@ void CZViewLog::SaveEncodingFile()
 			{
 				if (vecEncode[j].rect.x1 > vecEncode[j + 1].rect.x1) /* For decreasing order use < */
 				{
-					//int my1 = vecEncode[j].rect.y1 + vecEncode[j].rect.height*0.5f;
-					//int my2 = vecEncode[j + 1].rect.y1 + vecEncode[j + 1].rect.height*0.5f;
+					int my1 = vecEncode[j].rect.y1 + vecEncode[j].rect.height*0.5f;
+					int my2 = vecEncode[j + 1].rect.y1 + vecEncode[j + 1].rect.height*0.5f;
 
-					int my1 = vecEncode[j].rect.y2;
-					int my2 = vecEncode[j + 1].rect.y2;
+					//int my1 = vecEncode[j].rect.y2;
+					//int my2 = vecEncode[j + 1].rect.y2;
 
 					if (abs(my1 - my2) < (vecEncode[j].rect.height*0.5)){
 						_EWORDINFO swap = vecEncode[j];
@@ -371,6 +371,7 @@ void CZViewLog::SaveEncodingFile()
 		for (int i = 0; i < vecEncode.size(); i++){
 			
 			yPos = vecEncode[i].rect.y1 + vecEncode[i].rect.height*0.5f;
+		//	yPos = vecEncode[i].rect.y2;
 
 			// 1. CString to wchar * conversion
 			wchar_str = vecEncode[i].str.GetBuffer(vecEncode[i].str.GetLength());
