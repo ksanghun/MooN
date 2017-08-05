@@ -1599,6 +1599,8 @@ BOOL CExtractView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 void CExtractView::DoExtractionText(_TEXT_ORDER order)
 {
+	BeginWaitCursor();
+
 	cv::Mat img2(m_MatImg.size(), m_MatImg.type());
 	//Apply thresholding
 	cv::threshold(m_MatImg, img2, 200, 255, cv::THRESH_BINARY);
@@ -1851,6 +1853,7 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 
 	//::ShellExecute(NULL, L"open", L"notepad", L"D:/temp.txt", NULL, SW_SHOW);
 
+	EndWaitCursor();
 	Render();
 }
 

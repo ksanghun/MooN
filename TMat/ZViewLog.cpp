@@ -273,10 +273,11 @@ void CZViewLog::SaveEncodingFile()
 	std::vector<_EWORDINFO> vecEncode;
 	for (int i = 0; i < iter_gr->second.matche.size(); i++){
 		_EWORDINFO tmp;
-		tmp.rect = iter_gr->second.matche[i].rect;	
-		tmp.str =  iter_gr->second.matche[i].strCode;
+		tmp.rect = iter_gr->second.matche[i].rect;
+		tmp.str = iter_gr->second.matche[i].strCode;	
 		vecEncode.push_back(tmp);
 	}
+
 
 	                                     
 	//std::vector<_ENCODETEXT> encodeWord;
@@ -357,10 +358,21 @@ void CZViewLog::SaveEncodingFile()
 	CString strPath = SINGLETON_TMat::GetInstance()->GetLogPath();
 	strPath += L"/encoding.txt";
 
-	
-	fopen_s(&fp, (CStringA)strPath, "w");
-	if (fp){
 
+//	fopen_s(&fp, (CStringA)strPath, "w");
+//	fp = _wfopen(strPath, L"w");
+	CFile cfile;
+	if (!cfile.Open(strPath, CFile::modeWrite | CFile::modeNoTruncate | CFile::modeCreate))
+	{
+		return;
+	//	return FALSE;
+	}
+
+	USHORT nShort = 0xfeff;  // 유니코드 바이트 오더마크.
+	cfile.Write(&nShort, 2);
+
+//	file.Write(pStrWideChar, nSize * 2);
+	if (vecEncode.size() > 0){
 		wchar_t *wchar_str;
 		char *char_str;
 		int char_str_len;
@@ -368,42 +380,87 @@ void CZViewLog::SaveEncodingFile()
 		int preYPos = 0, yPos = 0;
 		bool Isfirst = true;
 
+		int averHeight = vecEncode[0].rect.height;
 		for (int i = 0; i < vecEncode.size(); i++){
-			
-			yPos = vecEncode[i].rect.y1 + vecEncode[i].rect.height*0.5f;
-		//	yPos = vecEncode[i].rect.y2;
 
-			// 1. CString to wchar * conversion
 			wchar_str = vecEncode[i].str.GetBuffer(vecEncode[i].str.GetLength());
-			char_str_len = WideCharToMultiByte(CP_ACP, 0, wchar_str, -1, NULL, 0, NULL, NULL);
-			char_str = new char[char_str_len];
-
-			// 2. wchar_t* to char* conversion
-			WideCharToMultiByte(CP_ACP, 0, wchar_str, -1, char_str, char_str_len, 0, 0);
+			yPos = vecEncode[i].rect.y1 + vecEncode[i].rect.height*0.5f;
 
 			int diff = abs(preYPos - yPos);
-			if (diff > (iter_gr->second.matche[i].rect.height*0.75)){
-				fwrite("\n", 1, 1, fp);
+			if (diff > averHeight){
 
-				//if ((diff > (iter_gr->second.matche[i].rect.height * 2)) &&  (Isfirst==false)){
-				//	int space = diff / (iter_gr->second.matche[i].rect.height*2.0f);
-				//	for (int k = 0; k < space; k++){
-				//		fwrite("\n", 1, 1, fp);
-				//	}
-				//}
+				cfile.Write(L"\r\n", 4);
+
 				preYPos = yPos;
-				Isfirst = false;
+				averHeight += vecEncode[i].rect.height;
+				averHeight /= 2;
 			}
+			int len = wcslen(wchar_str) * 2;
+			cfile.Write(wchar_str, len);
+			cfile.Write(L" ", 2);
+		}
+	}
+	cfile.Close();
+	::ShellExecute(NULL, L"open", L"notepad", strPath, NULL, SW_SHOW);
 
-			int len = strlen(char_str) + 1;
-			fwrite(char_str, len, 1, fp);
-			
 
-			delete[] char_str;
+
+
+	/*
+	if (fp){
+		wchar_t *wchar_str;
+		char *char_str;
+		int char_str_len;
+
+		int preYPos = 0, yPos = 0;
+		bool Isfirst = true;
+
+		if (vecEncode.size() > 0){
+			int averHeight = vecEncode[0].rect.height;
+			for (int i = 0; i < vecEncode.size(); i++){
+
+				yPos = vecEncode[i].rect.y1 + vecEncode[i].rect.height*0.5f;
+				//	yPos = vecEncode[i].rect.y2;
+
+				// 1. CString to wchar * conversion
+				wchar_str = vecEncode[i].str.GetBuffer(vecEncode[i].str.GetLength());
+				char_str_len = WideCharToMultiByte(CP_ACP, 0, wchar_str, -1, NULL, 0, NULL, NULL);
+				char_str = new char[char_str_len];
+
+				//// 2. wchar_t* to char* conversion
+				WideCharToMultiByte(CP_ACP, 0, wchar_str, -1, char_str, char_str_len, 0, 0);
+
+				int diff = abs(preYPos - yPos);
+				if (diff > averHeight){
+					fwprintf(fp, L"%ls", "\n");
+				//	fwrite("\n", 1, 1, fp);
+
+					//if ((diff > (iter_gr->second.matche[i].rect.height * 2)) &&  (Isfirst==false)){
+					//	int space = diff / (iter_gr->second.matche[i].rect.height*2.0f);
+					//	for (int k = 0; k < space; k++){
+					//		fwrite("\n", 1, 1, fp);
+					//	}
+					//}
+					preYPos = yPos;
+					//Isfirst = false;
+
+					averHeight += vecEncode[i].rect.height;
+					averHeight /= 2;
+
+				}
+
+				//int len = strlen(char_str) + 1;
+				//int len = wcslen(wchar_str) + 1;
+				//fwrite(char_str, len, 1, fp);
+
+				fwprintf(fp, L"%ls", wchar_str);
+				delete[] char_str;
+			}			
 		}
 		fclose(fp);
+		::ShellExecute(NULL, L"open", L"notepad", strPath, NULL, SW_SHOW);
 	}
-	::ShellExecute(NULL, L"open", L"notepad", strPath, NULL, SW_SHOW);
+	*/
 }
 
 
