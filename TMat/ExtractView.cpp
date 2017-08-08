@@ -1819,13 +1819,7 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 //		//break;
 //	}
 
-
-
-
-
 	// For Test //
-
-
 	//FILE* fp = 0;
 	//fopen_s(&fp, "D:/temp.txt", "w");
 	//if (fp){

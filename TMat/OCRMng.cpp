@@ -49,7 +49,7 @@ float COCRMng::extractWithOCR(cv::Mat image, std::vector<_OCR_RES>& boundRect, t
 {	
 	//======================//
 //	float fScale = 96.0f / (float)image.rows;
-	float fScale = 1.5f;
+	float fScale = 1.2f;
 	int nW = image.cols*fScale;
 	int nH = image.rows*fScale;
 	cv::Size size(nW, nH);
@@ -70,7 +70,7 @@ float COCRMng::extractWithOCR(cv::Mat image, std::vector<_OCR_RES>& boundRect, t
 				char* word = ri->GetUTF8Text(level);				
 
 				float conf = ri->Confidence(level);
-			//	if (conf > 94.99f) continue;
+				if (conf > 94.99f) continue;
 					int x1, y1, x2, y2, w, h;
 					ri->BoundingBox(level, &x1, &y1, &x2, &y2);
 					x1 /= fScale;
