@@ -147,7 +147,7 @@ void CDlgExtractTool::OnSize(UINT nType, int cx, int cy)
 	if (m_pExtView){
 
 		m_pExtView->InitCamera();
-		m_pExtView->MoveWindow(0, 0, cx, cy - 100);
+		m_pExtView->MoveWindow(0, 64, cx, cy - 64);
 
 	}
 }

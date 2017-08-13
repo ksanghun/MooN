@@ -96,6 +96,7 @@ public:
 	afx_msg void OnListAddcol();
 	afx_msg void OnListSavetocsv();
 	afx_msg void OnListSavetotext();
+	afx_msg void OnToolsCutarea();
 };
 
 

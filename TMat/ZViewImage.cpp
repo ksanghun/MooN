@@ -25,6 +25,7 @@ CZViewImage::CZViewImage()
 
 	m_pSelectPageForCNS = NULL;
 	m_bIsCutNSearchMode = false;
+	m_stateKeyDown = false;
 	
 	mtSetPoint3D(&m_PO, 0.0f, 0.0f, 0.0f);	
 	mtSetPoint3D(&m_PN, 0.0f, 0.0f, 1.0f);
@@ -34,6 +35,9 @@ CZViewImage::CZViewImage()
 
 	m_IsDBSearch = false;
 	m_selWordId = -1;
+
+
+	
 }
 
 
@@ -384,6 +388,10 @@ void CZViewImage::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 	if (m_bIsCutNSearchMode){
+		if (m_stateKeyDown == false){
+			m_bIsCutNSearchMode = false;
+			SendMessage(WM_SETCURSOR);
+		}
 	}
 	else{
 		m_mouseMode = 0;
@@ -496,9 +504,10 @@ void CZViewImage::OnLButtonDblClk(UINT nFlags, CPoint point)
 }
 
 
-void CZViewImage::EnableCutSearchMode(bool IsEnable) 
+void CZViewImage::EnableCutSearchMode(bool IsEnable, bool bKey) 
 { 
 	m_bIsCutNSearchMode = IsEnable; 
+	m_stateKeyDown = bKey;
 }
 
 BOOL CZViewImage::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)

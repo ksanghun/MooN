@@ -48,6 +48,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_LIST_ADDCOL, &CMainFrame::OnListAddcol)
 	ON_COMMAND(ID_LIST_SAVETOCSV, &CMainFrame::OnListSavetocsv)
 	ON_COMMAND(ID_LIST_SAVETOTEXT, &CMainFrame::OnListSavetotext)
+	ON_COMMAND(ID_TOOLS_CUTAREA, &CMainFrame::OnToolsCutarea)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -789,7 +790,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 		int nChar = (int)pMsg->wParam;
 		if (nChar == 90){  // Ctrl key
 			if (pViewImage){
-				pViewImage->EnableCutSearchMode(true);
+				pViewImage->EnableCutSearchMode(true, true);
 				pViewImage->SendMessage(WM_SETCURSOR);
 			}
 		}
@@ -843,7 +844,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 		int nChar = (int)pMsg->wParam;
 		if (nChar == 90){  // z key
 			if (pViewImage){
-				pViewImage->EnableCutSearchMode(false);
+				pViewImage->EnableCutSearchMode(false, false);
 				pViewImage->SendMessage(WM_SETCURSOR);
 			}
 		}
@@ -908,5 +909,18 @@ void CMainFrame::OnListSavetotext()
 	// TODO: Add your command handler code here
 	if (pView){
 		pView->SaveTextFile();
+	}
+}
+
+
+void CMainFrame::OnToolsCutarea()
+{
+	// TODO: Add your command handler code here
+	if (pView){
+		CZViewImage* pViewImage = pView->GetViewImage();
+		if (pViewImage){
+			pViewImage->EnableCutSearchMode(true, false);
+			pViewImage->SendMessage(WM_SETCURSOR);
+		}
 	}
 }

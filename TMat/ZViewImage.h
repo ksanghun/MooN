@@ -24,7 +24,7 @@ public:
 	void InitCamera(bool movexy=true);
 	void DrawImageByOrderForPicking();
 	int SelectObject3D(int x, int y, int rect_width, int rect_height, int selmode);
-	void EnableCutSearchMode(bool IsEnable);
+	void EnableCutSearchMode(bool IsEnable, bool bKey);
 
 
 	// key event //
@@ -60,6 +60,7 @@ private:
 	CPoint m_stratPnt, m_moveVec;
 
 	bool m_bIsCutNSearchMode;
+	bool m_stateKeyDown;
 
 
 	short m_nAniCnt;
