@@ -705,8 +705,9 @@ void CZDataManager::SetMatchingResults(IplImage* pCut)
 				cvCopy(pSrc, pTmp);
 								
 
+				cv::Rect nRect = GetNomalizedWordSize(matches[j].rect);
 
-				int w = _NORMALIZE_SIZE_W, h = _NORMALIZE_SIZE_H;
+				//int w = _NORMALIZE_SIZE_W, h = _NORMALIZE_SIZE_H;
 				//if (matches[j].rect.width > pCut->width * 2.0f){
 				//	w = 128;
 				//}
@@ -714,9 +715,17 @@ void CZDataManager::SetMatchingResults(IplImage* pCut)
 				//	h = 128;
 				//}
 
-				matchRes.pImgCut = cvCreateImage(cvSize(w, h), pTmp->depth, pTmp->nChannels);
+				//matchRes.pImgCut = cvCreateImage(cvSize(w, h), pTmp->depth, pTmp->nChannels);
+				//cvResize(pTmp, matchRes.pImgCut);
+				//cvReleaseImage(&pTmp);
+
+				matchRes.pImgCut = cvCreateImage(cvSize(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H), pCut->depth, pCut->nChannels);
+				cvSet(matchRes.pImgCut, cvScalar(255, 255, 255));
+
+				cvSetImageROI(matchRes.pImgCut, nRect);
 				cvResize(pTmp, matchRes.pImgCut);
 				cvReleaseImage(&pTmp);
+
 
 
 				//Encode image file to base64 //
@@ -778,7 +787,7 @@ void CZDataManager::SetMatchingResultsExtraction()
 			matchRes.matchId = matchId;
 			matchRes.matchFile = matchFile;
 			matchRes.matchPos = matchPos;
-			matchRes.accuracy = matches[j].accuracy;
+			matchRes.accuracy = matches[j].accuracy*100;
 			matchRes.fTh = matches[j].cInfo.th;
 			matchRes.pImgCut = matches[j].pImg;
 			matchRes.strCode = matches[j].strCode;
@@ -949,4 +958,28 @@ CBitmap* CZDataManager::GetLogCBitmap(IplImage* pImg)
 	else{
 		return NULL;
 	}
+}
+
+
+cv::Rect CZDataManager::GetNomalizedWordSize(RECT2D rect)
+{
+	cv::Rect norRect;
+	norRect.x = 0;
+	norRect.y = 0;
+
+	float fScale = (float)_NORMALIZE_SIZE_H / (float)rect.height;
+	norRect.width = rect.width*fScale;
+	norRect.height = rect.width*fScale;
+
+	int wcnt = norRect.width / _NORMALIZE_SIZE_H;
+	if (wcnt < 1)		wcnt = 1;
+	if (wcnt > 5)		wcnt = 5;
+
+	norRect.width = _NORMALIZE_SIZE_H*wcnt;
+
+	if (rect.height > _NORMALIZE_SIZE_H){
+		norRect.height = _NORMALIZE_SIZE_H;
+	}
+
+	return norRect;
 }

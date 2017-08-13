@@ -718,7 +718,7 @@ void CExtractView::CutNSearchExtractions()
 
 
 		(*ptexBox)[i].pcutImg = cvCreateImage(cvSize(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H), pCut->depth, pCut->nChannels);
-		cvSet((*ptexBox)[i].pcutImg, cvScalar(255));
+		cvSet((*ptexBox)[i].pcutImg, cvScalar(255, 255, 255));
 
 
 		cvSetImageROI((*ptexBox)[i].pcutImg, nRect);
@@ -1862,6 +1862,9 @@ cv::Rect CExtractView::GetNomalizedWordSize(cv::Rect rect)
 	norRect.width = rect.width*fScale;
 	norRect.height = rect.width*fScale;
 
+	if (norRect.width < _NORMALIZE_SIZE_H){
+		norRect.width = _NORMALIZE_SIZE_H;
+	}
 
 	if (rect.width > _NORMALIZE_SIZE_W){
 		norRect.width = _NORMALIZE_SIZE_W;

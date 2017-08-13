@@ -281,7 +281,7 @@ void CZMatching::PrepareCutNSearch(CZPageObject* pSelPage, RECT2D selRect)
 		m_cutInfo.th = m_Threshold;
 
 
-		cvShowImage("Cut Image", m_pCut);
+	//	cvShowImage("Cut Image", m_pCut);
 						
 	}
 
@@ -324,11 +324,12 @@ bool CZMatching::DoSearch(unsigned int& sCnt, unsigned int sId, CUT_INFO info)
 						mInfo.pos.x = x + m_pCut->width*0.5f;
 						mInfo.pos.y = y + m_pCut->height*0.5f;
 						mInfo.pos.z = 0;
-						mInfo.accuracy = fD;
-						mInfo.strAccracy.Format(L"%d", (int)(fD * 100));
+						mInfo.accuracy = fD*100;
+						mInfo.strAccracy.Format(L"%d", (int)(fD));
 						mInfo.rect.set(x, x + m_pCut->width, y, y + m_pCut->height);
 						mInfo.searchId = sId;
 						mInfo.cInfo = info;
+						mInfo.strCode = "-";
 
 						// Fit Area to a character size //
 						//FitCutImageRect(gray, mInfo.rect);

@@ -129,6 +129,7 @@ public:
 	//=================================================================//
 
 	CBitmap* GetLogCBitmap(IplImage* pImg);
+	cv::Rect GetNomalizedWordSize(RECT2D rect);
 
 private:
 
