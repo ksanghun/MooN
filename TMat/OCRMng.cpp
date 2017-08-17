@@ -49,11 +49,13 @@ float COCRMng::extractWithOCR(cv::Mat image, std::vector<_OCR_RES>& boundRect, t
 {	
 	//======================//
 //	float fScale = 96.0f / (float)image.rows;
-	float fScale = 1.2f;
-	int nW = image.cols*fScale;
-	int nH = image.rows*fScale;
-	cv::Size size(nW, nH);
-	cv::resize(image, image, size);
+////	float fScale = 1.2f;
+//	int nW = image.cols*fScale;
+//	int nH = image.rows*fScale;
+//	cv::Size size(nW, nH);
+//	cv::resize(image, image, size);
+
+	float fScale = 1.0f;
 
 	tess.SetImage((uchar*)image.data, image.size().width, image.size().height, image.channels(), image.step1());
 	const char* out = tess.GetUTF8Text();
@@ -71,29 +73,32 @@ float COCRMng::extractWithOCR(cv::Mat image, std::vector<_OCR_RES>& boundRect, t
 
 				float conf = ri->Confidence(level);
 				if (conf > 94.99f) continue;
-					int x1, y1, x2, y2, w, h;
-					ri->BoundingBox(level, &x1, &y1, &x2, &y2);
-					x1 /= fScale;
-					x2 /= fScale;
-					y1 /= fScale;
-					y2 /= fScale;
-
-					w = x2 - x1;
-					h = y2 - y1;
-
-					if ((word) && (w>2) && (h>2)){
-						_OCR_RES res;
-						res.rect = cv::Rect(cv::Point(x1, y1), cv::Point(x2, y2));
 
 
-						res.fConfidence = conf;
-						wchar_t* tword = Utf8ToUnicode(word);
-						res.strCode = tword;
-						boundRect.push_back(res);
+				int x1, y1, x2, y2, w, h;
+				ri->BoundingBox(level, &x1, &y1, &x2, &y2);
+				x1 /= fScale;
+				x2 /= fScale;
+				y1 /= fScale;
+				y2 /= fScale;
 
-						delete [] tword;
-					}
+				w = x2 - x1;
+				h = y2 - y1;
 
+				if ((word) && (w > 2) && (h > 2)){
+					_OCR_RES res;
+					res.rect = cv::Rect(cv::Point(x1, y1), cv::Point(x2, y2));
+
+
+					res.fConfidence = conf*0.01f;
+					wchar_t* tword = Utf8ToUnicode(word);
+					res.strCode = tword;
+					boundRect.push_back(res);
+
+					delete[] tword;
+				}
+
+				averConf += conf;
 					
 
 			} while (ri->Next(level));

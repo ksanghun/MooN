@@ -636,12 +636,15 @@ void CTMatView::OnTimer(UINT_PTR nIDEvent)
 
 
 
-			
+			pM->AddOutputString(L"Set Matching Results", false);
 			SINGLETON_TMat::GetInstance()->SetMatchingResults(m_pMatchingProcessor.GetCutImg());
+			pM->AddOutputString(L"Sorting Results", false);
 			SINGLETON_TMat::GetInstance()->SortMatchingResults();
 
 			if (m_pViewLog){
+				pM->AddOutputString(L"Start adding results into log list", false);
 				m_pViewLog->AddRecord();
+				pM->AddOutputString(L"End adding results into log list", false);
 			}
 
 			m_searchId++;

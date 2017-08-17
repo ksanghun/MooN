@@ -450,8 +450,8 @@ bool CMainFrame::checkCurrTime()
 
 
 	WORD eYear = 2017;
-	WORD eMonth = 8;
-	WORD eDay = 22;
+	WORD eMonth = 9;
+	WORD eDay = 30;
 
 	SYSTEMTIME st;
 	GetSystemTime(&st);
@@ -482,10 +482,10 @@ bool CMainFrame::Authorization()
 	//	return false;
 	//}
 
-	//if (checkCurrTime() == false){
-		//AfxMessageBox(L"Authentication has expired");
-		//return false;
-	//}
+	if (checkCurrTime() == false){
+		AfxMessageBox(L"Authentication has expired");
+		return false;
+	}
 	return true;
 }
 
@@ -537,16 +537,17 @@ void CMainFrame::InitConfituration()
 		{
 			m_strSrcPath = dlg.GetSrcPath();
 
+			// For MS //
 			// Save Config //
-			fopen_s(&fp, (CStringA)strFle, "wb");
-			SYSTEMTIME st;
-			GetSystemTime(&st);
-			if (fp){
-				sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
-				fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
-				fwrite(srcPath, pathSize, 1, fp);
-				fclose(fp);
-			}
+			//fopen_s(&fp, (CStringA)strFle, "wb");
+			//SYSTEMTIME st;
+			//GetSystemTime(&st);
+			//if (fp){
+			//	sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
+			//	fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
+			//	fwrite(srcPath, pathSize, 1, fp);
+			//	fclose(fp);
+			//}
 		}
 	}
 
@@ -589,8 +590,9 @@ void CMainFrame::GetImgFilePath(CString strPath)
 void CMainFrame::OnFileConfiguration()
 {
 	// TODO: Add your command handler code here
-	CDlgConfig dlg(NULL, m_strSrcPath, m_strLogPath);
+	// For MS
 
+	CDlgConfig dlg(NULL, m_strSrcPath, m_strLogPath);
 
 	CString sPath;
 	GetModuleFileName(nullptr, sPath.GetBuffer(_MAX_PATH + 1), _MAX_PATH);
@@ -604,17 +606,18 @@ void CMainFrame::OnFileConfiguration()
 
 		const int pathSize = 256;
 		char srcPath[pathSize];
-		// Save Config //
-		FILE* fp = 0;
-		fopen_s(&fp, (CStringA)strFle, "wb");
-		SYSTEMTIME st;
-		GetSystemTime(&st);
-		if (fp){
-			sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
-			fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
-			fwrite(srcPath, pathSize, 1, fp);
-			fclose(fp);
-		}
+		// Save Config // 
+		// For MS //
+		//FILE* fp = 0;
+		//fopen_s(&fp, (CStringA)strFle, "wb");
+		//SYSTEMTIME st;
+		//GetSystemTime(&st);
+		//if (fp){
+		//	sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
+		//	fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
+		//	fwrite(srcPath, pathSize, 1, fp);
+		//	fclose(fp);
+		//}
 
 		m_wndFileView.FillFileView(m_strSrcPath);
 		GetImgFilePath(m_strSrcPath);
@@ -712,6 +715,7 @@ void CMainFrame::OnProjectClearresult()
 void CMainFrame::OnProjectConfiguration()
 {
 	// TODO: Add your command handler code here
+	
 	CDlgConfig dlg(NULL, m_strSrcPath, m_strLogPath);
 
 
@@ -728,16 +732,17 @@ void CMainFrame::OnProjectConfiguration()
 		const int pathSize = 256;
 		char srcPath[pathSize];
 		// Save Config //
-		FILE* fp = 0;
-		fopen_s(&fp, (CStringA)strFle, "wb");
-		SYSTEMTIME st;
-		GetSystemTime(&st);
-		if (fp){
-			sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
-			fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
-			fwrite(srcPath, pathSize, 1, fp);
-			fclose(fp);
-		}
+		// for MS
+		//FILE* fp = 0;
+		//fopen_s(&fp, (CStringA)strFle, "wb");
+		//SYSTEMTIME st;
+		//GetSystemTime(&st);
+		//if (fp){
+		//	sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
+		//	fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
+		//	fwrite(srcPath, pathSize, 1, fp);
+		//	fclose(fp);
+		//}
 
 		m_wndFileView.FillFileView(m_strSrcPath);
 		GetImgFilePath(m_strSrcPath);

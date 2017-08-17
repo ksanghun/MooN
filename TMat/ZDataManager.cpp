@@ -113,28 +113,28 @@ CZDataManager::~CZDataManager()
 
 	// Write Log Data //
 	if (m_IsLogUpdate){
-		FILE* fp;
-		CString strFile;
-		strFile.Format(L"%s/log.info", m_strLogPath);
-		fopen_s(&fp, (CStringA)strFile, "wb");
-		if (fp){
-			fwrite(&m_wordId, sizeof(int), 1, fp);
-		}
-		fclose(fp);
+		//FILE* fp;
+		//CString strFile;
+		//strFile.Format(L"%s/log.info", m_strLogPath);
+		//fopen_s(&fp, (CStringA)strFile, "wb");
+		//if (fp){
+		//	fwrite(&m_wordId, sizeof(int), 1, fp);
+		//}
+		//fclose(fp);
 
-		// Write Word index info //
-		strFile.Format(L"%s/log.db", m_strLogPath);
-		fopen_s(&fp, (CStringA)strFile, "wb");
-		if (fp){
-			std::map<unsigned long, WORD_RECORD>::iterator iter = m_mapLogWord.begin();
-			for (; iter != m_mapLogWord.end(); iter++){
-				for (int i = 0; i < iter->second.posList.size(); i++){
-					WORD_POS wItem = iter->second.posList[i];
-					fwrite(&wItem, sizeof(WORD_POS), 1, fp);
-				}
-			}
-		}
-		fclose(fp);
+		//// Write Word index info //
+		//strFile.Format(L"%s/log.db", m_strLogPath);
+		//fopen_s(&fp, (CStringA)strFile, "wb");
+		//if (fp){
+		//	std::map<unsigned long, WORD_RECORD>::iterator iter = m_mapLogWord.begin();
+		//	for (; iter != m_mapLogWord.end(); iter++){
+		//		for (int i = 0; i < iter->second.posList.size(); i++){
+		//			WORD_POS wItem = iter->second.posList[i];
+		//			fwrite(&wItem, sizeof(WORD_POS), 1, fp);
+		//		}
+		//	}
+		//}
+		//fclose(fp);
 	}
 
 	ResetMatchingResult();
@@ -641,12 +641,11 @@ void CZDataManager::ResetMatchingResult()
 	std::map<unsigned long, MATCHGROUP>::iterator iter_gr = m_matchResGroup.begin();
 
 	for (; iter_gr != m_matchResGroup.end(); iter_gr++){
-		//for (int j = 0; j < iter_gr->second.matche.size(); j++){
-		//	if (iter_gr->second.matche[j].pImgCut != NULL){
-		//		cvReleaseImage(&iter_gr->second.matche[j].pImgCut);
-		//		iter_gr->second.matche[j].pImgCut = NULL;
-		//	}
-		//}
+		for (int j = 0; j < iter_gr->second.matche.size(); j++){
+			if (iter_gr->second.matche[j].pImgCut != NULL){
+				cvReleaseImage(&iter_gr->second.matche[j].pImgCut);
+			}
+		}
 		iter_gr->second.matche.clear();
 	}
 
@@ -669,6 +668,7 @@ void CZDataManager::SetMatchingResults(IplImage* pCut)
 		USES_CONVERSION;
 		char* sz = T2A(strpath);
 		IplImage *pSrc = SINGLETON_TMat::GetInstance()->LoadIplImage(strpath, 1);
+
 
 		std::vector<_MATCHInfo>& matches = pImgVec[i]->GetMatchResult();
 		for (int j = 0; j < matches.size(); j++){
@@ -695,6 +695,7 @@ void CZDataManager::SetMatchingResults(IplImage* pCut)
 			matchRes.accuracy = matches[j].accuracy;
 			matchRes.fTh = matches[j].cInfo.th;
 			matchRes.rect = matches[j].rect;
+			matchRes.pImgCut = NULL;
 
 
 
@@ -703,43 +704,38 @@ void CZDataManager::SetMatchingResults(IplImage* pCut)
 				IplImage* pTmp = cvCreateImage(cvSize(matches[j].rect.width, matches[j].rect.height), pSrc->depth, pSrc->nChannels);
 				cvSetImageROI(pSrc, cvRect(matches[j].rect.x1, matches[j].rect.y1, matches[j].rect.width, matches[j].rect.height));		// posx, posy = left - top
 				cvCopy(pSrc, pTmp);
-								
 
 				cv::Rect nRect = GetNomalizedWordSize(matches[j].rect);
-
-				//int w = _NORMALIZE_SIZE_W, h = _NORMALIZE_SIZE_H;
-				//if (matches[j].rect.width > pCut->width * 2.0f){
-				//	w = 128;
-				//}
-				//if (matches[j].rect.height > pCut->height * 2.0f){
-				//	h = 128;
-				//}
-
-				//matchRes.pImgCut = cvCreateImage(cvSize(w, h), pTmp->depth, pTmp->nChannels);
-				//cvResize(pTmp, matchRes.pImgCut);
-				//cvReleaseImage(&pTmp);
 
 				matchRes.pImgCut = cvCreateImage(cvSize(_NORMALIZE_SIZE_W, _NORMALIZE_SIZE_H), pCut->depth, pCut->nChannels);
 				cvSet(matchRes.pImgCut, cvScalar(255, 255, 255));
 
 				cvSetImageROI(matchRes.pImgCut, nRect);
 				cvResize(pTmp, matchRes.pImgCut);
+
+				//cvReleaseImage(&matchRes.pImgCut);
 				cvReleaseImage(&pTmp);
+				
 
 
-
-				//Encode image file to base64 //
+				////Encode image file to base64 //
 				cv::Mat m = cv::cvarrToMat(matchRes.pImgCut);
 				std::vector<uchar> data_encode;
 				imencode(".bmp", m, data_encode);
 				matchRes.strBase64 = SINGLETON_TMat::GetInstance()->base64_encode((unsigned char*)&data_encode[0], data_encode.size());
 				data_encode.clear();
-				//===========================================//
+				m.release();
+				////===========================================//
+				//
 
-				// Save Cut Image //
-				CString strName;
-				strName.Format(L"%s/%d_%u.bmp", m_strLogPath, (int)(matchRes.accuracy*100), matchId);
-				cvSaveImage((CStringA)strName, matchRes.pImgCut);
+				//
+
+				//// Save Cut Image //
+				//CString strName;
+				//strName.Format(L"%s/%d_%u.bmp", m_strLogPath, (int)(matchRes.accuracy*100), matchId);
+				//cvSaveImage((CStringA)strName, matchRes.pImgCut);	
+
+
 			}
 
 			m_matchResGroup[matchRes.searchId].matche.push_back(matchRes);
@@ -748,8 +744,12 @@ void CZDataManager::SetMatchingResults(IplImage* pCut)
 			matches[j].IsAdded = true;
 			IsAdded = true;
 
+
+			cvReleaseImage(&pSrc);
 		}
 	}
+
+	
 }
 
 void CZDataManager::SetMatchingResultsExtraction()
@@ -794,12 +794,33 @@ void CZDataManager::SetMatchingResultsExtraction()
 			matchRes.rect = matches[j].rect;
 
 
+
+				////Encode image file to base64 //
+				cv::Mat m = cv::cvarrToMat(matchRes.pImgCut);
+				std::vector<uchar> data_encode;
+				imencode(".bmp", m, data_encode);
+				matchRes.strBase64 = SINGLETON_TMat::GetInstance()->base64_encode((unsigned char*)&data_encode[0], data_encode.size());
+				data_encode.clear();
+				m.release();
+				////===========================================//
+				//
+				//
+
+				//// Save Cut Image //
+				//CString strName;
+				//strName.Format(L"%s/%d_%u.bmp", m_strLogPath, (int)(matchRes.accuracy*100), matchId);
+				//cvSaveImage((CStringA)strName, matchRes.pImgCut);	
+
+
+
+
+
+
 			m_matchResGroup[matchRes.searchId].matche.push_back(matchRes);
 			m_matchResGroup[matchRes.searchId].searchId = matchRes.searchId;
 
 			matches[j].IsAdded = true;
 			IsAdded = true;
-
 		}
 	}
 }
@@ -912,6 +933,7 @@ CBitmap* CZDataManager::GetLogCBitmap(IplImage* pImg)
 		BYTE* pBmpBits = (BYTE *)malloc(sizeof(BYTE)*nWidth*nHeight * 4);
 
 
+
 		// IplImage에 저장된 값을 직접 읽어서 
 		// 비트맵 데이터를 만듬 
 		for (h = 0; h < nHeight; ++h)
@@ -952,6 +974,9 @@ CBitmap* CZDataManager::GetLogCBitmap(IplImage* pImg)
 		memDC.SelectObject(pOldBmp);
 		memDC.DeleteDC();
 		dc.DeleteDC();
+
+		free(pBmpBits);
+	
 
 		return bmp;
 	}

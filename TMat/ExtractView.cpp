@@ -275,7 +275,7 @@ void CExtractView::DrawExtractions()
 
 				//if ((*ptexBox)[i].IsAmbig)				glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
 
-				if ((*ptexBox)[i].fConfi < 70)		glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
+				if ((*ptexBox)[i].fConfi < 0.70f)		glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
 
 				glBegin(GL_LINE_STRIP);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
@@ -1597,13 +1597,13 @@ BOOL CExtractView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 
 
-void CExtractView::DoExtractionText(_TEXT_ORDER order)
+void CExtractView::DoExtractionTextFromLines(_TEXT_ORDER order)
 {
 	BeginWaitCursor();
 
 	cv::Mat img2(m_MatImg.size(), m_MatImg.type());
 	//Apply thresholding
-	cv::threshold(m_MatImg, img2, 200, 255, cv::THRESH_BINARY);
+	cv::threshold(m_MatImg, img2, 150, 255, cv::THRESH_BINARY);
 //	cv::imshow("BeforeBinary1", img2);
 
 
@@ -1635,10 +1635,10 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 
 		//1.  English extraction //
 		boundRect.clear();
-		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_WORD);
+		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_SYMBOL);
 		for (int i = 0; i < boundRect.size(); i++){
 
-			if (boundRect[i].fConfidence > 75){
+			if (boundRect[i].fConfidence > 0.70){
 				// remove extreacted characters //
 				m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
 				imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
@@ -1658,10 +1658,11 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 		boundRect.clear();
 		fChi = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetChiTess(), tesseract::RIL_SYMBOL);
 		for (int i = 0; i < boundRect.size(); i++){
-			if (boundRect[i].fConfidence > 60){
+			if (boundRect[i].fConfidence > 0.70){
 
 				m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
 				imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
+
 				boundRect[i].rect.x += lineRect.x;
 				boundRect[i].rect.y += (lineRect.y - lineRect.height);
 
@@ -1689,17 +1690,17 @@ void CExtractView::DoExtractionText(_TEXT_ORDER order)
 		//}
 
 		// Error tests==========================get word box================================//
-		boundRect.clear();
-		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_WORD);
-		for (int i = 0; i < boundRect.size(); i++){
-				boundRect[i].rect.x += lineRect.x;
-				boundRect[i].rect.y += (lineRect.y - lineRect.height);
+		//boundRect.clear();
+		//fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_SYMBOL);
+		//for (int i = 0; i < boundRect.size(); i++){
+		//		boundRect[i].rect.x += lineRect.x;
+		//		boundRect[i].rect.y += (lineRect.y - lineRect.height);
 
-				boundRect[i].type = 0;
-				m_Extractor.AddExtBox(boundRect[i]);
-				averArea += (boundRect[i].rect.area());
-				areaCnt++;
-		}
+		//		boundRect[i].type = 0;
+		//		m_Extractor.AddExtBox(boundRect[i]);
+		//		averArea += (boundRect[i].rect.area());
+		//		areaCnt++;
+		//}
 		//===============================================================================//
 
 
@@ -1928,4 +1929,93 @@ cv::Rect CExtractView::GetNomalizedSize(int averArea, cv::Rect rect)
 	}
 
 	return norRect;
+}
+
+
+
+void CExtractView::DoExtractionTextFromTexts(_TEXT_ORDER order)
+{
+	BeginWaitCursor();
+
+	cv::Mat img2(m_MatImg.size(), m_MatImg.type());
+	//Apply thresholding
+	cv::threshold(m_MatImg, img2, 200, 255, cv::THRESH_BINARY);
+	//	cv::imshow("BeforeBinary1", img2);
+
+
+	int averArea = 0;
+	int areaCnt = 0;
+	float fEng = 0, fChi = 0;
+
+	std::vector<_OCR_RES> boundRectEng;
+	std::vector<_OCR_RES> boundRectChi;
+//	std::vector<_EXTRACT_BOX> pTextBox = (*m_Extractor.GetTextBoxes());
+//	(*m_Extractor.GetTextBoxes()) = std::vector<_EXTRACT_BOX>();
+	std::vector<_EXTRACT_BOX> pTextBox = (*m_Extractor.GetLineBoxes());
+	
+
+	for (int j = 0; j < pTextBox.size(); j++){
+
+		cv::Rect lineRect = pTextBox[j].textbox;
+
+		//float fAratio = (float)(pTextBox)[j].textbox.width / (float)(pTextBox)[j].textbox.height;
+		//float fScale = 32.0f / (float)(pTextBox)[j].textbox.height;
+
+
+
+		int nWidth = (pTextBox)[j].textbox.width;
+		int nHeight = (pTextBox)[j].textbox.height*3;
+
+		cv::Rect imgRect;
+		imgRect.x = 0;
+		imgRect.y = (pTextBox)[j].textbox.height;
+		imgRect.width = (pTextBox)[j].textbox.width;
+		imgRect.height = (pTextBox)[j].textbox.height;
+
+
+		cv::Mat imgLine(nHeight, nWidth, img2.type(), cvScalar(255));
+		img2(lineRect).copyTo(imgLine(imgRect));
+
+		//cv::imshow("Cut Text", imgLine);
+		//break;
+
+		//1.  English extraction //
+		boundRectEng.clear();
+		boundRectChi.clear();
+		fEng = m_OCRMng.extractWithOCR(imgLine, boundRectEng, m_OCRMng.GetEngTess(), tesseract::RIL_SYMBOL);
+		fChi = m_OCRMng.extractWithOCR(imgLine, boundRectChi, m_OCRMng.GetChiTess(), tesseract::RIL_SYMBOL);
+		
+
+		for (int i = 0; i < boundRectEng.size(); i++){
+			if (boundRectEng[i].fConfidence > boundRectChi[i].fConfidence){
+				boundRectEng[i].rect.x += lineRect.x;
+				boundRectEng[i].rect.y += (lineRect.y - lineRect.height);
+				boundRectEng[i].type = 0;
+				m_Extractor.AddExtBox(boundRectEng[i]);
+				averArea += (boundRectEng[i].rect.area());
+				areaCnt++;
+			}
+			else{
+				boundRectChi[i].rect.x += lineRect.x;
+				boundRectChi[i].rect.y += (lineRect.y - lineRect.height);
+				boundRectEng[i].type = 0;
+				m_Extractor.AddExtBox(boundRectChi[i]);
+				averArea += (boundRectChi[i].rect.area());
+				areaCnt++;
+			}
+		}
+
+
+		imgLine.release();
+	}
+
+
+	//	m_Extractor.ClearExtractResult();
+	std::vector<_EXTRACT_BOX>* ptexBox = m_Extractor.GetTextBoxes();
+	if (areaCnt>0){
+		averArea /= areaCnt;
+	}
+
+	EndWaitCursor();
+	Render();
 }

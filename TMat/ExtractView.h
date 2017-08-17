@@ -44,7 +44,8 @@ public:
 	void DoFineExtractionText(_TEXT_ORDER order);
 	void DoExtractionWord(_TEXT_ORDER order);
 	void DoExtractionLine(_TEXT_ORDER order);
-	void DoExtractionText(_TEXT_ORDER order);
+	void DoExtractionTextFromLines(_TEXT_ORDER order);
+	void DoExtractionTextFromTexts(_TEXT_ORDER order);
 	
 	float MatchingCutImgs(IplImage* pCut, IplImage* dst);
 	void InsertExtrationIntoDB();
