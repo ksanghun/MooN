@@ -539,15 +539,15 @@ void CMainFrame::InitConfituration()
 
 			// For MS //
 			// Save Config //
-			//fopen_s(&fp, (CStringA)strFle, "wb");
-			//SYSTEMTIME st;
-			//GetSystemTime(&st);
-			//if (fp){
-			//	sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
-			//	fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
-			//	fwrite(srcPath, pathSize, 1, fp);
-			//	fclose(fp);
-			//}
+			fopen_s(&fp, (CStringA)strFle, "wb");
+			SYSTEMTIME st;
+			GetSystemTime(&st);
+			if (fp){
+				sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
+				fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
+				fwrite(srcPath, pathSize, 1, fp);
+				fclose(fp);
+			}
 		}
 	}
 
@@ -608,16 +608,16 @@ void CMainFrame::OnFileConfiguration()
 		char srcPath[pathSize];
 		// Save Config // 
 		// For MS //
-		//FILE* fp = 0;
-		//fopen_s(&fp, (CStringA)strFle, "wb");
-		//SYSTEMTIME st;
-		//GetSystemTime(&st);
-		//if (fp){
-		//	sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
-		//	fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
-		//	fwrite(srcPath, pathSize, 1, fp);
-		//	fclose(fp);
-		//}
+		FILE* fp = 0;
+		fopen_s(&fp, (CStringA)strFle, "wb");
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		if (fp){
+			sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
+			fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
+			fwrite(srcPath, pathSize, 1, fp);
+			fclose(fp);
+		}
 
 		m_wndFileView.FillFileView(m_strSrcPath);
 		GetImgFilePath(m_strSrcPath);
@@ -733,16 +733,16 @@ void CMainFrame::OnProjectConfiguration()
 		char srcPath[pathSize];
 		// Save Config //
 		// for MS
-		//FILE* fp = 0;
-		//fopen_s(&fp, (CStringA)strFle, "wb");
-		//SYSTEMTIME st;
-		//GetSystemTime(&st);
-		//if (fp){
-		//	sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
-		//	fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
-		//	fwrite(srcPath, pathSize, 1, fp);
-		//	fclose(fp);
-		//}
+		FILE* fp = 0;
+		fopen_s(&fp, (CStringA)strFle, "wb");
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		if (fp){
+			sprintf_s(srcPath, sizeof(srcPath), (CStringA)m_strSrcPath, fp);
+			fwrite(&st, sizeof(SYSTEMTIME), 1, fp);
+			fwrite(srcPath, pathSize, 1, fp);
+			fclose(fp);
+		}
 
 		m_wndFileView.FillFileView(m_strSrcPath);
 		GetImgFilePath(m_strSrcPath);

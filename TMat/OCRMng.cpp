@@ -58,6 +58,8 @@ float COCRMng::extractWithOCR(cv::Mat image, std::vector<_OCR_RES>& boundRect, t
 	float fScale = 1.0f;
 
 	tess.SetImage((uchar*)image.data, image.size().width, image.size().height, image.channels(), image.step1());
+	tess.Recognize(0);
+
 	const char* out = tess.GetUTF8Text();
 
 	//tesseract::PageIteratorLevel level;
@@ -104,6 +106,9 @@ float COCRMng::extractWithOCR(cv::Mat image, std::vector<_OCR_RES>& boundRect, t
 			} while (ri->Next(level));
 
 	}
+
+	tess.Clear();
+
 
 	if (cnt > 0)
 		averConf /= cnt;
