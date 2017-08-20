@@ -108,6 +108,9 @@ void CZViewLog::AddRecord()
 
 		for (int i = 0; i < iter_gr->second.matche.size(); i++){
 			CBitmap* pbmp = SINGLETON_TMat::GetInstance()->GetLogCBitmap(iter_gr->second.matche[i].pImgCut);
+			//cvReleaseImage(&iter_gr->second.matche[i].pImgCut);
+			//iter_gr->second.matche[i].pImgCut = NULL;
+
 
 			if (pbmp == NULL) continue;
 
@@ -197,6 +200,8 @@ void CZViewLog::AddNewColumn()
 
 void CZViewLog::SaveLogFile()
 {
+	// For MS
+	/*
 	CFileDialog dlg(FALSE, L"*.csv", NULL, OFN_FILEMUSTEXIST | OFN_OVERWRITEPROMPT, L"CSV Files(*.csv)|*.csv|");
 	if (dlg.DoModal() == IDOK)
 	{
@@ -237,9 +242,8 @@ void CZViewLog::SaveLogFile()
 
 			fclose(fp);
 		}
-
-		int a = 0;
 	}
+	*/
 }
 
 

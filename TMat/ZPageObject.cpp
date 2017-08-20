@@ -756,6 +756,7 @@ bool CZPageObject::LoadThumbImage(unsigned short resolution)
 
 	IplImage*timg = cvCreateImage(cvSize(resolution, resolution), src->depth, src->nChannels);
 	cvResize(src, timg);
+	cvReleaseImage(&src);
 //	cv::resize(src, src, cv::Size(resolution, resolution), 0, 0, CV_INTER_LINEAR);		// Memory Leak!!!!!!
 
 	// glupload Image - Thumnail image=======================================================//
@@ -783,7 +784,7 @@ bool CZPageObject::LoadThumbImage(unsigned short resolution)
 
 
 //	src.release();
-	cvReleaseImage(&src);
+	
 	cvReleaseImage(&timg);
 	return true;
 

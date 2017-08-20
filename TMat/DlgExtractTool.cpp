@@ -447,9 +447,6 @@ void CDlgExtractTool::OnBnClickedBnExtractText()
 void CDlgExtractTool::OnBnClickedBnFineExtract()
 {
 	// TODO: Add your control notification handler code here
-
-	return;
-
 	if (m_pExtView){
 		if (m_bVertical){
 			m_pExtView->DoFineExtractionText(V_ORDER);
@@ -598,10 +595,12 @@ void CDlgExtractTool::OnBnClickedBn()
 	// TODO: Add your control notification handler code here
 	if (m_pExtView){
 		if (m_bVertical){
-			m_pExtView->DoExtractionText(V_ORDER);
+			m_pExtView->DoExtractionTextFromLines(V_ORDER);
+		//	m_pExtView->DoExtractionTextFromTexts(V_ORDER);
 		}
 		else{
-			m_pExtView->DoExtractionText(H_ORDER);
+			m_pExtView->DoExtractionTextFromLines(H_ORDER);
+		//	m_pExtView->DoExtractionTextFromTexts(H_ORDER);
 		}
 	}
 }
