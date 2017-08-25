@@ -506,11 +506,11 @@ void CMainFrame::InitConfituration()
 	if (PathFileExists(strfolder) == 0){
 		CreateDirectory(strfolder, NULL);
 	}
-	CString strLog = path + "\\logdata";
-	if (PathFileExists(strLog) == 0){
-		CreateDirectory(strLog, NULL);
-	}
-	SINGLETON_TMat::GetInstance()->SetLogPath(strLog);
+	//CString strLog = path + "\\logdata";
+	//if (PathFileExists(strLog) == 0){
+	//	CreateDirectory(strLog, NULL);
+	//}
+	//SINGLETON_TMat::GetInstance()->SetLogPath(strLog);
 	////======================================//
 
 
@@ -550,6 +550,16 @@ void CMainFrame::InitConfituration()
 			}
 		}
 	}
+
+
+
+	CString strLog = m_strLogPath + "\\logdata";
+	if (PathFileExists(strLog) == 0){
+		CreateDirectory(strLog, NULL);
+	}
+	SINGLETON_TMat::GetInstance()->SetLogPath(strLog);
+
+
 
 	m_wndFileView.FillFileView(m_strSrcPath);
 	GetImgFilePath(m_strSrcPath);

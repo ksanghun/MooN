@@ -807,9 +807,9 @@ void CZDataManager::SetMatchingResultsExtraction()
 				//
 
 				//// Save Cut Image //
-				//CString strName;
-				//strName.Format(L"%s/%d_%u.bmp", m_strLogPath, (int)(matchRes.accuracy*100), matchId);
-				//cvSaveImage((CStringA)strName, matchRes.pImgCut);	
+				CString strName;
+				strName.Format(L"%s/%d_%u.bmp", m_strLogPath, (int)(matchRes.accuracy*100), matchId);
+				cvSaveImage((CStringA)strName, matchRes.pImgCut);	
 
 
 
@@ -994,11 +994,16 @@ cv::Rect CZDataManager::GetNomalizedWordSize(RECT2D rect)
 
 	float fScale = (float)_NORMALIZE_SIZE_H / (float)rect.height;
 	norRect.width = rect.width*fScale;
-	norRect.height = rect.width*fScale;
+	norRect.height = rect.height*fScale;
 
 	int wcnt = norRect.width / _NORMALIZE_SIZE_H;
-	if (wcnt < 1)		wcnt = 1;
-	if (wcnt > 5)		wcnt = 5;
+	if (wcnt < 1){
+		wcnt = 1;
+	}
+
+	if (wcnt > 10){ 
+		wcnt = 10; 
+	}
 
 	norRect.width = _NORMALIZE_SIZE_H*wcnt;
 

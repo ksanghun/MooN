@@ -26,7 +26,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Static</UseOfMfc>
@@ -54,14 +54,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;tesseract-include\tesseract;tesseract-include\leptonica</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;tesseract-include;tesseract-include\leptonica</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>lib;lib/mupdf;tesseract-include</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libglfw.lib;libmupdf.lib;libfonts.lib;libthirdparty.lib;comctl32.lib;vfw32.lib;IlmImfd.lib;ippicvmt.lib;libjasper.lib;libjpeg.lib;libpng.lib;libtiff.lib;libwebp.lib;opencv_calib3d300d.lib;opencv_core300d.lib;opencv_features2d300d.lib;opencv_hal300d.lib;opencv_highgui300d.lib;opencv_imgcodecs300d.lib;opencv_imgproc300d.lib;zlib.lib;liblept168.lib;libtesseract302.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>lib;lib/mupdf;tesseract-lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libglfw.lib;libmupdf.lib;libfonts.lib;libthirdparty.lib;comctl32.lib;vfw32.lib;IlmImfd.lib;ippicvmt.lib;libjasper.lib;libjpeg.lib;libpng.lib;libtiff.lib;libwebp.lib;opencv_calib3d300d.lib;opencv_core300d.lib;opencv_features2d300d.lib;opencv_hal300d.lib;opencv_highgui300d.lib;opencv_imgcodecs300d.lib;opencv_imgproc300d.lib;zlib.lib;liblept171d.lib;libtesseract304d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
     </Link>
     <Midl>

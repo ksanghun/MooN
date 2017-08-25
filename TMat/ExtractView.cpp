@@ -512,7 +512,6 @@ void CExtractView::SetExtractImage(CZPageObject* _pImg, RECT2D cutRect)
 	}
 	else{
 		pimg = cvLoadImage(sz);
-
 		pCut = cvCreateImage(cvSize(cutRect.width, cutRect.height), pimg->depth, pimg->nChannels);
 		cvSetImageROI(pimg, cvRect(cutRect.x1, cutRect.y1, cutRect.width, cutRect.height));		// posx, posy = left - top
 		cvCopy(pimg, pCut);
@@ -1603,8 +1602,12 @@ void CExtractView::DoExtractionTextFromLines(_TEXT_ORDER order)
 
 	cv::Mat img2(m_MatImg.size(), m_MatImg.type());
 	//Apply thresholding
-	cv::threshold(m_MatImg, img2, 150, 255, cv::THRESH_BINARY);
-//	cv::imshow("BeforeBinary1", img2);
+	cv::threshold(m_MatImg, img2, 200, 255, cv::THRESH_BINARY);
+
+	cv::Mat img3;
+	img2.copyTo(img3);
+	cv::imshow("BeforeBinary1", img3);
+
 
 
 	int averArea = 0;
@@ -1638,11 +1641,11 @@ void CExtractView::DoExtractionTextFromLines(_TEXT_ORDER order)
 		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_SYMBOL);
 		for (int i = 0; i < boundRect.size(); i++){
 
-			if (boundRect[i].fConfidence > 0.70){
+			if (boundRect[i].fConfidence > 0.85){
 				// remove extreacted characters //
-				m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
-				imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
-
+				//m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
+				//imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
+				
 
 				boundRect[i].rect.x += lineRect.x;
 				boundRect[i].rect.y += (lineRect.y - lineRect.height);			
@@ -1650,18 +1653,23 @@ void CExtractView::DoExtractionTextFromLines(_TEXT_ORDER order)
 				m_Extractor.AddExtBox(boundRect[i]);
 				averArea += (boundRect[i].rect.area());
 				areaCnt++;
+
+				m_Extractor.verifyCutSize(boundRect[i].rect, img3.cols, img3.rows);
+				img3(boundRect[i].rect).setTo(cv::Scalar(255));
 			}
 		}
 
-		//	cv::imshow("AfterBinary2", img2);
+		img3(lineRect).copyTo(imgLine(imgRect));
+
+		cv::imshow("AfterBinary2", img3);
 		//2. Chinese Charactes ============//
 		boundRect.clear();
 		fChi = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetChiTess(), tesseract::RIL_SYMBOL);
 		for (int i = 0; i < boundRect.size(); i++){
-			if (boundRect[i].fConfidence > 0.70){
+			if (boundRect[i].fConfidence > 0.80){
 
-				m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
-				imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
+				//m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
+				//imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
 
 				boundRect[i].rect.x += lineRect.x;
 				boundRect[i].rect.y += (lineRect.y - lineRect.height);
@@ -1670,8 +1678,13 @@ void CExtractView::DoExtractionTextFromLines(_TEXT_ORDER order)
 				m_Extractor.AddExtBox(boundRect[i]);
 				averArea += (boundRect[i].rect.area());
 				areaCnt++;
+
+				m_Extractor.verifyCutSize(boundRect[i].rect, img3.cols, img3.rows);
+				img3(boundRect[i].rect).setTo(cv::Scalar(255));
 			}
 		}
+
+		cv::imshow("AfterBinary3", img3);
 
 		//	cv::imshow("AfterBinary3", img2);
 		//boundRect.clear();
@@ -1861,21 +1874,64 @@ cv::Rect CExtractView::GetNomalizedWordSize(cv::Rect rect)
 
 	float fScale = (float)_NORMALIZE_SIZE_H / (float)rect.height;
 	norRect.width = rect.width*fScale;
-	norRect.height = rect.width*fScale;
+	norRect.height = rect.height*fScale;
 
-	if (norRect.width < _NORMALIZE_SIZE_H){
+
+	// Checkl Aspect Ratio //
+	float aRatio = (float)rect.width / (float)rect.height;
+
+	if (aRatio < 0.5f){ 
+		norRect.width = _NORMALIZE_SIZE_H / 2;
+		norRect.x = norRect.width / 2;
+
+		norRect.height = _NORMALIZE_SIZE_H;
+	}
+	else if (aRatio > 1.5f){
+		norRect.height = _NORMALIZE_SIZE_H / 2;
+		norRect.y = norRect.height / 2;
+
 		norRect.width = _NORMALIZE_SIZE_H;
 	}
 
-	if (rect.width > _NORMALIZE_SIZE_W){
-		norRect.width = _NORMALIZE_SIZE_W;
+
+	else{
+		int wcnt = (norRect.width / _NORMALIZE_SIZE_H);
+		if (wcnt < 1)			wcnt = 1;
+		if (wcnt > 10)			wcnt = 10;
+
+
+		norRect.width = _NORMALIZE_SIZE_H*wcnt;
+
+		if (rect.height > _NORMALIZE_SIZE_H){
+			norRect.height = _NORMALIZE_SIZE_H;
+		}
 	}
 
-	if (rect.height > _NORMALIZE_SIZE_H){
-		norRect.height = _NORMALIZE_SIZE_H;
-	}
-
+	
 	return norRect;
+
+
+	//cv::Rect norRect;
+	//norRect.x = 0;
+	//norRect.y = 0;
+
+	//float fScale = (float)_NORMALIZE_SIZE_H / (float)rect.height;
+	//norRect.width = rect.width*fScale;
+	//norRect.height = rect.height*fScale;
+
+	//if (norRect.width < _NORMALIZE_SIZE_H){
+	//	norRect.width = _NORMALIZE_SIZE_H;
+	//}
+
+	//if (rect.width > _NORMALIZE_SIZE_W){
+	//	norRect.width = _NORMALIZE_SIZE_W;
+	//}
+
+	//if (rect.height > _NORMALIZE_SIZE_H){
+	//	norRect.height = _NORMALIZE_SIZE_H;
+	//}
+
+	//return norRect;
 }
 
 cv::Rect CExtractView::GetNomalizedSize(int averArea, cv::Rect rect)

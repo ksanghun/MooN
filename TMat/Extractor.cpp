@@ -1239,7 +1239,6 @@ void CExtractor::ProcExtractionText(cv::Mat& img, _TEXT_ORDER _torder, int _w, i
 {
 	// ExtractTexts ===========================================================//
 	m_fineExtractCoff = 0;
-
 	adaptiveThreshold(img, img, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 75, 10);
 	cv::bitwise_not(img, img);
 
