@@ -61,7 +61,7 @@ CMainFrame::CMainFrame()
 
 CMainFrame::~CMainFrame()
 {
-	int a = 0;
+	SINGLETON_TMat::Destory();
 }
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -157,15 +157,21 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	}
 
-	m_wndFileView.EnableDocking(CBRS_ALIGN_ANY);
+	m_wndFileView.EnableDocking(CBRS_ALIGN_LEFT);
 //	m_wndClassView.EnableDocking(CBRS_ALIGN_ANY);
 	DockPane(&m_wndFileView);
-	CDockablePane* pTabbedBar = NULL;
-//	m_wndFileView.AttachToTabWnd(&m_wndFileView, DM_SHOW, TRUE, &pTabbedBar);
+	m_wndProperties.EnableDocking(CBRS_ALIGN_LEFT);
+	DockPane(&m_wndProperties);
+
+
+	//CDockablePane* pTabbedBar = NULL;
+	//m_wndFileView.AttachToTabWnd(&m_wndFileView, DM_SHOW, TRUE, &pTabbedBar);
+	//m_wndProperties.AttachToTabWnd(&m_wndProperties, DM_SHOW, TRUE, &pTabbedBar);
+
+
 	m_wndOutput.EnableDocking(CBRS_ALIGN_ANY);
 	DockPane(&m_wndOutput);
-	m_wndProperties.EnableDocking(CBRS_ALIGN_ANY);
-	DockPane(&m_wndProperties);
+	
 
 	
 
@@ -213,6 +219,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	CMFCToolBar::SetBasicCommands(lstBasicCommands);
 
 	InitConfituration();
+
+
+
 
 	return 0;
 }

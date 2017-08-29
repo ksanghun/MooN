@@ -2,6 +2,10 @@
 #include "ExtractView.h"
 #include "TMatView.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 
 CExtractView::CExtractView()
 {
@@ -275,7 +279,7 @@ void CExtractView::DrawExtractions()
 
 				//if ((*ptexBox)[i].IsAmbig)				glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
 
-				if ((*ptexBox)[i].fConfi < 0.70f)		glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
+				if ((*ptexBox)[i].fConfi < 0.80f)		glColor4f(1.0f, 0.0f, 0.0f, 0.99f);
 
 				glBegin(GL_LINE_STRIP);
 				glVertex3f(rect.x1, m_pImg->GetImgHeight() - rect.y1, 0.0f);
@@ -1609,7 +1613,7 @@ void CExtractView::DoExtractionTextFromLines(_TEXT_ORDER order)
 	cv::imshow("BeforeBinary1", img3);
 
 
-
+	// Deskew //
 	int averArea = 0;
 	int areaCnt = 0;
 	float fEng = 0, fChi = 0;
@@ -1635,20 +1639,21 @@ void CExtractView::DoExtractionTextFromLines(_TEXT_ORDER order)
 		cv::Mat imgLine(nHeight, nWidth, img2.type(), cvScalar(255));
 		img2(lineRect).copyTo(imgLine(imgRect));
 
+		//m_Extractor.DeSkew(imgLine);
+		//cv::imshow("Deskew", img3);
 
-		//1.  English extraction //
+		//2. English Charactes ============//
 		boundRect.clear();
-		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_SYMBOL);
+		fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_WORD);
 		for (int i = 0; i < boundRect.size(); i++){
 
-			if (boundRect[i].fConfidence > 0.85){
+			if (boundRect[i].fConfidence > 0.70){
 				// remove extreacted characters //
-				//m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
-				//imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
-				
+				m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
+				imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
 
 				boundRect[i].rect.x += lineRect.x;
-				boundRect[i].rect.y += (lineRect.y - lineRect.height);			
+				boundRect[i].rect.y += (lineRect.y - lineRect.height);
 				boundRect[i].type = 0;
 				m_Extractor.AddExtBox(boundRect[i]);
 				averArea += (boundRect[i].rect.area());
@@ -1658,18 +1663,17 @@ void CExtractView::DoExtractionTextFromLines(_TEXT_ORDER order)
 				img3(boundRect[i].rect).setTo(cv::Scalar(255));
 			}
 		}
-
 		img3(lineRect).copyTo(imgLine(imgRect));
+		cv::imshow("AfterBinary Eng", img3);
 
-		cv::imshow("AfterBinary2", img3);
-		//2. Chinese Charactes ============//
+		//1.  Chinise extraction //
 		boundRect.clear();
 		fChi = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetChiTess(), tesseract::RIL_SYMBOL);
 		for (int i = 0; i < boundRect.size(); i++){
-			if (boundRect[i].fConfidence > 0.80){
+			if (boundRect[i].fConfidence > 0.70){
 
-				//m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
-				//imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
+				m_Extractor.verifyCutSize(boundRect[i].rect, imgLine.cols, imgLine.rows);
+				imgLine(boundRect[i].rect).setTo(cv::Scalar(255));
 
 				boundRect[i].rect.x += lineRect.x;
 				boundRect[i].rect.y += (lineRect.y - lineRect.height);
@@ -1683,8 +1687,9 @@ void CExtractView::DoExtractionTextFromLines(_TEXT_ORDER order)
 				img3(boundRect[i].rect).setTo(cv::Scalar(255));
 			}
 		}
+		img3(lineRect).copyTo(imgLine(imgRect));
+		cv::imshow("AfterBinary Chi", img3);
 
-		cv::imshow("AfterBinary3", img3);
 
 		//	cv::imshow("AfterBinary3", img2);
 		//boundRect.clear();
@@ -1704,7 +1709,7 @@ void CExtractView::DoExtractionTextFromLines(_TEXT_ORDER order)
 
 		// Error tests==========================get word box================================//
 		//boundRect.clear();
-		//fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_SYMBOL);
+		//fEng = m_OCRMng.extractWithOCR(imgLine, boundRect, m_OCRMng.GetEngTess(), tesseract::RIL_WORD);
 		//for (int i = 0; i < boundRect.size(); i++){
 		//		boundRect[i].rect.x += lineRect.x;
 		//		boundRect[i].rect.y += (lineRect.y - lineRect.height);

@@ -6,7 +6,9 @@
 #include "DlgConfig.h"
 #include "afxdialogex.h"
 
-
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 // CDlgConfig dialog
 
 IMPLEMENT_DYNAMIC(CDlgConfig, CDialog)

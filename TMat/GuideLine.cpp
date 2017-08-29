@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "GuideLine.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 CGuideLine::CGuideLine()
 {
 //	mtSetPoint2D(&m_increment, 0, 0);

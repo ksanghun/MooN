@@ -5,7 +5,9 @@
 
 #include "ZDataManager.h"
 
-
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 #define _MAX_EXTRACT_ITERATION 20
 #define _MIN_BOX_SIZE 2
@@ -114,7 +116,10 @@ void CExtractor::DeSkew(cv::Mat& srcimg)
 	cv::Mat img;
 	cv::threshold(srcimg, img, 100, 255, cv::THRESH_OTSU);
 
+
+
 	cv::bitwise_not(img, img);
+
 
 	std::vector<cv::Point> points;
 	findNonZero(img, points);
@@ -124,22 +129,22 @@ void CExtractor::DeSkew(cv::Mat& srcimg)
 	if (angle < -45.)
 		angle += 90.;
 
-	cv::Point2f vertices[4];
-	box.points(vertices);
-	for (int i = 0; i < 4; ++i)
-		cv::line(img, vertices[i], vertices[(i + 1) % 4], cv::Scalar(255, 0, 0));
+	//cv::Point2f vertices[4];
+	//box.points(vertices);
+	//for (int i = 0; i < 4; ++i)
+	//	cv::line(img, vertices[i], vertices[(i + 1) % 4], cv::Scalar(255, 0, 0));
 
 
 //	imshow("detact img ", img);
 
 	// Rotate image //
+
 	cv::Mat rotMat, rotatedFrame;
-	cv::Point center = cv::Point(img.cols / 2, img.rows / 2);
-	rotMat = getRotationMatrix2D(cv::Point2f(img.cols / 2, img.rows / 2), angle, 1);
-	cv::warpAffine(img, rotatedFrame, rotMat, img.size(), cv::INTER_CUBIC);
+	cv::Point center = cv::Point(srcimg.cols / 2, srcimg.rows / 2);
+	rotMat = getRotationMatrix2D(cv::Point2f(srcimg.cols / 2, srcimg.rows / 2), angle, 1);
+	cv::warpAffine(srcimg, rotatedFrame, rotMat, srcimg.size(), cv::INTER_CUBIC);
 //	imshow("img_rot", rotatedFrame);
-
-
+	
 	srcimg = rotatedFrame;
 }
 

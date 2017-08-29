@@ -4,6 +4,10 @@
 #include "MainFrm.h"
 #include "resource.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 enum TIMEREVNT { _RENDER = 100, _ADDIMG, _SEARCHIMG, _MOVECAMANI, _UPDATE_PAGE};
 
 

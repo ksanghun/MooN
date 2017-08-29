@@ -4,7 +4,9 @@
 #include "stdafx.h"
 #include "OGLWnd.h"
 
-
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 // COGLWnd
 

@@ -10,6 +10,10 @@
 #include "ZDataManager.h"
 
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 IMPLEMENT_DYNAMIC(CZListCtrlLog, CListCtrl)
 
 CZListCtrlLog::CZListCtrlLog()

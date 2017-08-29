@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "ZPDFConverter.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 CZPDFConverter::CZPDFConverter()
 {
@@ -38,7 +41,7 @@ IplImage* CZPDFConverter::LoadPDF(CString strpath, unsigned short nChannel)
 	pdf = pdf_specifics(ctx, doc);
 	fz_matrix page_ctm;
 	//fz_scale(&page_ctm, 1.337f, 1.337f);
-	fz_scale(&page_ctm, 2.5, 2.5);
+	fz_scale(&page_ctm, 2.5f, 2.5f);
 	//fz_scale(&page_ctm, 2, 2);
 
 	page = fz_load_page(ctx, doc, currentpage);

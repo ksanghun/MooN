@@ -61,7 +61,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>lib;lib/mupdf;tesseract-lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libglfw.lib;libmupdf.lib;libfonts.lib;libthirdparty.lib;comctl32.lib;vfw32.lib;IlmImfd.lib;ippicvmt.lib;libjasper.lib;libjpeg.lib;libpng.lib;libtiff.lib;libwebp.lib;opencv_calib3d300d.lib;opencv_core300d.lib;opencv_features2d300d.lib;opencv_hal300d.lib;opencv_highgui300d.lib;opencv_imgcodecs300d.lib;opencv_imgproc300d.lib;zlib.lib;liblept171d.lib;libtesseract304d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libglfw.lib;libmupdf.lib;libthirdparty.lib;libfonts.lib;comctl32.lib;vfw32.lib;IlmImfd.lib;ippicvmt.lib;libjasper.lib;libjpeg.lib;libpng.lib;libtiff.lib;libwebp.lib;opencv_calib3d300d.lib;opencv_core300d.lib;opencv_features2d300d.lib;opencv_hal300d.lib;opencv_highgui300d.lib;opencv_imgcodecs300d.lib;opencv_imgproc300d.lib;zlib.lib;liblept171d.lib;libtesseract304d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
     </Link>
     <Midl>

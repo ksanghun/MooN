@@ -2,7 +2,9 @@
 #include "stdafx.h"
 #include "PropGridSlider.h"
 ////////////////////////////////////////////////////////////////////////////////////
-
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 BEGIN_MESSAGE_MAP(CPropSlider, CSliderCtrl)
 	ON_NOTIFY_REFLECT(NM_RELEASEDCAPTURE, &CPropSlider::OnNMReleasedcapture)

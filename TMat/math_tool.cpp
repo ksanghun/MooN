@@ -1,6 +1,10 @@
 #include "StdAfx.h"
 #include "math_tool.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 POINT3D mtCross(POINT3D A, POINT3D B)
 {
 	POINT3D C;

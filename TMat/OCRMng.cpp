@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "OCRMng.h"
 
-
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 COCRMng::COCRMng()
 {
@@ -10,6 +12,8 @@ COCRMng::COCRMng()
 
 COCRMng::~COCRMng()
 {
+	m_tessEng.End();
+	m_tessChi.End();
 }
 
 
@@ -18,7 +22,7 @@ bool COCRMng::InitOCRMng()
 	if (m_tessEng.Init("./tessdata/", "eng")){
 		return false;
 	}
-	if (m_tessChi.Init("./tessdata/", "chi_tra")){
+	if (m_tessChi.Init("./tessdata/", "kor")){
 		return false;
 	}
 
@@ -27,7 +31,7 @@ bool COCRMng::InitOCRMng()
 
 
 	m_tessChi.SetPageSegMode(tesseract::PSM_SINGLE_BLOCK);
-	m_tessChi.SetVariable("tessedit_char_blacklist", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+//	m_tessChi.SetVariable("tessedit_char_blacklist", "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz(){}[]~!@#$%^&*()_+-=,.?;:'\"");
 	return true;
 }
 
@@ -82,9 +86,7 @@ float COCRMng::extractWithOCR(cv::Mat image, std::vector<_OCR_RES>& boundRect, t
 					//do{
 					//	const char* choice = ci.GetUTF8Text();
 					//	float ciConf = ci.Confidence();
-
 					//	TRACE("Confidence: %s - %3.2f\n", choice, ciConf);
-
 					//} while (ci.Next());
 
 
@@ -114,13 +116,12 @@ float COCRMng::extractWithOCR(cv::Mat image, std::vector<_OCR_RES>& boundRect, t
 					averConf += conf;
 				}
 					
-
+				delete[] word;
 			} while (ri->Next(level));
 
 	}
 
 	tess.Clear();
-
 
 	if (cnt > 0)
 		averConf /= cnt;

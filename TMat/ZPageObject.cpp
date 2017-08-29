@@ -4,6 +4,10 @@
 #include "TMatView.h"
 //#define SPACE_SIZE 7000
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 #define Z_TRANS 70000
 //#define Z_TRANS 0
 

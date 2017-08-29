@@ -6,6 +6,10 @@
 #include "Extractor.h"
 
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 // For convert image file to base64 //
 static const std::string base64_chars =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"

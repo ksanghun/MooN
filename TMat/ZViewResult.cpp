@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "ZViewResult.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 CZViewResult::CZViewResult()
 {

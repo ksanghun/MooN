@@ -1,6 +1,12 @@
 #include "StdAfx.h"
 #include "Camera2Axis.h"
 
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
 //#define MIN_VERTICAL_ANGLE 285.0f 
 
 #define MIN_VERTICAL_ANGLE 295.0f 

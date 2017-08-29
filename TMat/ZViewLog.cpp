@@ -6,6 +6,9 @@
 #include "ZViewLog.h"
 #include "ZDataManager.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 // CZViewLog
 IMPLEMENT_DYNAMIC(CZViewLog, CWnd)
